@@ -23,3 +23,7 @@ play-service-account.json
 
 # Screenshot test output (baselines in src/test/screenshots ARE committed)
 **/build/outputs/roborazzi/
+
+# Python bytecode (the review script is run directly in CI)
+__pycache__/
+*.pyc
