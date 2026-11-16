@@ -1,0 +1,9 @@
+# Terraform state holds real resource data and can leak secrets: never commit it.
+*.tfstate
+*.tfstate.*
+.terraform/
+crash.log
+*.tfplan
+# Local variable files may contain tokens or personal values.
+*.tfvars
+*.tfvars.json
