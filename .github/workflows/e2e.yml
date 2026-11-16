@@ -40,6 +40,16 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
+      # Without this the emulator aborts: "FATAL | Not enough space to create userdata partition.
+      # Available: 6383 MB, need 7372 MB". (The action's disk-size input does not lower that
+      # requirement, it was tried and the emulator still asked for 7372 MB.) These preinstalled
+      # toolchains are not used by this job.
+      - name: Free disk space for the emulator
+        run: |
+          df -h /
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/local/share/boost /usr/local/lib/android/sdk/ndk
+          df -h /
+
       - name: Build debug APK
         run: ./gradlew :app:assembleDebug
 
@@ -54,11 +64,6 @@ jobs:
           api-level: 35
           arch: x86_64
           target: google_apis
-          # The default userdata partition (7.3 GB) does not fit on the free runner disk:
-          # "FATAL | Not enough space to create userdata partition". 4 GB is plenty for one small app.
-          disk-size: 4096M
-          # Fail in 5 minutes instead of waiting 10 for an emulator that cannot start.
-          emulator-boot-timeout: 300
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           script: |
