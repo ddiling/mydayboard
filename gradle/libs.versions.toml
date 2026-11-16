@@ -6,7 +6,7 @@ agp = "9.5.1"
 # which puts this KGP on the build classpath and overrides AGP's bundled one.
 kotlin = "2.4.20"
 detekt = "2.0.0-alpha.6"
-spotless = "8.6.0"
+spotless = "8.11.0"
 ktlint = "1.8.0"
 kover = "0.9.11"
 roborazzi = "1.66.0"
