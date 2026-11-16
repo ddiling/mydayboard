@@ -54,6 +54,11 @@ jobs:
           api-level: 35
           arch: x86_64
           target: google_apis
+          # The default userdata partition (7.3 GB) does not fit on the free runner disk:
+          # "FATAL | Not enough space to create userdata partition". 4 GB is plenty for one small app.
+          disk-size: 4096M
+          # Fail in 5 minutes instead of waiting 10 for an emulator that cannot start.
+          emulator-boot-timeout: 300
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           script: |
