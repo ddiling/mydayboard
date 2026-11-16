@@ -78,6 +78,6 @@ everyone gets the same build. Upgrade with `terraform init -upgrade` in a PR.
 
 ## CI
 
-There is no Terraform job in CI: a real plan needs an admin token, which must
-not be stored as a CI secret. Run `terraform fmt -check -recursive` and
-`terraform validate` locally before a PR.
+CI (`.github/workflows/terraform.yml`) runs `fmt -check`, `validate` and `tflint`,
+which need no token. There is no `plan` in CI: it needs an admin token, which must
+not be stored as a CI secret. See [ROADMAP.md](ROADMAP.md) for the safe path to more.

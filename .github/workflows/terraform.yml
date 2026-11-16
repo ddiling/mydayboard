@@ -1,0 +1,58 @@
+# Token-free checks for the Terraform code in infra/. Nothing here talks to the
+# GitHub API: no secrets, read-only repo access. (A real `plan` needs a token and
+# is deliberately not run in CI, see infra/ROADMAP.md.)
+name: Terraform
+
+on:
+  pull_request:
+    paths:
+      - "infra/**"
+      - ".github/workflows/terraform.yml"
+  push:
+    branches: [main]
+    paths:
+      - "infra/**"
+      - ".github/workflows/terraform.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: terraform-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Terraform fmt, validate, lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: infra
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.17.2
+          terraform_wrapper: false
+
+      - name: Format check
+        run: terraform fmt -check -recursive
+
+      # -backend=false: no state is read. The provider is downloaded from the
+      # public registry and verified against the committed .terraform.lock.hcl.
+      - name: Init
+        run: terraform init -backend=false -lockfile=readonly
+
+      - name: Validate
+        run: terraform validate
+
+      - uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: v0.66.0
+
+      - name: Lint
+        run: |
+          tflint --init
+          tflint --recursive --format compact
