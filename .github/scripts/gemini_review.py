@@ -35,11 +35,13 @@ MARKER = "<!-- gemini-review -->"
 
 # Roughly 30k tokens of diff. Larger pull requests are cut and the comment says so.
 MAX_DIFF_CHARS = 120_000
-MAX_OUTPUT_TOKENS = 4096
+# Thinking models count their reasoning toward this limit. 4096 was used up by the reasoning alone
+# and the answer was cut off before it started, so leave plenty of room for both.
+MAX_OUTPUT_TOKENS = 16384
 
-# HTTP statuses after which the next model in the fallback list is tried:
-# not found (retired model), rate limited, server error, overloaded.
-FALLBACK_STATUSES = (404, 429, 500, 503)
+# Statuses after which the next model in the fallback list is tried: not found (retired model),
+# rate limited, server error, overloaded, and 0 = no HTTP answer at all (network error, timeout).
+FALLBACK_STATUSES = (0, 404, 429, 500, 503)
 # Seconds to wait before retry N is N * this value. Tests set it to 0.
 RETRY_SECONDS = int(os.environ.get("GEMINI_RETRY_SECONDS", "15"))
 
@@ -77,7 +79,7 @@ Project guidelines follow.
 
 class GeminiApiError(Exception):
     def __init__(self, status: int, detail: str) -> None:
-        super().__init__(f"Gemini API returned HTTP {status}: {detail}")
+        super().__init__(f"Gemini API returned HTTP {status}: {detail}" if status else f"Gemini API unreachable: {detail}")
         self.status = status
 
 
@@ -138,12 +140,19 @@ def build_user_prompt(meta: dict, diff: str, skipped: list[str], truncated: bool
 
 
 def extract_text(response: dict) -> str:
+    """The answer text only. Thinking models also return reasoning parts (`"thought": true`)."""
     candidates = response.get("candidates") or []
-    parts = (candidates[0].get("content") or {}).get("parts", []) if candidates else []
-    text = "".join(part.get("text", "") for part in parts).strip()
+    if not candidates:
+        raise RuntimeError(f"Gemini returned no candidates (feedback: {response.get('promptFeedback')})")
+    candidate = candidates[0]
+    parts = (candidate.get("content") or {}).get("parts", [])
+    text = "".join(part.get("text", "") for part in parts if not part.get("thought")).strip()
+    reason = candidate.get("finishReason")
     if not text:
-        reason = candidates[0].get("finishReason") if candidates else response.get("promptFeedback")
-        raise RuntimeError(f"Gemini returned no text (reason: {reason})")
+        raise RuntimeError(f"Gemini returned no answer text (finish reason: {reason})")
+    if reason == "MAX_TOKENS":
+        # A half-finished review is worse than none: it would be posted as if it were complete.
+        raise RuntimeError(f"Gemini's answer was cut off at {MAX_OUTPUT_TOKENS} tokens (finish reason: {reason})")
     return text
 
 
@@ -164,12 +173,14 @@ def call_gemini(api_key: str, model: str, system_prompt: str, user_prompt: str) 
         try:
             with urllib.request.urlopen(request, timeout=120) as response:
                 return json.load(response)
-        except urllib.error.HTTPError as error:
-            detail = error.read().decode(errors="replace")[:1000]
-            if error.code in (429, 500, 503) and attempt < 3:
-                time.sleep(RETRY_SECONDS * attempt)  # rate limit or overload: wait and retry
-                continue
-            raise GeminiApiError(error.code, detail) from None
+        except urllib.error.HTTPError as error:  # must come first: HTTPError is a subclass of URLError
+            status, detail = error.code, error.read().decode(errors="replace")[:1000]
+        except (urllib.error.URLError, TimeoutError, ConnectionError) as error:
+            status, detail = 0, f"network error: {error}"  # DNS failure, reset, timeout
+        if status in (0, 429, 500, 503) and attempt < 3:
+            time.sleep(RETRY_SECONDS * attempt)  # transient: wait and retry
+            continue
+        raise GeminiApiError(status, detail) from None
     raise AssertionError("unreachable")
 
 
