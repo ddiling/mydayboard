@@ -8,7 +8,7 @@ is a strange comment, not an action.
 
 Environment (set by .github/workflows/gemini-review.yml):
   GEMINI_API_KEY  API key (repository secret)
-  GEMINI_MODEL    model id, e.g. gemini-2.5-flash
+  GEMINI_MODEL    model id, e.g. gemini-3.8-flash
   GH_TOKEN        token for `gh` (the workflow's GITHUB_TOKEN)
   REPOSITORY      owner/name
   PR_NUMBER       pull request number
