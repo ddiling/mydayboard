@@ -1,7 +1,7 @@
 # Review guidelines for MyDayboard
 
-These rules are the system prompt of the automated Gemini pull request review
-(`.github/workflows/gemini-review.yml`) and apply to human reviewers as well.
+These rules are the system prompt of the automated AI pull request review
+(`.github/workflows/ai-review.yml`) and apply to human reviewers as well.
 
 MyDayboard is a single Android app (Kotlin, Jetpack Compose, Material 3) that combines alarms, timers,
 trackers and recurring tasks behind a dashboard. It is a portfolio project: the owner must be able to
