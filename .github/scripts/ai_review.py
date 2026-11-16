@@ -41,6 +41,9 @@ GUIDELINES_PATH = Path("docs/review-guidelines.md")
 MARKER = "<!-- ai-review -->"
 
 # Generated or binary files add cost, not signal.
+# Cloudflare (in front of Groq) rejects the default "Python-urllib" agent with HTTP 403, code 1010.
+USER_AGENT = "ai-review-script/1.0"
+
 IGNORED_PATHS = (
     "*/src/test/screenshots/*",
     "*lint-baseline.xml",
@@ -218,7 +221,7 @@ def post_json(url: str, headers: dict[str, str], payload: dict) -> dict:
     request = urllib.request.Request(
         url,
         data=json.dumps(payload).encode(),
-        headers={"Content-Type": "application/json", **headers},
+        headers={"Content-Type": "application/json", "User-Agent": USER_AGENT, **headers},
         method="POST",
     )
     for attempt in (1, 2, 3):
@@ -291,7 +294,7 @@ def call_model(entry: ModelEntry, system_prompt: str, user_prompt: str) -> str:
 
 def print_gemini_models(entry: ModelEntry) -> None:
     """Help the user pick a valid model id after a 404 (names only, no secrets)."""
-    request = urllib.request.Request(f"{entry.provider.base_url}/models?pageSize=100", headers={"x-goog-api-key": entry.api_key})
+    request = urllib.request.Request(f"{entry.provider.base_url}/models?pageSize=100", headers={"x-goog-api-key": entry.api_key, "User-Agent": USER_AGENT})
     try:
         with urllib.request.urlopen(request, timeout=30) as response:
             names = [m["name"].removeprefix("models/") for m in json.load(response).get("models", [])]
