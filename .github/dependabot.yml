@@ -1,0 +1,28 @@
+version: 2
+updates:
+  # Reads gradle/libs.versions.toml
+  - package-ecosystem: gradle
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 10
+    groups:
+      kotlin:
+        patterns: ["org.jetbrains.kotlin*", "com.google.devtools.ksp*"]
+      agp:
+        patterns: ["com.android.tools.build*", "com.android.application", "com.android.library"]
+      androidx:
+        patterns: ["androidx.*"]
+      testing:
+        patterns: ["junit*", "org.robolectric*", "io.github.takahirom.roborazzi*"]
+      code-quality:
+        patterns: ["dev.detekt*", "com.diffplug.spotless*"]
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]

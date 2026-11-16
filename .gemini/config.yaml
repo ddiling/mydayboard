@@ -1,0 +1,25 @@
+# Gemini Code Assist for GitHub: repository-level settings.
+# Reference: https://docs.cloud.google.com/gemini/docs/code-review/customize-repo-review
+# Review conventions live in .gemini/styleguide.md.
+
+have_fun: false
+
+memory_config:
+  disabled: false
+
+# Generated or binary files add noise, not signal.
+ignore_patterns:
+  - "**/src/test/screenshots/**" # Roborazzi baselines (PNG)
+  - "**/lint-baseline.xml"
+  - "gradle/wrapper/**"
+  - "gradle/gradle-daemon-jvm.properties"
+
+code_review:
+  disable: false
+  comment_severity_threshold: MEDIUM
+  max_review_comments: -1
+  pull_request_opened:
+    help: false
+    summary: true
+    code_review: true
+    include_drafts: true

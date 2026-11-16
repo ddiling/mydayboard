@@ -1,0 +1,43 @@
+# Re-records screenshot baselines on CI's Linux runner and commits them to the branch.
+# Use it when a UI change is intentional: Actions -> "Record screenshots" -> pick your branch.
+# Recording on CI (not on laptops) keeps baselines consistent across macOS/Windows/Linux.
+name: Record screenshots
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.ref }}
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 25
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-read-only: true
+
+      - name: Record baselines
+        run: ./gradlew recordRoborazziDebug
+
+      - name: Commit updated baselines
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- '**/src/test/screenshots/**'
+          if git diff --cached --quiet; then
+            echo "Baselines unchanged."
+          else
+            git commit -m "test: update screenshot baselines"
+            git push
+          fi
+      # Note: pushes made with GITHUB_TOKEN don't trigger new workflow runs.
+      # Re-run CI on the PR (or push an empty commit) after this finishes.

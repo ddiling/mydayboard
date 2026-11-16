@@ -1,0 +1,10 @@
+* text=auto eol=lf
+*.bat text eol=crlf
+gradlew text eol=lf
+
+*.png binary
+*.jar binary
+
+# Screenshot baselines grow quickly. Once you have many, move them to Git LFS:
+#   git lfs install && git lfs track "**/src/test/screenshots/**/*.png"
+# and set `lfs: true` on actions/checkout in the workflows.

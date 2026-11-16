@@ -1,0 +1,160 @@
+# Runs on every PR and on main.
+# PRs build/check/test only the modules affected by the change (plus everything
+# that depends on them). main builds everything, which also warms the cache.
+# Branch protection: require ONLY the "CI passed" job (see bottom).
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  # Cancel superseded PR runs, but let every main build finish.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  contents: read
+
+env:
+  # Kotlin warnings fail the build in CI (see gradle.properties).
+  ORG_GRADLE_PROJECT_warningsAsErrors: "true"
+  # Empty on main -> all modules. On PRs -> diff against the target branch.
+  AFFECTED_BASE: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || '' }}
+
+jobs:
+  static-analysis:
+    name: Lint & static analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0 # full history, so git diff can find the merge base
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 25
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          # Only main writes the build cache; PRs read it. Also validates the wrapper jar.
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+
+      - name: Show affected modules
+        run: |
+          ./gradlew -q :printAffectedModules -PaffectedBase="$AFFECTED_BASE" > affected.txt
+          { echo "### Affected modules"; echo '```'; cat affected.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          cat affected.txt
+
+      - name: Build-logic tests (module rules, ...)
+        run: ./gradlew :build-logic:convention:test
+
+      - name: Spotless (ktlint) + Detekt + module rules + Android Lint
+        run: ./gradlew :affectedStaticAnalysis -PaffectedBase="$AFFECTED_BASE" --continue
+
+      - name: Upload reports
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: static-analysis-reports
+          path: |
+            **/build/reports/detekt/
+            **/build/reports/lint-results-*.html
+          retention-days: 7
+
+  test:
+    name: Unit & screenshot tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 25
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+
+      # ciTest = unit tests + Roborazzi screenshot verification (every @Preview) + coverage minimums.
+      - name: Run tests (affected modules)
+        if: github.event_name == 'pull_request'
+        run: ./gradlew :affectedTest -PaffectedBase="$AFFECTED_BASE" --continue
+
+      # On main everything is affected anyway, so build the merged coverage report in the same run.
+      # Always use :coverageReport, never :koverHtmlReport alone (see README, "Coverage").
+      - name: Run tests and build coverage report (main)
+        if: github.event_name != 'pull_request'
+        run: ./gradlew :coverageReport --continue
+
+      - name: Upload coverage report
+        if: github.event_name != 'pull_request' && success()
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-report
+          path: build/reports/kover/html/
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload screenshot diffs
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: screenshot-diffs
+          path: "**/build/outputs/roborazzi/"
+          retention-days: 14
+
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-reports
+          path: "**/build/reports/tests/"
+          retention-days: 7
+
+  build:
+    name: Assemble app
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 25
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+
+      # Debug + R8-minified release (unsigned) of the app.
+      - name: Assemble
+        run: ./gradlew :affectedAssemble -PaffectedBase="$AFFECTED_BASE"
+
+      - name: Upload debug APKs
+        uses: actions/upload-artifact@v7
+        with:
+          name: debug-apks
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: ignore
+          retention-days: 7
+
+  # Single required check for branch protection. Jobs can't be "skipped into
+  # failure": if nothing was affected the jobs still succeed quickly, and this
+  # gate turns any failure/cancellation into one clear red check.
+  ci-passed:
+    name: CI passed
+    if: always()
+    needs: [static-analysis, test, build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check job results
+        run: |
+          echo '${{ toJSON(needs) }}'
+          if ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}; then
+            echo "A required CI job failed." && exit 1
+          fi

@@ -1,0 +1,11 @@
+#!/usr/bin/env sh
+# Fast local gate: formatting + static analysis before every commit.
+# Install with: ./scripts/install-git-hooks.sh   (skip once with: git commit --no-verify)
+set -e
+
+echo "pre-commit: spotlessCheck + detekt"
+if ! ./gradlew spotlessCheck detekt --quiet; then
+  echo ""
+  echo "pre-commit failed. Auto-fix formatting with: ./gradlew spotlessApply"
+  exit 1
+fi

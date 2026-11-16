@@ -1,0 +1,5 @@
+# Who must review what. The LAST matching pattern wins.
+# Solo project: the owner is the fallback for everything. Do NOT enable "Require review from
+# Code Owners" in branch protection unless there is a second reviewer, because you cannot
+# approve your own pull requests.
+*   @ddiling

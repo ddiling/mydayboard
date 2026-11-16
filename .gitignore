@@ -1,0 +1,25 @@
+# Gradle / build
+.gradle/
+.kotlin/
+build/
+local.properties
+captures/
+.externalNativeBuild/
+.cxx/
+
+# IDE
+.idea/*
+!.idea/codeStyles/
+!.idea/inspectionProfiles/
+*.iml
+.DS_Store
+
+# Signing & secrets — never commit these
+*.jks
+*.keystore
+keystore.properties
+google-services.json
+play-service-account.json
+
+# Screenshot test output (baselines in src/test/screenshots ARE committed)
+**/build/outputs/roborazzi/
