@@ -5,7 +5,7 @@
 # Logic lives in .github/scripts/ai_review.py, the rules the model follows in docs/review-guidelines.md.
 #
 # Setup: add the repository secrets of the providers you want (each is optional, models without a key
-# are skipped): GROQ_API_KEY, OPENROUTER_API_KEY, GEMINI_API_KEY. Optional repository variable
+# are skipped): GROQ_API_KEY_REVIEW, OPENROUTER_API_KEY_REVIEW, GEMINI_API_KEY_REVIEW. Optional repository variable
 # REVIEW_MODELS overrides the ordered fallback list below ("provider:model,provider:model,...").
 # A model that is overloaded, out of quota, retired or too small for the diff hands over to the next.
 #
@@ -51,9 +51,9 @@ jobs:
       contents: read
       pull-requests: write
     env:
-      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY_REVIEW }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY_REVIEW }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY_REVIEW }}
       # Order: Groq first (fast, but only small diffs fit its free plan), then OpenRouter (pinned free
       # model, never the random `openrouter/free` router), then Gemini (large context, flaky capacity).
       REVIEW_MODELS: >-
