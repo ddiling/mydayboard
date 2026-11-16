@@ -110,6 +110,7 @@ Each module has three lifecycle tasks: `ciStaticAnalysis`, `ciTest` and `ciAssem
 | `ci.yml` | Every PR and push to `main` | Static analysis, tests and assembly for affected modules, plus build-logic tests. On `main` it also publishes the merged coverage report as an artifact. Ends with one **`CI passed`** gate job. |
 | `e2e.yml` | `main`, nightly, manual, or PRs labelled `e2e` | One Maestro emulator job running the flows in `app/maestro/`. On PRs only with the `e2e` label. |
 | `screenshots-record.yml` | Manual | Re-records all screenshot baselines on Linux and commits them to the branch |
+| `gemini-review.yml` | PR opened or ready for review (not Dependabot), or a `/gemini-review` comment | Posts one advisory review comment, written by the Gemini API. Dependabot PRs are reviewed only on demand. Needs the `GEMINI_API_KEY` secret. |
 | `release.yml` | Tag `vX.Y.Z` | Signed AAB → Play **internal** track → GitHub Release |
 | `dependabot.yml` | Weekly | Grouped dependency and Actions update PRs |
 
