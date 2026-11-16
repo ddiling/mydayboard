@@ -4,8 +4,8 @@
 # The review is ONE comment; a re-review updates it. It is advisory and never blocks a merge.
 # Logic lives in .github/scripts/gemini_review.py, the rules the model follows in docs/review-guidelines.md.
 #
-# Setup: repository secret GEMINI_API_KEY. Optional repository variable GEMINI_MODEL
-# (default below). Free-tier prompts may be used by Google to improve its products, so
+# Setup: repository secret GEMINI_API_KEY. Optional repository variable GEMINI_MODEL: one model id
+# or a comma-separated fallback list, used in order when a model is overloaded or retired. Free-tier prompts may be used by Google to improve its products, so
 # use a dedicated key and never send a pull request that contains secrets or personal data.
 name: Gemini review
 
@@ -48,7 +48,7 @@ jobs:
       pull-requests: write
     env:
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-      GEMINI_MODEL: ${{ vars.GEMINI_MODEL || 'gemini-3.8-flash' }}
+      GEMINI_MODEL: ${{ vars.GEMINI_MODEL || 'gemini-3.8-flash,gemini-3.7-flash' }}
       GH_TOKEN: ${{ github.token }}
       REPOSITORY: ${{ github.repository }}
       PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}

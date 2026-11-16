@@ -8,7 +8,7 @@ is a strange comment, not an action.
 
 Environment (set by .github/workflows/gemini-review.yml):
   GEMINI_API_KEY  API key (repository secret)
-  GEMINI_MODEL    model id, e.g. gemini-3.8-flash
+  GEMINI_MODEL    model id, or a comma-separated fallback list: "gemini-3.8-flash,gemini-3.7-flash"
   GH_TOKEN        token for `gh` (the workflow's GITHUB_TOKEN)
   REPOSITORY      owner/name
   PR_NUMBER       pull request number
@@ -36,6 +36,12 @@ MARKER = "<!-- gemini-review -->"
 # Roughly 30k tokens of diff. Larger pull requests are cut and the comment says so.
 MAX_DIFF_CHARS = 120_000
 MAX_OUTPUT_TOKENS = 4096
+
+# HTTP statuses after which the next model in the fallback list is tried:
+# not found (retired model), rate limited, server error, overloaded.
+FALLBACK_STATUSES = (404, 429, 500, 503)
+# Seconds to wait before retry N is N * this value. Tests set it to 0.
+RETRY_SECONDS = int(os.environ.get("GEMINI_RETRY_SECONDS", "15"))
 
 # Generated or binary files add cost, not signal.
 IGNORED_PATHS = (
@@ -161,14 +167,14 @@ def call_gemini(api_key: str, model: str, system_prompt: str, user_prompt: str) 
         except urllib.error.HTTPError as error:
             detail = error.read().decode(errors="replace")[:1000]
             if error.code in (429, 500, 503) and attempt < 3:
-                time.sleep(15 * attempt)  # rate limit or overload: wait and retry
+                time.sleep(RETRY_SECONDS * attempt)  # rate limit or overload: wait and retry
                 continue
             raise GeminiApiError(error.code, detail) from None
     raise AssertionError("unreachable")
 
 
 def print_available_models(api_key: str) -> None:
-    """Help the user pick a valid model id after an HTTP 404 (names only, no secrets)."""
+    """Help the user pick valid model ids after an HTTP 404 (names only, no secrets)."""
     request = urllib.request.Request(f"{API_ROOT}/models?pageSize=100", headers={"x-goog-api-key": api_key})
     try:
         with urllib.request.urlopen(request, timeout=30) as response:
@@ -177,6 +183,21 @@ def print_available_models(api_key: str) -> None:
         print(f"Could not list models: {error}")
         return
     print("Models available to this key:", ", ".join(sorted(n for n in names if "gemini" in n)))
+
+
+def generate_review(api_key: str, models: list[str], system_prompt: str, user_prompt: str) -> tuple[str, str]:
+    """Try each model in order. Returns (review text, model that produced it)."""
+    for index, model in enumerate(models):
+        try:
+            return extract_text(call_gemini(api_key, model, system_prompt, user_prompt)), model
+        except GeminiApiError as error:
+            print(f"{model}: {error}")
+            if error.status == 404:
+                print_available_models(api_key)
+            if error.status not in FALLBACK_STATUSES or index == len(models) - 1:
+                raise
+            print(f"Falling back to {models[index + 1]}.")
+    raise AssertionError("unreachable: models is never empty")
 
 
 def run(command: list[str], stdin: str | None = None) -> str:
@@ -202,10 +223,13 @@ def upsert_comment(repo: str, number: str, body: str) -> None:
 
 def main() -> int:
     try:
-        api_key, model = os.environ["GEMINI_API_KEY"], os.environ["GEMINI_MODEL"]
-        repo, number = os.environ["REPOSITORY"], os.environ["PR_NUMBER"]
+        api_key, repo, number = os.environ["GEMINI_API_KEY"], os.environ["REPOSITORY"], os.environ["PR_NUMBER"]
+        models = [name.strip() for name in os.environ["GEMINI_MODEL"].split(",") if name.strip()]
     except KeyError as missing:
         print(f"Missing environment variable {missing}. Is the GEMINI_API_KEY secret set?")
+        return 1
+    if not models:
+        print("GEMINI_MODEL is empty.")
         return 1
 
     meta = json.loads(
@@ -219,13 +243,11 @@ def main() -> int:
 
     guidelines = GUIDELINES_PATH.read_text() if GUIDELINES_PATH.exists() else "(no project guidelines file)"
     try:
-        response = call_gemini(api_key, model, REVIEW_RULES + guidelines, build_user_prompt(meta, diff, skipped, truncated))
-        review = extract_text(response)
-    except GeminiApiError as error:
-        print(error)
-        if error.status == 404:
-            print_available_models(api_key)
-        return 1
+        review, model = generate_review(
+            api_key, models, REVIEW_RULES + guidelines, build_user_prompt(meta, diff, skipped, truncated)
+        )
+    except GeminiApiError:
+        return 1  # already printed by generate_review
     except RuntimeError as error:  # e.g. the response was blocked or empty
         print(error)
         return 1
