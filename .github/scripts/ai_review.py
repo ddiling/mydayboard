@@ -46,6 +46,8 @@ IGNORED_PATHS = (
     "*/src/test/screenshots/*",
     "*lint-baseline.xml",
     "gradle/wrapper/*",
+    "gradlew",
+    "gradlew.bat",
     "gradle/gradle-daemon-jvm.properties",
     "*.lock",
 )
