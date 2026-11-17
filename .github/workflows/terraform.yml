@@ -1,6 +1,6 @@
 # Token-free checks for the Terraform code in infra/. Nothing here talks to the
 # GitHub API: no secrets, read-only repo access. (A real `plan` needs a token and
-# is deliberately not run in CI, see infra/ROADMAP.md.)
+# is deliberately not run in CI, see infra/README.md.)
 name: Terraform
 
 on:

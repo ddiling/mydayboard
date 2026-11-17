@@ -80,4 +80,19 @@ everyone gets the same build. Upgrade with `terraform init -upgrade` in a PR.
 
 CI (`.github/workflows/terraform.yml`) runs `fmt -check`, `validate` and `tflint`,
 which need no token. There is no `plan` in CI: it needs an admin token, which must
-not be stored as a CI secret. See [ROADMAP.md](ROADMAP.md) for the safe path to more.
+not be stored as a CI secret.
+
+### Later, if it is worth the effort (in this order)
+
+1. **Misconfiguration scan** (`checkov` or `trivy config`), token-free. Pin the action by commit SHA.
+2. **Remote state**: a versioned bucket with locking, or HCP Terraform; CI logs in with OIDC.
+   Do it after the repo is public and secure the bucket.
+3. **`plan` on PRs**: OIDC does not cover the GitHub API, so use a read-only GitHub App and
+   store only its private key as a secret. Never use `pull_request_target`.
+4. **Drift detection**: a nightly `terraform plan -detailed-exitcode` (exit code 2 = a setting
+   was changed by hand). Needs steps 2 and 3.
+5. **Gated apply**: a write-capable GitHub App visible only to a protected environment with a
+   reviewer (environments need a public repo on Free), applying the saved plan file.
+
+Private vulnerability reporting and first-time-contributor approval have no provider
+resource yet; re-check provider releases before each step.
