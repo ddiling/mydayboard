@@ -1,7 +1,7 @@
 # AI review of pull requests with free-tier model providers (Groq, OpenRouter, Google Gemini).
 #   - Automatic when a pull request is opened or marked ready for review, except for Dependabot.
 #   - On demand for any pull request: comment `/ai-review` (owner, members and collaborators only).
-# The review is ONE comment; a re-review updates it. It is advisory and never blocks a merge.
+# Every review is a new comment; the footer names the commit it covers. It is advisory and never blocks a merge.
 # Logic lives in .github/scripts/ai_review.py, the rules the model follows in docs/review-guidelines.md.
 #
 # Setup: add the repository secrets of the providers you want (each is optional, models without a key
