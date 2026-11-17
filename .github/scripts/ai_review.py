@@ -272,6 +272,18 @@ def openai_text(response: dict, limit: int) -> str:
     return text
 
 
+def only_the_review(text: str) -> str:
+    """Keep the review itself: from the last "## Summary" heading on (it may even be glued to the end of a sentence).
+
+    Some models think out loud before answering, without marking it, and that text must never be
+    posted. The answer comes last, so the last heading wins (the notes may quote the format).
+    No heading means the model ignored the format: fail, so the next model is tried."""
+    matches = list(re.finditer(r"## Summary[ \t]*\n", text))
+    if not matches:
+        raise RuntimeError("answer does not contain the required '## Summary' section")
+    return text[matches[-1].start():]
+
+
 def call_model(entry: ModelEntry, system_prompt: str, user_prompt: str) -> str:
     provider = entry.provider
     if provider.openai_compatible:
@@ -282,14 +294,14 @@ def call_model(entry: ModelEntry, system_prompt: str, user_prompt: str) -> str:
             provider.token_param: provider.max_output_tokens,
         }
         response = post_json(f"{provider.base_url}/chat/completions", {"Authorization": f"Bearer {entry.api_key}"}, payload)
-        return openai_text(response, provider.max_output_tokens)
+        return only_the_review(openai_text(response, provider.max_output_tokens))
     payload = {
         "systemInstruction": {"parts": [{"text": system_prompt}]},
         "contents": [{"role": "user", "parts": [{"text": user_prompt}]}],
         "generationConfig": {"temperature": 0.2, "maxOutputTokens": provider.max_output_tokens},
     }
     response = post_json(f"{provider.base_url}/models/{entry.model}:generateContent", {"x-goog-api-key": entry.api_key}, payload)
-    return gemini_text(response, provider.max_output_tokens)
+    return only_the_review(gemini_text(response, provider.max_output_tokens))
 
 
 def print_gemini_models(entry: ModelEntry) -> None:
