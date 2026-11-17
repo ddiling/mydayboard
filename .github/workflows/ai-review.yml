@@ -1,0 +1,70 @@
+# AI review of pull requests with free-tier model providers (Groq, OpenRouter, Google Gemini).
+#   - Automatic when a pull request is opened or marked ready for review, except for Dependabot.
+#   - On demand for any pull request: comment `/ai-review` (owner, members and collaborators only).
+# The review is ONE comment; a re-review updates it. It is advisory and never blocks a merge.
+# Logic lives in .github/scripts/ai_review.py, the rules the model follows in docs/review-guidelines.md.
+#
+# Setup: add the repository secrets of the providers you want (each is optional, models without a key
+# are skipped): GROQ_API_KEY_REVIEW, OPENROUTER_API_KEY_REVIEW, GEMINI_API_KEY_REVIEW. Optional repository variable
+# REVIEW_MODELS overrides the ordered fallback list below ("provider:model,provider:model,...").
+# A model that is overloaded, out of quota, retired or too small for the diff hands over to the next.
+#
+# Free tiers may use your prompts to improve their models (Gemini says so in its terms; some OpenRouter
+# free models do). Use dedicated keys and never send a pull request that contains secrets or personal data.
+name: AI review
+
+on:
+  pull_request:
+    types: [opened, ready_for_review]
+  issue_comment:
+    types: [created]
+
+concurrency:
+  group: ai-review-${{ github.event.pull_request.number || github.event.issue.number }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  review:
+    name: Review pull request
+    # Automatic: same-repo, non-draft, not Dependabot. Dependabot pull requests get no repository
+    # secrets on `pull_request` anyway, so they are reviewed only on demand.
+    # On demand: a PR comment starting with /ai-review by someone with write access. The comment
+    # run uses the workflow on the default branch, so a pull request cannot change what it runs.
+    if: >-
+      (
+        github.event_name == 'pull_request' &&
+        github.event.pull_request.draft == false &&
+        github.event.pull_request.head.repo.fork == false &&
+        github.event.pull_request.user.login != 'dependabot[bot]'
+      ) || (
+        github.event_name == 'issue_comment' &&
+        github.event.issue.pull_request &&
+        github.event.sender.type == 'User' &&
+        startsWith(github.event.comment.body, '/ai-review') &&
+        contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association)
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: write
+    env:
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY_REVIEW }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY_REVIEW }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY_REVIEW }}
+      # Order: Groq first (fast, but only small diffs fit its free plan), then OpenRouter (pinned free
+      # model, never the random `openrouter/free` router), then Gemini (large context, flaky capacity).
+      REVIEW_MODELS: >-
+        ${{ vars.REVIEW_MODELS ||
+        'groq:openai/gpt-oss-120b,openrouter:nvidia/nemotron-3-ultra-550b-a55b:free,gemini:gemini-3.5-flash,gemini:gemini-3.1-flash-lite' }}
+      GH_TOKEN: ${{ github.token }}
+      REPOSITORY: ${{ github.repository }}
+      PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Review with AI
+        run: python3 .github/scripts/ai_review.py
