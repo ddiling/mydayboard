@@ -58,18 +58,6 @@ RETRY_STATUSES = (0, 429, 500, 502, 503, 504)
 # Seconds to wait before retry N is N * this value. Tests set it to 0.
 RETRY_SECONDS = int(os.environ.get("AI_REVIEW_RETRY_SECONDS", "15"))
 
-# One request may wait this long for an answer. A model that is silent for that long is not retried:
-# the next model in the list is more likely to answer than a second wait on the same one.
-REQUEST_TIMEOUT = 90
-# The whole script must finish inside the workflow's 10 minute limit, or NO review is posted at all.
-# After this budget no new request is started, so a slow first model cannot starve the fallbacks.
-START = time.monotonic()
-BUDGET_SECONDS = float(os.environ.get("AI_REVIEW_BUDGET_SECONDS", "480"))
-
-
-def time_left() -> float:
-    return START + BUDGET_SECONDS - time.monotonic()
-
 REVIEW_RULES = """\
 You are a senior Android and Kotlin reviewer. Review ONLY the changes in the pull request diff.
 
@@ -246,18 +234,15 @@ def post_json(url: str, headers: dict[str, str], payload: dict) -> dict:
         method="POST",
     )
     for attempt in (1, 2, 3):
-        timed_out = False
         try:
-            with urllib.request.urlopen(request, timeout=REQUEST_TIMEOUT) as response:
+            with urllib.request.urlopen(request, timeout=120) as response:
                 return json.load(response)
         except urllib.error.HTTPError as error:  # must come first: HTTPError is a subclass of URLError
             status, detail = error.code, error.read().decode(errors="replace")[:1000]
         except (urllib.error.URLError, TimeoutError, ConnectionError) as error:
             status, detail = 0, f"network error: {error}"  # DNS failure, reset, timeout
-            timed_out = isinstance(error, TimeoutError) or isinstance(getattr(error, "reason", None), TimeoutError)
-        wait = RETRY_SECONDS * attempt
-        if status in RETRY_STATUSES and not timed_out and attempt < 3 and time_left() > wait + REQUEST_TIMEOUT:
-            time.sleep(wait)
+        if status in RETRY_STATUSES and attempt < 3:
+            time.sleep(RETRY_SECONDS * attempt)
             continue
         raise ApiError(status, detail) from None
     raise AssertionError("unreachable")

@@ -51,9 +51,6 @@ jobs:
       contents: read
       pull-requests: write
     env:
-      # Python buffers stdout when it is not a terminal, so a job cancelled at its time limit lost every
-      # progress line. Unbuffered output makes the log readable while the script runs, and after a cancel.
-      PYTHONUNBUFFERED: "1"
       GROQ_API_KEY: ${{ secrets.GROQ_API_KEY_REVIEW }}
       OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY_REVIEW }}
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY_REVIEW }}
