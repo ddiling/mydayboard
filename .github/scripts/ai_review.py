@@ -352,6 +352,10 @@ def generate_review(
     failures: list[str] = []
 
     def attempt(entry: ModelEntry) -> tuple[str, ModelEntry, bool] | None:
+        if time_left() < REQUEST_TIMEOUT:
+            print(f"{entry.label}: not tried, the time budget is used up.")
+            failures.append(f"{entry.label}: not tried, out of time")
+            return None
         limit = entry.provider.max_diff_chars
         text, truncated = truncate(diff, limit)
         try:
