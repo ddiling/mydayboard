@@ -200,6 +200,15 @@ def defang_mentions(text: str) -> str:
     return re.sub(r"(?<![\w`/])@(?=[A-Za-z0-9])", "@\u200b", text)
 
 
+def skipped_note(skipped: list[str], shown: int = 8) -> str:
+    """Footer text naming the files that were not sent to the model, so nothing is skipped silently."""
+    if not skipped:
+        return ""
+    names = ", ".join(f"`{path}`" for path in skipped[:shown])
+    more = f" and {len(skipped) - shown} more" if len(skipped) > shown else ""
+    return f" _Not reviewed (generated or binary): {names}{more}._"
+
+
 def build_user_prompt(meta: dict, diff: str, skipped: list[str], truncated: bool, limit: int) -> str:
     notes = []
     if skipped:
@@ -397,6 +406,7 @@ def main() -> int:
         return 1
 
     footer = f"_Automated review of `{meta['headRefOid'][:7]}` by `{entry.label}`. Advisory only: it can be wrong._"
+    footer += skipped_note(skipped_files)
     if truncated:
         footer += " _The diff was too large for this model and was cut, so part of it was not reviewed._"
     body = f"{defang_mentions(review)}\n\n---\n{footer}\n"
