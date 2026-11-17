@@ -5,8 +5,8 @@
 | Area | State |
 |---|---|
 | Code | `infra/`: reusable module `modules/github_repository`, first instance `mydayboard` |
-| Managed (always) | squash-only merge, squash title = PR title, body = PR description, delete head branch, update branch, auto-merge, issues/projects/wiki flags, description, topics, visibility |
-| Managed (public only, `repo_is_public = true`) | ruleset on `main` (PR + `CI passed`, no force-push/deletion, no code-owner review, no bypass), secret scanning + push protection, Dependabot alerts + security updates, `release` environment |
+| Managed (always) | squash-only merge, squash title = PR title, body = PR description, delete head branch, update branch, issues/projects/wiki flags, description, topics, visibility |
+| Managed (public only, `repo_is_public = true`) | ruleset on `main` (PR + `CI passed`, no force-push/deletion, no code-owner review, no bypass), auto-merge, secret scanning + push protection, Dependabot alerts + security updates, `release` environment |
 | Public-only guard | `count = 0` while private: absent from plan, cannot fail |
 | Provider | `integrations/github ~> 6.13.0`; `.terraform.lock.hcl` committed (4 platforms) |
 | State | local `infra/terraform.tfstate`, git-ignored |
@@ -19,7 +19,7 @@
 
 | Item | Why missing | Needs |
 |---|---|---|
-| `terraform apply` of `allow_auto_merge = true` | live value is `false`; `plan` shows 1 change until applied | run `terraform apply` locally |
+| First `terraform apply` | writes two provider-only attributes to the state; no GitHub change | run `terraform apply` locally |
 | Security/misconfig scan (checkov/trivy) | extra third-party action | SHA-pinned action or container |
 | Remote state | state exists only on one PC, no backup/locking | versioned bucket + OIDC, or HCP Terraform |
 | Plan on PR | needs a credential for the GitHub API | GitHub App (read-only), private key as secret |
@@ -31,7 +31,7 @@
 
 ## Order
 
-1. Apply `allow_auto_merge` (then `plan` = no changes).
+1. Run the first `terraform apply` locally (state only; then `plan` = no changes).
 2. Merge PR #13.
 3. Go public: `repo_is_public = true`, then the two manual settings.
 4. Roadmap steps in `ROADMAP.md`: scan, remote state, PR plan, drift, gated apply.

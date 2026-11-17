@@ -10,20 +10,21 @@ Always (works on a private Free repo):
 
 - Squash merge only (merge commits and rebase merges off)
 - Squash commit title = PR title, body = PR description
-- Delete head branch on merge, "Update branch" button, auto-merge allowed
+- Delete head branch on merge, "Update branch" button
 - Issues/projects on, wiki off, description, topics, visibility
 
 Only when `repo_is_public = true` (GitHub Free offers these on public repos only):
 
 - Ruleset on `main`: PR required, status check `CI passed` required,
   force-push and deletion blocked, no code-owner review, no bypass actors
+- Auto-merge (GitHub ignores it on a private Free repo, so it follows visibility)
 - Secret scanning and push protection
 - Dependabot alerts and Dependabot security updates
 - GitHub Environment `release` (used by `release.yml`)
 
 While private these resources have `count = 0`: they are absent from the plan,
 so plan and apply cannot fail on them.
-Note: auto-merge does nothing until the ruleset exists.
+Note: auto-merge only helps once the ruleset requires checks.
 
 ## Not managed (set by hand)
 
@@ -50,19 +51,18 @@ terraform apply
 
 ### First-time import (once per repo, per machine/state)
 
-The repo already exists, so adopt it instead of creating it:
-
-```bash
-terraform import 'module.mydayboard.github_repository.this' mydayboard
-terraform plan   # should show no changes
-```
+The repo already exists, so it is adopted instead of created: the `import {}`
+block in `main.tf` does it. On a fresh state, `terraform plan` shows the import
+and `terraform apply` performs it. The first apply also writes two
+provider-only attributes (`archive_on_destroy`, `ignore_vulnerability_alerts_during_read`)
+to the state; nothing changes on GitHub, and afterwards `plan` shows no changes.
 
 ### Going public
 
 Do it deliberately, in its own PR: set `repo_is_public = true` (variable default
 in `variables.tf`, or `-var repo_is_public=true`). One apply then makes the repo
 public and creates the ruleset, security features and environment.
-Check `terraform plan` first (expected: 4 to add, 1 to change).
+Check `terraform plan` first (expected: 4 to add, 1 to change, and the one change must read `visibility: "private" -> "public"`).
 
 ## State
 

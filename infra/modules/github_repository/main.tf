@@ -25,7 +25,12 @@ resource "github_repository" "this" {
 
   delete_branch_on_merge = true # remove the head branch once merged
   allow_update_branch    = true # "Update branch" button on a PR that fell behind
-  allow_auto_merge       = true # PRs can merge themselves once required checks pass
+
+  # PRs can merge themselves once required checks pass. GitHub silently ignores
+  # this on a private Free repo (the API answers "false"), which would make
+  # Terraform report a change forever, so it follows visibility like the other
+  # Free-plan-limited settings.
+  allow_auto_merge = var.is_public
 
   # Public-only: secret scanning and push protection. On a private Free repo
   # these need GitHub Advanced Security, so the block is omitted until public.
