@@ -114,6 +114,24 @@ Each module has three lifecycle tasks: `ciStaticAnalysis`, `ciTest` and `ciAssem
 | `release.yml` | Tag `vX.Y.Z` | Signed AAB → Play **internal** track → GitHub Release |
 | `dependabot.yml` | Weekly | Grouped dependency and Actions update PRs |
 
+### Pinned actions
+
+Every `uses:` line in `.github/workflows` names a full commit SHA, with the human-readable version as a comment:
+
+```yaml
+- uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+```
+
+**Why.** A tag such as `v6` is only a label, and the action's owner can move it to different code at any time. If their account or repository is compromised, the next run of our workflow executes the attacker's code with the secrets of that job. `release.yml` is the most exposed: it holds the signing keystore and the Play credentials. A commit SHA identifies exact code and cannot be repointed, so a moved tag changes nothing for us.
+
+**Cost.** A SHA is unreadable, hence the `# v6` comment, and updates do not arrive by themselves. Dependabot's `github-actions` ecosystem opens a PR that changes both the SHA and the comment.
+
+**Adding or updating an action.** Take the SHA from the action's own repository, never from a blog post or another project, and check that it is the commit of the tag you name:
+
+```bash
+gh api repos/actions/checkout/commits/v6 --jq .sha
+```
+
 ### Branch protection on `main`
 
 - Require pull requests.
@@ -174,4 +192,4 @@ runs the screenshot tests as no-ops and under-reports UI coverage.
 - **Data layer:** `core:data` (repositories), `core:network` and `core:database`. Features depend on interfaces in `core:domain`.
 - **Navigation:** Navigation Compose. Each feature exposes a `NavGraphBuilder` extension, and `:app` composes the graphs.
 - **Build speed:** a remote build cache (Develocity or a self-hosted Gradle cache node). It matters more in a monorepo than anywhere else.
-- **Security:** CodeQL, GitHub's dependency-review action, and pinning third-party actions to commit SHAs.
+- **Security:** CodeQL and GitHub's dependency-review action.
