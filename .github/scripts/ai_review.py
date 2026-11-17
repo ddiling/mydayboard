@@ -37,8 +37,6 @@ from pathlib import Path
 
 GUIDELINES_PATH = Path("docs/review-guidelines.md")
 
-# Hidden marker: lets a re-review update its previous comment instead of adding a new one.
-MARKER = "<!-- ai-review -->"
 
 # Generated or binary files add cost, not signal.
 # Cloudflare (in front of Groq) rejects the default "Python-urllib" agent with HTTP 403, code 1010.
@@ -360,21 +358,9 @@ def run(command: list[str], stdin: str | None = None) -> str:
     return subprocess.run(command, input=stdin, capture_output=True, text=True, check=True).stdout
 
 
-def upsert_comment(repo: str, number: str, body: str) -> None:
-    """Update the previous AI review comment if there is one, otherwise add a new comment."""
-    ids = run(
-        [
-            "gh", "api", f"repos/{repo}/issues/{number}/comments", "--paginate",
-            "--jq", f'.[] | select(.body | startswith("{MARKER}")) | .id',
-        ]
-    ).split()
-    if ids:
-        run(
-            ["gh", "api", "-X", "PATCH", f"repos/{repo}/issues/comments/{ids[-1]}", "--input", "-"],
-            stdin=json.dumps({"body": body}),
-        )
-    else:
-        run(["gh", "pr", "comment", number, "--repo", repo, "--body-file", "-"], stdin=body)
+def post_comment(repo: str, number: str, body: str) -> None:
+    """Add the review as a NEW comment, so every review stays visible next to the commit it covers."""
+    run(["gh", "pr", "comment", number, "--repo", repo, "--body-file", "-"], stdin=body)
 
 
 def main() -> int:
@@ -411,11 +397,11 @@ def main() -> int:
     footer = f"_Automated review of `{meta['headRefOid'][:7]}` by `{entry.label}`. Advisory only: it can be wrong._"
     if truncated:
         footer += " _The diff was too large for this model and was cut, so part of it was not reviewed._"
-    body = f"{MARKER}\n{defang_mentions(review)}\n\n---\n{footer}\n"
+    body = f"{defang_mentions(review)}\n\n---\n{footer}\n"
     if os.environ.get("REVIEW_DRY_RUN"):
         print(body)
         return 0
-    upsert_comment(repo, number, body)
+    post_comment(repo, number, body)
     print(f"Review posted (by {entry.label}).")
     return 0
 
