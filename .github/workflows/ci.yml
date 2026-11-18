@@ -63,6 +63,16 @@ jobs:
             **/build/reports/lint-results-*.html
           retention-days: 7
 
+  # The AI review script is plain Python, so it needs no Gradle: stdlib unittest only.
+  review-script:
+    name: AI review script tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Run tests
+        run: python3 -m unittest discover -s .github/scripts/tests -v
+
   test:
     name: Unit & screenshot tests
     runs-on: ubuntu-latest
@@ -149,7 +159,7 @@ jobs:
   ci-passed:
     name: CI passed
     if: always()
-    needs: [static-analysis, test, build]
+    needs: [static-analysis, review-script, test, build]
     runs-on: ubuntu-latest
     steps:
       - name: Check job results
