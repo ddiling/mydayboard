@@ -12,6 +12,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import io.github.ddiling.mydayboard.core.dashboard.DashboardCard
 import io.github.ddiling.mydayboard.core.dashboard.DashboardHost
+import io.github.ddiling.mydayboard.core.navigation.Destination
 import io.github.ddiling.mydayboard.feature.counter.navigation.CounterDestination
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -81,7 +82,7 @@ class DashboardScreenTest {
 
         composeRule.onNodeWithTag(OPEN_COUNTER_TAG).performClick()
 
-        assertEquals(listOf<Any>(CounterDestination), host.navigated)
+        assertEquals(listOf<Destination>(CounterDestination), host.navigated)
     }
 
     private fun card(tag: String) =

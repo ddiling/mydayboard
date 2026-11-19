@@ -9,11 +9,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import io.github.ddiling.mydayboard.core.dashboard.DashboardCard
 import io.github.ddiling.mydayboard.core.dashboard.DashboardHost
 import io.github.ddiling.mydayboard.core.designsystem.theme.AppTheme
+import io.github.ddiling.mydayboard.core.navigation.Destination
 
 private object PreviewHost : DashboardHost {
     override val snackbarHostState = SnackbarHostState()
 
-    override fun navigate(destination: Any) = Unit
+    override fun navigate(destination: Destination) = Unit
 }
 
 private class PreviewCard(

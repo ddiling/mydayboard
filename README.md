@@ -21,6 +21,7 @@ core/
   domain/          Pure Kotlin business logic (no Android), incl. the clock, id generator and minute ticker
   designsystem/    Theme and shared components
   dashboard/       The dashboard card contract: features contribute cards, :app renders them
+  navigation/      The Destination marker for type-safe navigation routes (pure Kotlin)
   database/        Room database: tracker entities, DAOs, schema history
   testing/         Shared test fixtures (fake clock, predictable ids, test zones); testImplementation only
 build-logic/       Convention plugins: the single source of truth for all rules

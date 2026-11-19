@@ -3,6 +3,7 @@ package io.github.ddiling.mydayboard.core.dashboard
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import io.github.ddiling.mydayboard.core.navigation.Destination
 
 /**
  * One card on the dashboard. Features contribute cards with Hilt `@IntoSet`; `:app` renders them,
@@ -26,6 +27,6 @@ interface DashboardCard {
 interface DashboardHost {
     val snackbarHostState: SnackbarHostState
 
-    /** [destination] is a `@Serializable` route object owned by the card's feature. */
-    fun navigate(destination: Any)
+    /** [destination] is a `@Serializable` [Destination] owned by the card's feature. */
+    fun navigate(destination: Destination)
 }
