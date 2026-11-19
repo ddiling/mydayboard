@@ -18,8 +18,8 @@ complexity:
 
 naming:
   FunctionNaming:
-    # Composables are PascalCase.
-    ignoreAnnotated: ['Composable']
+    # Composables are PascalCase; test names use backticks with spaces, as Kotlin's coding conventions allow in tests.
+    ignoreAnnotated: ['Composable', 'Test']
 
 style:
   MagicNumber:

@@ -16,13 +16,16 @@ import java.time.Instant
  *   unrelated write to the same table. Collectors are therefore only woken by changes to what they observe.
  */
 interface TrackerRepository {
-    /** All trackers, ordered by `createdAt` ascending. */
+    /** All trackers ordered by `createdAt` ascending, ties broken by `id` ascending so the order is stable. */
     fun observeTrackers(): Flow<List<Tracker>>
 
     /** The tracker with [id], or null when it is missing or deleted. */
     fun observeTracker(id: String): Flow<Tracker?>
 
-    /** Events of [trackerId] ordered by `occurredAt` descending; empty when the tracker is missing or deleted. */
+    /**
+     * Events of [trackerId] ordered by `occurredAt` descending, ties broken by `id` descending so the order is
+     * stable; empty when the tracker is missing or deleted.
+     */
     fun observeEvents(trackerId: String): Flow<List<TrackerEvent>>
 
     /** Events of all non-deleted trackers, for statistics across trackers. */
