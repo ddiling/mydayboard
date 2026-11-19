@@ -23,7 +23,7 @@ enum class Trend {
 private const val TREND_WINDOW_DAYS = 7L
 
 /**
- * Compares the last two complete weeks of an event counter (decision D13).
+ * Compares the last two complete weeks of an event counter.
  *
  * - Recent week: today−7 … today−1. Previous week: today−14 … today−8. Both are local calendar days in [zone],
  *   from 00:00, so a week containing a daylight-saving change still covers exactly its seven local days.

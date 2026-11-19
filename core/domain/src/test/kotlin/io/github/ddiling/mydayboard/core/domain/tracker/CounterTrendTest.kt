@@ -109,4 +109,15 @@ class CounterTrendTest {
 
         assertEquals(Trend.DOWN, trend)
     }
+
+    @Test
+    fun `history starting at midnight 14 days ago is enough data across a spring-forward change`() {
+        // The previous week (2026-03-29 … 2026-04-04) is only 167 hours long, so "14 x 24 hours before today" would be
+        // 2026-03-28 23:00 and would wrongly treat this history as starting too late.
+        val events = listOf(warsaw("2026-04-06T09:00"))
+
+        val trend = counterTrend(events, warsaw("2026-03-29T00:00"), LocalDate.parse("2026-04-12"), WARSAW)
+
+        assertEquals(Trend.UP, trend)
+    }
 }
