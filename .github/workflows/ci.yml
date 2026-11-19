@@ -111,6 +111,15 @@ jobs:
         if: github.event_name != 'pull_request'
         run: ./gradlew :coverageReport --continue
 
+      # Compiling a Room module rewrites its exported schema JSON. A new or changed file here
+      # means the schema was not committed, and later migration tests would have nothing to compare.
+      - name: Check that Room schemas are committed
+        run: |
+          changed="$(git status --porcelain -- '*/schemas/*')"
+          if [ -n "$changed" ]; then
+            echo "::error::Commit the exported Room schema:" && echo "$changed" && exit 1
+          fi
+
       - name: Upload coverage report
         if: github.event_name != 'pull_request' && success()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
