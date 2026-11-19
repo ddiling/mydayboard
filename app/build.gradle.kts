@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.mydayboard.android.application)
     alias(libs.plugins.mydayboard.android.compose)
+    alias(libs.plugins.mydayboard.android.hilt)
 }
 
 android {

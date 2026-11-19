@@ -7,7 +7,7 @@ import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
 
 /**
- * A feature module = Android library + Compose + screenshot tests, wired to
+ * A feature module = Android library + Compose + screenshot tests + Hilt, wired to
  * the shared core modules. A new feature's build script is just a namespace.
  *
  * Coverage: the ViewModels are the logic of a feature, so they get a minimum
@@ -20,6 +20,8 @@ class AndroidFeatureConventionPlugin : Plugin<Project> {
             pluginManager.apply("mydayboard.android.library")
             pluginManager.apply("mydayboard.android.compose")
             pluginManager.apply("mydayboard.android.screenshot")
+            // Every feature gets its ViewModels from Hilt (hiltViewModel()), never from hand-written factories.
+            pluginManager.apply("mydayboard.android.hilt")
 
             extensions.configure<KoverProjectExtension> {
                 currentProject { createVariant(VIEW_MODEL_VARIANT) { add("debug") } }
@@ -37,6 +39,7 @@ class AndroidFeatureConventionPlugin : Plugin<Project> {
                 add("implementation", project(":core:domain"))
                 add("implementation", libs.library("androidx-lifecycle-runtime-compose"))
                 add("implementation", libs.library("androidx-lifecycle-viewmodel-compose"))
+                add("implementation", libs.library("androidx-hilt-lifecycle-viewmodel-compose"))
                 add("testImplementation", libs.library("junit"))
             }
         }

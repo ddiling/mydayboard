@@ -55,8 +55,9 @@ android { namespace = "io.github.ddiling.mydayboard.feature.counter" }
 
 | Convention plugin | Used by | Adds |
 |---|---|---|
-| `mydayboard.android.application` | `:app` | SDK levels, R8, strict Lint across all dependencies, versioning and signing from CI environment variables, `.debug` suffix |
-| `mydayboard.android.feature` | `feature/*` | Library + Compose + screenshot tests + core dependencies |
+| `mydayboard.android.application` | `:app` | SDK levels, R8, strict Lint across all dependencies, versioning and signing from CI environment variables, `.debug` suffix, Robolectric for app-level tests |
+| `mydayboard.android.feature` | `feature/*` | Library + Compose + screenshot tests + Hilt (`hiltViewModel()`) + core dependencies |
+| `mydayboard.android.hilt` | `:app`, `feature/*` | Hilt with KSP: runtime, compiler, and `hilt-android-testing` for `@HiltAndroidTest` |
 | `mydayboard.android.library` | Android `core/*` | SDK levels, Java 17 |
 | `mydayboard.jvm.library` | `core/domain` | Plain Kotlin/JVM |
 | `mydayboard.android.compose` | Compose modules | Compose compiler, BOM, stability config |
@@ -189,7 +190,6 @@ runs the screenshot tests as no-ops and under-reports UI coverage.
 
 ## Recommended next steps
 
-- **Dependency injection:** Hilt with KSP, with a `core:di` or per-feature modules. Features then stop creating their own ViewModels.
 - **Data layer:** `core:data` (repositories), `core:network` and `core:database`. Features depend on interfaces in `core:domain`.
 - **Navigation:** Navigation Compose. Each feature exposes a `NavGraphBuilder` extension, and `:app` composes the graphs.
 - **Build speed:** a remote build cache (Develocity or a self-hosted Gradle cache node). It matters more in a monorepo than anywhere else.

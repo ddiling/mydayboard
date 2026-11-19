@@ -17,21 +17,21 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.ddiling.mydayboard.core.designsystem.component.PrimaryButton
 import io.github.ddiling.mydayboard.core.designsystem.preview.PreviewSurface
-import io.github.ddiling.mydayboard.core.domain.SummarizeTapsUseCase
 import io.github.ddiling.mydayboard.core.domain.TapSummary
 
 /**
  * Public entry point of the feature: the only API apps use.
- * Swap the ViewModel factory for your DI of choice.
+ * Hilt provides the ViewModel, so the caller needs no factory; it must be hosted
+ * in an `@AndroidEntryPoint` activity.
  */
 @Composable
 fun CounterRoute(
     modifier: Modifier = Modifier,
-    viewModel: CounterViewModel = viewModel { CounterViewModel(SummarizeTapsUseCase()) },
+    viewModel: CounterViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     CounterScreen(uiState = uiState, onTap = viewModel::onTap, modifier = modifier)

@@ -4,6 +4,7 @@ import com.android.build.api.dsl.ApplicationExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
+import org.gradle.kotlin.dsl.dependencies
 
 /**
  * Everything an app module needs except its namespace, applicationId and
@@ -56,6 +57,10 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                     }
                 }
 
+                // Robolectric tests of the whole app (e.g. MainActivityTest) read the merged
+                // resources, so strings render as on a device.
+                testOptions.unitTests.isIncludeAndroidResources = true
+
                 packaging {
                     resources.excludes += "/META-INF/{AL2.0,LGPL2.1}"
                 }
@@ -67,6 +72,16 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
             }
 
             configureKotlin()
+
+            // App-level tests start real activities on the JVM with Robolectric, no emulator needed.
+            dependencies {
+                add("testImplementation", libs.library("junit"))
+                add("testImplementation", libs.library("robolectric"))
+            }
+            // The Compose test APIs are versioned by the Compose BOM, which the compose convention adds.
+            pluginManager.withPlugin("org.jetbrains.kotlin.plugin.compose") {
+                dependencies { add("testImplementation", libs.library("androidx-compose-ui-test-junit4")) }
+            }
 
             addToCiTask(CiTasks.STATIC_ANALYSIS, "lintDebug")
             addToCiTask(CiTasks.TEST, "testDebugUnitTest")
