@@ -10,5 +10,6 @@ internal class NavDashboardHost(
 ) : DashboardHost {
     override val snackbarHostState = SnackbarHostState()
 
-    override fun navigate(destination: Any) = navController.navigate(destination)
+    // Single top: a double tap must not stack the same destination twice.
+    override fun navigate(destination: Any) = navController.navigate(destination) { launchSingleTop = true }
 }

@@ -59,14 +59,8 @@ fun DashboardScreen(
             }
         } else {
             LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding =
-                    PaddingValues(
-                        start = 16.dp,
-                        end = 16.dp,
-                        top = padding.calculateTopPadding() + 16.dp,
-                        bottom = padding.calculateBottomPadding() + 16.dp,
-                    ),
+                modifier = Modifier.fillMaxSize().padding(padding),
+                contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 items(cards, key = { it.key }) { card ->

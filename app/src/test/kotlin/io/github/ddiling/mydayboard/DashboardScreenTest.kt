@@ -2,6 +2,7 @@ package io.github.ddiling.mydayboard
 
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertIsDisplayed
@@ -12,8 +13,7 @@ import androidx.compose.ui.test.performClick
 import io.github.ddiling.mydayboard.core.dashboard.DashboardCard
 import io.github.ddiling.mydayboard.core.dashboard.DashboardHost
 import io.github.ddiling.mydayboard.feature.counter.navigation.CounterDestination
-import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -28,6 +28,7 @@ class DashboardScreenTest {
     val composeRule = createComposeRule()
 
     private val host = FakeDashboardHost()
+    private lateinit var scope: CoroutineScope
 
     @Test
     fun `cards appear in the given order`() {
@@ -64,9 +65,12 @@ class DashboardScreenTest {
 
     @Test
     fun `a snackbar shown through the host is displayed`() {
-        composeRule.setContent { DashboardScreen(cards = emptyList(), host = host) }
+        composeRule.setContent {
+            scope = rememberCoroutineScope()
+            DashboardScreen(cards = emptyList(), host = host)
+        }
 
-        MainScope().launch(start = CoroutineStart.UNDISPATCHED) { host.snackbarHostState.showSnackbar("Saved") }
+        composeRule.runOnUiThread { scope.launch { host.snackbarHostState.showSnackbar("Saved") } }
 
         composeRule.onNodeWithText("Saved").assertIsDisplayed()
     }
