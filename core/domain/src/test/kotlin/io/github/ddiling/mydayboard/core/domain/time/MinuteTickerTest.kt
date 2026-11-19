@@ -4,6 +4,7 @@ import app.cash.turbine.test
 import io.github.ddiling.mydayboard.core.testing.MutableClock
 import io.github.ddiling.mydayboard.core.testing.TestZones
 import io.github.ddiling.mydayboard.core.testing.warsaw
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
@@ -52,14 +53,15 @@ class MinuteTickerTest {
         }
 
     @Test
-    fun `later ticks come every full minute`() =
+    fun `later ticks stay on the full minute when time passes between ticks`() =
         runTest {
-            minuteTicker(clock).test {
+            // Each emission takes 5 s to handle (or the device woke late), so the clock runs ahead of the delays.
+            minuteTicker(clock).onEach { clock.advanceBy(Duration.ofSeconds(5)) }.test {
                 expectMostRecentItem()
-                passTime(Duration.ofSeconds(30))
-                expectMostRecentItem()
+                passTime(Duration.ofSeconds(25))
+                assertEquals(warsaw(2026, 3, 2, 10, 1), expectMostRecentItem())
 
-                passTime(Duration.ofSeconds(59))
+                passTime(Duration.ofSeconds(54))
                 expectNoEvents()
                 passTime(Duration.ofSeconds(1))
 

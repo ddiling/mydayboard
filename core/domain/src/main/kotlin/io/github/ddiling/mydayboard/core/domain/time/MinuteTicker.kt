@@ -23,10 +23,9 @@ import kotlin.time.toKotlinDuration
 fun minuteTicker(clock: Clock): Flow<Instant> =
     flow {
         while (true) {
-            val now = clock.instant()
-            emit(now)
-            // delay(kotlin.time.Duration) rounds up to whole milliseconds, so it never wakes before the minute.
-            delay(timeUntilNextMinute(now).toKotlinDuration())
+            emit(clock.instant())
+            // Measured after emit, which waits for the collector. delay(Duration) rounds up to whole ms: never early.
+            delay(timeUntilNextMinute(clock.instant()).toKotlinDuration())
         }
     }
 
