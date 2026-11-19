@@ -166,6 +166,7 @@ The signing key lives only in GitHub Secrets, never in the repo. Use Play App Si
 |---|---|---|---|
 | Formatting | ktlint (`ktlint_official`) via Spotless | `.editorconfig` | `./gradlew spotlessApply` |
 | Code smells, complexity | Detekt 2 | `config/detekt/detekt.yml` | Fix it, or `./gradlew detektBaseline` |
+| Exact types | Custom Detekt rule `NoAnyType` (like ESLint's `no-explicit-any`): `Any`/`Any?` is not allowed as a type, except in `equals(other: Any?)` | `core/detekt-rules/` | Use the exact type |
 | Android issues | Android Lint, every warning treated as an error, run once for the app across all its dependencies | `config/lint/lint.xml` | Fix it, or `./gradlew updateLintBaseline` |
 | Architecture | `checkModuleDependencies` | `ModuleRules.kt` | Move shared code to `core/` |
 | Visual regressions | Roborazzi screenshot tests from `@Preview`s | `*/src/test/screenshots/` | `./gradlew recordRoborazziDebug` (or the workflow) |
