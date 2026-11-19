@@ -1,8 +1,9 @@
 """Tests for .github/scripts/ai_review.py.
 
-Run from the repository root (pytest is the only test dependency, see requirements.in):
+Run from the repository root with Python 3.12 (the version requirements.txt was compiled with;
+pytest is the only test dependency, see requirements.in):
 
-    python3 -m venv .venv && .venv/bin/pip install -r .github/scripts/tests/requirements.txt
+    python3.12 -m venv .venv && .venv/bin/pip install -r .github/scripts/tests/requirements.txt
     .venv/bin/python -m pytest .github/scripts/tests -v
 
 The script under test uses the standard library only. No test touches the network: model calls and
@@ -28,6 +29,20 @@ def make_entry(provider_name: str, model: str = "m", key: str = "key") -> ai_rev
     environ = {"GROQ_API_KEY": "k", "OPENROUTER_API_KEY": "k", "GEMINI_API_KEY": "k"}
     entries, _ = ai_review.parse_models(f"{provider_name}:{model}", environ)
     return entries[0]
+
+
+class ScriptTestCase(unittest.TestCase):
+    """Gives every test the same clock and retry settings, whatever the environment says.
+
+    ai_review reads AI_REVIEW_BUDGET_SECONDS and AI_REVIEW_RETRY_SECONDS when it is imported and
+    starts its clock then. Without this, an exported small budget would make unrelated tests fail
+    with "out of time"."""
+
+    def setUp(self):
+        for name, value in (("START", time.monotonic()), ("BUDGET_SECONDS", 480.0), ("RETRY_SECONDS", 0)):
+            patcher = mock.patch.object(ai_review, name, value)
+            patcher.start()
+            self.addCleanup(patcher.stop)
 
 
 META = {"title": "t", "body": "", "headRefName": "feature", "baseRefName": "main", "headRefOid": "abcdef1234"}
@@ -85,6 +100,16 @@ class DiffTest(unittest.TestCase):
         self.assertIn("app/Main.kt", kept)
         self.assertIn("gradle/libs.versions.toml", kept)
         self.assertNotIn("diff --git a/gradlew ", kept)
+
+    def test_lock_files_are_ignored_including_the_test_requirements(self):
+        diff = (
+            "diff --git a/some.lock b/some.lock\n+x\n"
+            "diff --git a/.github/scripts/tests/requirements.txt b/.github/scripts/tests/requirements.txt\n+y\n"
+            "diff --git a/.github/scripts/tests/requirements.in b/.github/scripts/tests/requirements.in\n+z\n"
+        )
+        kept, skipped = ai_review.filter_diff(diff)
+        self.assertEqual(skipped, ["some.lock", ".github/scripts/tests/requirements.txt"])
+        self.assertIn("requirements.in", kept)
 
     def test_gradlew_bat_is_ignored_too(self):
         _, skipped = ai_review.filter_diff("diff --git a/gradlew.bat b/gradlew.bat\n+x\n")
@@ -206,7 +231,7 @@ class DiscussionTest(unittest.TestCase):
         self.assertLess(len(text), ai_review.MAX_COMMENT_CHARS + 100)
 
 
-class GenerateReviewTest(unittest.TestCase):
+class GenerateReviewTest(ScriptTestCase):
     def test_falls_back_to_the_next_model(self):
         entries = [make_entry("groq"), make_entry("openrouter")]
 
@@ -268,7 +293,7 @@ class GenerateReviewTest(unittest.TestCase):
         self.assertIn("out of time", str(raised.exception))
 
 
-class PostJsonTest(unittest.TestCase):
+class PostJsonTest(ScriptTestCase):
     class FakeResponse:
         def __init__(self, body: bytes) -> None:
             self.body = body
@@ -295,10 +320,32 @@ class PostJsonTest(unittest.TestCase):
                 raise answer
             return answer
 
-        with mock.patch.object(ai_review, "RETRY_SECONDS", 0), mock.patch("urllib.request.urlopen", side_effect=fake_open) as opened:
+        with mock.patch("urllib.request.urlopen", side_effect=fake_open) as opened:
             result = ai_review.post_json("https://example.test", {}, {})
         self.assertEqual(result, {"ok": True})
         self.assertEqual(opened.call_count, 2)
+
+    def test_every_transient_status_is_retried(self):
+        for status in (429, 500, 502, 503, 504):
+            with self.subTest(status=status):
+                answers = [self.http_error(status), self.FakeResponse(b'{"ok": true}')]
+
+                def fake_open(request, timeout):
+                    answer = answers.pop(0)
+                    if isinstance(answer, Exception):
+                        raise answer
+                    return answer
+
+                with mock.patch("urllib.request.urlopen", side_effect=fake_open) as opened:
+                    self.assertEqual(ai_review.post_json("https://example.test", {}, {}), {"ok": True})
+                self.assertEqual(opened.call_count, 2)
+
+    def test_connect_timeout_is_not_retried(self):
+        error = urllib.error.URLError(TimeoutError("connect timed out"))
+        with mock.patch("urllib.request.urlopen", side_effect=error) as opened:
+            with self.assertRaises(ai_review.ApiError):
+                ai_review.post_json("https://example.test", {}, {})
+        self.assertEqual(opened.call_count, 1)
 
     def test_client_error_is_not_retried(self):
         with mock.patch("urllib.request.urlopen", side_effect=self.http_error(401)) as opened:

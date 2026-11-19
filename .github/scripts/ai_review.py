@@ -50,6 +50,7 @@ IGNORED_PATHS = (
     "gradlew.bat",
     "gradle/gradle-daemon-jvm.properties",
     "*.lock",
+    ".github/scripts/tests/requirements.txt",  # hundreds of hash lines, no signal
 )
 
 # After these statuses the same model is retried: 0 = no HTTP answer at all (network error, timeout),
@@ -109,7 +110,7 @@ Project guidelines follow.
 class Provider:
     name: str
     key_env: str
-    base_url: str  # root URL; tests point it at a fake server
+    base_url: str  # root URL; the *_BASE_URL / *_API_ROOT environment variables can point it elsewhere
     max_diff_chars: int  # the largest diff this provider's free tier takes in ONE request
     max_output_tokens: int
     openai_compatible: bool = True
