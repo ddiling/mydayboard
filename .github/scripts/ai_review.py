@@ -38,10 +38,10 @@ from pathlib import Path
 GUIDELINES_PATH = Path("docs/review-guidelines.md")
 
 
-# Generated or binary files add cost, not signal.
 # Cloudflare (in front of Groq) rejects the default "Python-urllib" agent with HTTP 403, code 1010.
 USER_AGENT = "ai-review-script/1.0"
 
+# Generated or binary files add cost, not signal.
 IGNORED_PATHS = (
     "*/src/test/screenshots/*",
     "*lint-baseline.xml",
@@ -109,7 +109,7 @@ Project guidelines follow.
 class Provider:
     name: str
     key_env: str
-    base_url: str  # root URL; tests point it at a fake server
+    base_url: str  # root URL; the *_BASE_URL / *_API_ROOT environment variables can point it elsewhere
     max_diff_chars: int  # the largest diff this provider's free tier takes in ONE request
     max_output_tokens: int
     openai_compatible: bool = True

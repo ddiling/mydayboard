@@ -19,6 +19,15 @@ updates:
       code-quality:
         patterns: ["dev.detekt*", "com.diffplug.spotless*"]
 
+  # Test-only Python packages for the AI review script (hashed requirements file)
+  - package-ecosystem: pip
+    directory: "/.github/scripts/tests"
+    schedule:
+      interval: weekly
+    groups:
+      python-tests:
+        patterns: ["*"]
+
   - package-ecosystem: github-actions
     directory: "/"
     schedule:

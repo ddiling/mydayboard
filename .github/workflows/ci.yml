@@ -63,6 +63,27 @@ jobs:
             **/build/reports/lint-results-*.html
           retention-days: 7
 
+  # The AI review script is plain Python (standard library only), so its tests need no Gradle.
+  # pytest is the one test-only dependency: installed from a hashed requirements file, so a
+  # tampered or substituted package fails the install instead of running.
+  review-script:
+    name: AI review script tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false # third-party code runs below and nothing here needs the token
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12" # the version requirements.txt was compiled with
+      - name: Install pytest
+        run: |
+          python -m venv "$RUNNER_TEMP/venv"
+          "$RUNNER_TEMP/venv/bin/pip" install --quiet --require-hashes -r .github/scripts/tests/requirements.txt
+      - name: Run tests
+        run: '"$RUNNER_TEMP/venv/bin/python" -m pytest .github/scripts/tests -v'
+
   test:
     name: Unit & screenshot tests
     runs-on: ubuntu-latest
@@ -149,7 +170,7 @@ jobs:
   ci-passed:
     name: CI passed
     if: always()
-    needs: [static-analysis, test, build]
+    needs: [static-analysis, review-script, test, build]
     runs-on: ubuntu-latest
     steps:
       - name: Check job results
