@@ -1,4 +1,4 @@
-// Shared test fixtures: a hand-driven clock, predictable ids, a Main dispatcher rule and named zones.
+// Shared test fixtures: a hand-driven clock, predictable ids and named zones.
 // Other modules only ever add it as `testImplementation(projects.core.testing)`, never to production code.
 plugins {
     alias(libs.plugins.mydayboard.jvm.library)

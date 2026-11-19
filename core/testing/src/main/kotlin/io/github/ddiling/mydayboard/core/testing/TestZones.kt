@@ -17,8 +17,7 @@ object TestZones {
 
 /**
  * The instant at which clocks in Warsaw show this date and time, so a test reads like its scenario instead of
- * a UTC time with the offset worked out by hand. Daylight-saving edges follow [ZonedDateTime.of]: a time skipped
- * in spring moves forward by the gap; one that occurs twice in autumn takes the earlier (summer) offset.
+ * a UTC time with the offset worked out by hand.
  */
 fun warsaw(
     year: Int,

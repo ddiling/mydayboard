@@ -20,7 +20,7 @@ feature/
 core/
   domain/          Pure Kotlin business logic (no Android), incl. the clock, id generator and minute ticker
   designsystem/    Theme and shared components
-  testing/         Shared test fixtures (fake clock, predictable ids, Main dispatcher rule); testImplementation only
+  testing/         Shared test fixtures (fake clock, predictable ids, test zones); testImplementation only
 build-logic/       Convention plugins: the single source of truth for all rules
 config/            detekt.yml, lint.xml, Compose stability config (one copy for everything)
 scripts/           new-module.sh, git hooks
