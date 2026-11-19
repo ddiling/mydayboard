@@ -73,4 +73,44 @@ class ValidateTrackerNameTest {
 
         assertEquals(TrackerNameValidation.Valid("Zażółć gęślą jaźń"), result)
     }
+
+    @Test
+    fun `a decomposed name is returned composed`() {
+        // "o" + combining acute accent (U+0301) composes to "ó" (U+00F3).
+        val result = validateTrackerName("Ziółka")
+
+        assertEquals(TrackerNameValidation.Valid("Ziółka"), result)
+    }
+
+    @Test
+    fun `forty Polish letters typed decomposed are valid`() {
+        // 80 code points as typed, 40 after composing.
+        val result = validateTrackerName("ż".repeat(40))
+
+        assertEquals(TrackerNameValidation.Valid("ż".repeat(40)), result)
+    }
+
+    @Test
+    fun `whitespace runs including line breaks and tabs become one space`() {
+        val result = validateTrackerName("Coffee\n\tbreak")
+
+        assertEquals(TrackerNameValidation.Valid("Coffee break"), result)
+    }
+
+    @Test
+    fun `a name of only a zero-width space is blank`() {
+        val result = validateTrackerName("​")
+
+        assertEquals(TrackerNameValidation.Blank, result)
+    }
+
+    @Test
+    fun `an emoji joined by a zero-width joiner is visible and valid`() {
+        // Woman (U+1F469) + zero-width joiner (U+200D) + laptop (U+1F4BB) shows as one "woman technologist".
+        val name = "👩‍💻"
+
+        val result = validateTrackerName(name)
+
+        assertEquals(TrackerNameValidation.Valid(name), result)
+    }
 }
