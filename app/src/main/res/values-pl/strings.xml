@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MyDayboard</string>
+    <string name="dashboard_empty">Na razie nic tu nie ma</string>
+    <string name="dashboard_open_counter">Licznik</string>
+</resources>

@@ -45,5 +45,7 @@ include(":feature:counter")
 // Core: shared foundations.
 include(":core:domain")
 include(":core:designsystem")
+include(":core:dashboard")
+include(":core:navigation")
 include(":core:database")
 include(":core:testing")

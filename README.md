@@ -20,6 +20,8 @@ feature/
 core/
   domain/          Pure Kotlin business logic (no Android), incl. the clock, id generator and minute ticker
   designsystem/    Theme and shared components
+  dashboard/       The dashboard card contract: features contribute cards, :app renders them
+  navigation/      The Destination marker for type-safe navigation routes (pure Kotlin)
   database/        Room database: tracker entities, DAOs, schema history
   testing/         Shared test fixtures (fake clock, predictable ids, test zones); testImplementation only
 build-logic/       Convention plugins: the single source of truth for all rules
@@ -36,7 +38,7 @@ feature  →  core
 core     →  core
 ```
 
-Nothing depends on `:app`. No feature depends on another feature. `core` never depends on a feature. Code that two features need goes into `core`. The dashboard lives in `:app`, the only layer allowed to know every feature.
+Nothing depends on `:app`. No feature depends on another feature. `core` never depends on a feature. Code that two features need goes into `core`. The dashboard screen lives in `:app`, the only layer allowed to know every feature; features contribute cards through the `:core:dashboard` contract and Hilt multibinding.
 
 Every module runs `checkModuleDependencies` as part of `check` and CI. It fails the build with a message like:
 

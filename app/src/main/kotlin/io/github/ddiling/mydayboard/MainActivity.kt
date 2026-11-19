@@ -12,17 +12,22 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
+import io.github.ddiling.mydayboard.core.dashboard.DashboardCard
 import io.github.ddiling.mydayboard.core.designsystem.theme.AppTheme
+import javax.inject.Inject
 
 /**
  * The app shell stays thin: theme, navigation and the dashboard. Screens live in feature modules.
- * The dashboard will live here (only :app may depend on every feature), once there are cards to show.
+ * The dashboard lives here (only :app may depend on every feature); features contribute its cards via Hilt.
  *
  * `@AndroidEntryPoint` connects the activity to Hilt, so `hiltViewModel()` in the feature screens
  * it hosts can create their ViewModels with injected dependencies.
  */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @Inject
+    lateinit var dashboardCards: Set<@JvmSuppressWildcards DashboardCard>
+
     @OptIn(ExperimentalComposeUiApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -33,7 +38,7 @@ class MainActivity : ComponentActivity() {
                     // Exposes Compose testTags as resource ids for Maestro/UiAutomator.
                     modifier = Modifier.fillMaxSize().semantics { testTagsAsResourceId = true },
                 ) {
-                    MyDayboardNavHost(navController = rememberNavController())
+                    MyDayboardNavHost(navController = rememberNavController(), cards = dashboardCards)
                 }
             }
         }

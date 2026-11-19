@@ -7,6 +7,8 @@ tags:
 ---
 - launchApp:
     clearState: true
+- tapOn:
+    id: "open_counter"
 - assertVisible: "You haven't tapped yet"
 - tapOn:
     id: "tap_button"
