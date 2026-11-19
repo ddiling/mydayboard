@@ -40,3 +40,13 @@ internal fun event(
     updatedAt = occurredAt,
     deletedAt = deletedAt,
 )
+
+/** Reads `updated_at` and `deleted_at` of any row, deleted or not: the DAO reads hide deleted rows. */
+internal fun MyDayboardDatabase.updatedAndDeletedAt(
+    table: String,
+    id: String,
+): Pair<Long, Long?> =
+    openHelper.readableDatabase.query("SELECT updated_at, deleted_at FROM $table WHERE id = '$id'").use { cursor ->
+        check(cursor.moveToFirst()) { "no row $id in $table" }
+        cursor.getLong(0) to if (cursor.isNull(1)) null else cursor.getLong(1)
+    }

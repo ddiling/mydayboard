@@ -121,4 +121,16 @@ class TrackerDaoTest {
         runTest {
             assertEquals(0, dao.softDelete("missing", T0 + 1))
         }
+
+    @Test
+    fun `softDelete keeps the first delete's timestamps on an already deleted tracker`() =
+        runTest {
+            val firstDelete = T0 + 1
+            dao.insert(tracker("a"))
+            dao.softDelete("a", firstDelete)
+
+            dao.softDelete("a", T0 + 2)
+
+            assertEquals(firstDelete to firstDelete, database.updatedAndDeletedAt("trackers", "a"))
+        }
 }

@@ -194,4 +194,29 @@ class TrackerEventDaoTest {
 
             assertEquals(0, dao.softDeleteIfActive("e", now = T0 + 2))
         }
+
+    @Test
+    fun `softDeleteIfActive keeps the first delete's timestamps on an already deleted event`() =
+        runTest {
+            val firstDelete = T0 + 1
+            trackerDao.insert(tracker("t"))
+            dao.insert(event("e", "t", deletedAt = firstDelete))
+
+            dao.softDeleteIfActive("e", now = T0 + 2)
+
+            assertEquals(T0 to firstDelete, database.updatedAndDeletedAt("tracker_events", "e"))
+        }
+
+    @Test
+    fun `updateOccurredAtIfActive leaves an already deleted event unchanged`() =
+        runTest {
+            val deletedAt = T0 + 1
+            trackerDao.insert(tracker("t"))
+            dao.insert(event("e", "t", deletedAt = deletedAt))
+
+            val changed = dao.updateOccurredAtIfActive("e", occurredAt = T0 + 5, now = T0 + 6)
+
+            assertEquals(0, changed)
+            assertEquals(T0 to deletedAt, database.updatedAndDeletedAt("tracker_events", "e"))
+        }
 }
