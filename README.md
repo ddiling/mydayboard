@@ -20,6 +20,7 @@ feature/
 core/
   domain/          Pure Kotlin business logic (no Android), incl. the clock, id generator and minute ticker
   designsystem/    Theme and shared components
+  database/        Room database: tracker entities, DAOs, schema history
   testing/         Shared test fixtures (fake clock, predictable ids, test zones); testImplementation only
 build-logic/       Convention plugins: the single source of truth for all rules
 config/            detekt.yml, lint.xml, Compose stability config (one copy for everything)
@@ -59,6 +60,7 @@ android { namespace = "io.github.ddiling.mydayboard.feature.counter" }
 | `mydayboard.android.application` | `:app` | SDK levels, R8, strict Lint across all dependencies, versioning and signing from CI environment variables, `.debug` suffix, Robolectric for app-level tests |
 | `mydayboard.android.feature` | `feature/*` | Library + Compose + screenshot tests + Hilt (`hiltViewModel()`) + core dependencies |
 | `mydayboard.android.hilt` | `:app`, `feature/*` | Hilt with KSP: runtime, compiler, and `hilt-android-testing` for `@HiltAndroidTest` |
+| `mydayboard.android.room` | `core/database` | Room with KSP: runtime, compiler, schema export to `schemas/`, `room-testing` |
 | `mydayboard.android.library` | Android `core/*` | SDK levels, Java 17 |
 | `mydayboard.jvm.library` | `core/domain`, `core/testing` | Plain Kotlin/JVM |
 | `mydayboard.android.compose` | Compose modules | Compose compiler, BOM, stability config |

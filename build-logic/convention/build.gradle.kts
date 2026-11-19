@@ -30,6 +30,7 @@ dependencies {
     compileOnly(libs.roborazzi.gradlePlugin)
     compileOnly(libs.ksp.gradlePlugin)
     compileOnly(libs.hilt.gradlePlugin)
+    compileOnly(libs.room.gradlePlugin)
 
     testImplementation(libs.junit)
 }
@@ -75,6 +76,13 @@ gradlePlugin {
                     .get()
                     .pluginId
             implementationClass = "io.github.ddiling.mydayboard.buildlogic.AndroidHiltConventionPlugin"
+        }
+        register("androidRoom") {
+            id =
+                libs.plugins.mydayboard.android.room
+                    .get()
+                    .pluginId
+            implementationClass = "io.github.ddiling.mydayboard.buildlogic.AndroidRoomConventionPlugin"
         }
         register("root") {
             id =
