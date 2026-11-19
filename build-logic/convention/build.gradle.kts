@@ -23,6 +23,7 @@ dependencies {
     compileOnly(libs.android.gradlePlugin)
     compileOnly(libs.kotlin.gradlePlugin)
     compileOnly(libs.compose.gradlePlugin)
+    compileOnly(libs.kotlin.serialization.gradlePlugin)
     compileOnly(libs.detekt.gradlePlugin)
     compileOnly(libs.spotless.gradlePlugin)
     compileOnly(libs.kover.gradlePlugin)

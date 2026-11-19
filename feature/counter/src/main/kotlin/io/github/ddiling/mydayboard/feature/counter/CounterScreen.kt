@@ -24,12 +24,13 @@ import io.github.ddiling.mydayboard.core.designsystem.preview.PreviewSurface
 import io.github.ddiling.mydayboard.core.domain.TapSummary
 
 /**
- * Public entry point of the feature: the only API apps use.
+ * Entry point of the counter screen, internal: apps reach it only through the navigation API
+ * (`counterScreen()` and `CounterDestination`).
  * Hilt provides the ViewModel, so the caller needs no factory; it must be hosted
  * in an `@AndroidEntryPoint` activity.
  */
 @Composable
-fun CounterRoute(
+internal fun CounterRoute(
     modifier: Modifier = Modifier,
     viewModel: CounterViewModel = hiltViewModel(),
 ) {
