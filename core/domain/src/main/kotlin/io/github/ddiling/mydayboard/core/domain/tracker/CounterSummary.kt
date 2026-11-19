@@ -22,8 +22,9 @@ data class CounterSummary(
  * Summarizes an event counter as of [now].
  *
  * "Today" is the local calendar day in [zone] that contains [now], from 00:00 up to the next 00:00, because that
- * is what the user means by today, wherever they are. It is computed by converting each instant to a local date rather than by subtracting 24 hours, so days with a
- * daylight-saving change (23 or 25 hours long) still count every event of that day.
+ * is what the user means by today, wherever they are. It is computed by converting each instant to a local date
+ * rather than by subtracting 24 hours, so days with a daylight-saving change (23 or 25 hours long) still count
+ * every event of that day.
  *
  * Events after [now] are ignored. The app never creates them, but a clock that was wrong when an event was
  * recorded, or an event synced from another device, could produce one, and a negative "time since last" would
