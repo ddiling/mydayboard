@@ -10,9 +10,6 @@ config:
   validation: true
 
 complexity:
-  TooManyFunctions:
-    # A shared contract test is one class on purpose: every implementation extends it to run all behaviours.
-    excludes: ['**/test/**', '**/androidTest/**', '**/*ContractTest.kt']
   LongParameterList:
     # Composables legitimately take many optional params (modifier, colors, ...).
     ignoreAnnotated: ['Composable']
@@ -21,11 +18,11 @@ complexity:
 
 naming:
   FunctionNaming:
-    # Composables are PascalCase; test names are backticked sentences (the shared contract tests live in main).
-    ignoreAnnotated: ['Composable', 'Test']
+    # Composables are PascalCase.
+    ignoreAnnotated: ['Composable']
 
 style:
   MagicNumber:
     ignorePropertyDeclaration: true
     # dp/sp values in UI code and preview fixtures are not "magic".
-    ignoreAnnotated: ['Composable', 'Preview', 'PreviewLightDark', 'Test']
+    ignoreAnnotated: ['Composable', 'Preview', 'PreviewLightDark']
