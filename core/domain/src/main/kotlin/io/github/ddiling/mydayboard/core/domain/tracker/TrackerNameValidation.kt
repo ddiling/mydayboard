@@ -61,8 +61,8 @@ fun validateTrackerName(raw: String): TrackerNameValidation {
 
 private fun isInvisible(codePoint: Int): Boolean {
     val category = Character.getType(codePoint)
+    // After the collapse and trim, the only whitespace left is the plain space, which isWhitespace covers.
     return Character.isWhitespace(codePoint) ||
-        Character.isSpaceChar(codePoint) ||
         category == Character.FORMAT.toInt() ||
         category == Character.CONTROL.toInt()
 }
