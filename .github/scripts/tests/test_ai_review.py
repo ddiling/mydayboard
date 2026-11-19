@@ -101,14 +101,20 @@ class DiffTest(unittest.TestCase):
         self.assertIn("gradle/libs.versions.toml", kept)
         self.assertNotIn("diff --git a/gradlew ", kept)
 
-    def test_lock_files_are_ignored_including_the_test_requirements(self):
+    def test_lock_files_are_ignored(self):
+        _, skipped = ai_review.filter_diff("diff --git a/some.lock b/some.lock\n+x\n")
+        self.assertEqual(skipped, ["some.lock"])
+
+    def test_the_hashed_test_requirements_stay_visible_to_the_reviewer(self):
+        # A new or swapped pin there is a supply-chain change: CI installs and runs it, so the
+        # reviewer must see it. The file is small, so there is nothing to gain by hiding it.
         diff = (
-            "diff --git a/some.lock b/some.lock\n+x\n"
             "diff --git a/.github/scripts/tests/requirements.txt b/.github/scripts/tests/requirements.txt\n+y\n"
             "diff --git a/.github/scripts/tests/requirements.in b/.github/scripts/tests/requirements.in\n+z\n"
         )
         kept, skipped = ai_review.filter_diff(diff)
-        self.assertEqual(skipped, ["some.lock", ".github/scripts/tests/requirements.txt"])
+        self.assertEqual(skipped, [])
+        self.assertIn("requirements.txt", kept)
         self.assertIn("requirements.in", kept)
 
     def test_gradlew_bat_is_ignored_too(self):
@@ -329,6 +335,21 @@ class PostJsonTest(ScriptTestCase):
         for status in (429, 500, 502, 503, 504):
             with self.subTest(status=status):
                 answers = [self.http_error(status), self.FakeResponse(b'{"ok": true}')]
+
+                def fake_open(request, timeout):
+                    answer = answers.pop(0)
+                    if isinstance(answer, Exception):
+                        raise answer
+                    return answer
+
+                with mock.patch("urllib.request.urlopen", side_effect=fake_open) as opened:
+                    self.assertEqual(ai_review.post_json("https://example.test", {}, {}), {"ok": True})
+                self.assertEqual(opened.call_count, 2)
+
+    def test_network_errors_without_an_answer_are_retried(self):
+        for error in (ConnectionResetError("reset"), urllib.error.URLError("dns failure")):
+            with self.subTest(error=type(error).__name__):
+                answers = [error, self.FakeResponse(b'{"ok": true}')]
 
                 def fake_open(request, timeout):
                     answer = answers.pop(0)

@@ -50,7 +50,6 @@ IGNORED_PATHS = (
     "gradlew.bat",
     "gradle/gradle-daemon-jvm.properties",
     "*.lock",
-    ".github/scripts/tests/requirements.txt",  # hundreds of hash lines, no signal
 )
 
 # After these statuses the same model is retried: 0 = no HTTP answer at all (network error, timeout),
