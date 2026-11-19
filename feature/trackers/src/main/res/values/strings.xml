@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="trackers_title">Trackers</string>
+    <string name="trackers_add">Add tracker</string>
+    <string name="trackers_empty_hint">No trackers yet. Add one to start tracking.</string>
+    <string name="trackers_today_count">Today: %d</string>
+    <string name="trackers_no_events">No events yet</string>
+    <string name="trackers_last_ago">%s ago</string>
+    <string name="trackers_detail_placeholder">Tracker details</string>
+    <string name="trackers_editor_placeholder">Tracker editor</string>
     <string name="trackers_duration_just_now">Just now</string>
     <string name="trackers_duration_minutes">%d min</string>
     <string name="trackers_duration_hours">%d h</string>

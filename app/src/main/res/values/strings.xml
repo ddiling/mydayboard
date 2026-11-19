@@ -3,4 +3,5 @@
     <string name="app_name">MyDayboard</string>
     <string name="dashboard_empty">Nothing here yet</string>
     <string name="dashboard_open_counter">Counter</string>
+    <string name="dashboard_open_trackers">Trackers</string>
 </resources>

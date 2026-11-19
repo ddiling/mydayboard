@@ -23,13 +23,15 @@ import androidx.compose.ui.unit.dp
 import io.github.ddiling.mydayboard.core.dashboard.DashboardCard
 import io.github.ddiling.mydayboard.core.dashboard.DashboardHost
 import io.github.ddiling.mydayboard.feature.counter.navigation.CounterDestination
+import io.github.ddiling.mydayboard.feature.trackers.navigation.TrackersListDestination
 
+internal const val OPEN_TRACKERS_TAG = "open_trackers"
 internal const val OPEN_COUNTER_TAG = "open_counter"
 
 /**
  * The dashboard: the cards (already in display order) in a list, or a hint when there are none.
- * The top-bar action is temporary: it opens the counter, the only other screen, so it stays reachable
- * until the tracker list exists.
+ * The first top-bar action opens the tracker list. The second one is temporary: it opens the counter
+ * placeholder and gets removed together with it; until then it keeps the counter smoke flow working.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,6 +46,10 @@ fun DashboardScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.app_name)) },
                 actions = {
+                    TextButton(
+                        onClick = { host.navigate(TrackersListDestination) },
+                        modifier = Modifier.testTag(OPEN_TRACKERS_TAG),
+                    ) { Text(stringResource(R.string.dashboard_open_trackers)) }
                     TextButton(
                         onClick = { host.navigate(CounterDestination) },
                         modifier = Modifier.testTag(OPEN_COUNTER_TAG),
