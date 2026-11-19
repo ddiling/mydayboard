@@ -11,6 +11,9 @@ import org.junit.Test
 
 /** Contract for creating, ordering and renaming trackers. */
 abstract class TrackerContractTest : TrackerRepositoryContractBase() {
+    /** More than 9, so that ids compared as text (`id-10` before `id-2`) differ from creation order. */
+    private val tiedCount = 10
+
     @Test
     fun `created tracker gets a generated id`() =
         runTest {
@@ -54,6 +57,16 @@ abstract class TrackerContractTest : TrackerRepositoryContractBase() {
             val second = givenTracker()
 
             assertEquals(listOf(first, second), repo.observeTrackers().first())
+        }
+
+    @Test
+    fun `trackers created at the same time are ordered by id ascending`() =
+        runTest {
+            repeat(tiedCount) { givenTracker() }
+
+            val ids = repo.observeTrackers().first().map { it.id }
+
+            assertEquals(ids.sorted(), ids)
         }
 
     @Test

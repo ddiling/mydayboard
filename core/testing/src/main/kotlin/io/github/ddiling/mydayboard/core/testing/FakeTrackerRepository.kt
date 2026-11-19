@@ -29,15 +29,19 @@ class FakeTrackerRepository(
 
     private val state = MutableStateFlow(State())
 
+    // The same orders as the Room queries, ties included, so both implementations list identically.
+    private val trackerOrder = compareBy<Tracker> { it.createdAt }.thenBy { it.id }
+    private val eventOrder = compareByDescending<TrackerEvent> { it.occurredAt }.thenByDescending { it.id }
+
     override fun observeTrackers(): Flow<List<Tracker>> =
-        state.map { s -> s.trackers.sortedBy { it.createdAt } }.distinctUntilChanged()
+        state.map { s -> s.trackers.sortedWith(trackerOrder) }.distinctUntilChanged()
 
     override fun observeTracker(id: String): Flow<Tracker?> =
         state.map { s -> s.trackers.firstOrNull { it.id == id } }.distinctUntilChanged()
 
     override fun observeEvents(trackerId: String): Flow<List<TrackerEvent>> =
         state
-            .map { s -> s.events.filter { it.trackerId == trackerId }.sortedByDescending { it.occurredAt } }
+            .map { s -> s.events.filter { it.trackerId == trackerId }.sortedWith(eventOrder) }
             .distinctUntilChanged()
 
     override fun observeAllEvents(): Flow<List<TrackerEvent>> = state.map { it.events }.distinctUntilChanged()

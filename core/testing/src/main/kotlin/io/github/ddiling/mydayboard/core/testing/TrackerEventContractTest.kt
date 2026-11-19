@@ -11,6 +11,9 @@ import org.junit.Test
 
 /** Contract for adding, ordering and moving events. */
 abstract class TrackerEventContractTest : TrackerRepositoryContractBase() {
+    /** More than 9, so that ids compared as text (`id-10` before `id-2`) differ from creation order. */
+    private val tiedCount = 10
+
     @Test
     fun `events are ordered by occurrence time descending`() =
         runTest {
@@ -20,6 +23,17 @@ abstract class TrackerEventContractTest : TrackerRepositoryContractBase() {
             val oldest = givenEvent(tracker, oldestEventTime)
 
             assertEquals(listOf(newest, middle, oldest), repo.observeEvents(tracker.id).first())
+        }
+
+    @Test
+    fun `events with the same occurrence time are ordered by id descending`() =
+        runTest {
+            val tracker = givenTracker()
+            repeat(tiedCount) { givenEvent(tracker, oldestEventTime) }
+
+            val ids = repo.observeEvents(tracker.id).first().map { it.id }
+
+            assertEquals(ids.sortedDescending(), ids)
         }
 
     @Test
