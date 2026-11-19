@@ -9,6 +9,8 @@ plugins {
     alias(libs.plugins.kotlin.compose) apply false
     alias(libs.plugins.detekt) apply false
     alias(libs.plugins.roborazzi) apply false
+    alias(libs.plugins.ksp) apply false
+    alias(libs.plugins.hilt) apply false
     alias(libs.plugins.spotless)
     // Merged coverage report (:koverHtmlReport); every module applies it via mydayboard.quality.
     alias(libs.plugins.kover)
