@@ -27,4 +27,22 @@ interface TrackerDao {
 
     @Update
     suspend fun update(entity: TrackerEntity)
+
+    /**
+     * Renames in one statement, so a concurrent soft delete cannot be undone by a stale read-modify-write.
+     * Returns the number of rows changed: 0 when the tracker is missing or deleted.
+     */
+    @Query("UPDATE trackers SET name = :name, updated_at = :now WHERE id = :id AND deleted_at IS NULL")
+    suspend fun rename(
+        id: String,
+        name: String,
+        now: Long,
+    ): Int
+
+    /** Soft-deletes in one statement; 0 rows changed when the tracker is missing or already deleted. */
+    @Query("UPDATE trackers SET updated_at = :now, deleted_at = :now WHERE id = :id AND deleted_at IS NULL")
+    suspend fun softDelete(
+        id: String,
+        now: Long,
+    ): Int
 }
