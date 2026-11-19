@@ -20,3 +20,11 @@ kover {
         }
     }
 }
+
+dependencies {
+    // `api`: minuteTicker returns a Flow, so every caller needs coroutines on its compile classpath too.
+    api(libs.kotlinx.coroutines.core)
+
+    // Not a cycle: :core:testing uses this module's main code; only the tests here use :core:testing.
+    testImplementation(projects.core.testing)
+}

@@ -45,3 +45,4 @@ include(":feature:counter")
 // Core: shared foundations.
 include(":core:domain")
 include(":core:designsystem")
+include(":core:testing")

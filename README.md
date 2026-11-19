@@ -18,8 +18,9 @@ app/               The application: a thin shell that owns navigation and the da
 feature/
   counter/         Event counter (placeholder for the first real tracker)
 core/
-  domain/          Pure Kotlin business logic (no Android)
+  domain/          Pure Kotlin business logic (no Android), incl. the clock, id generator and minute ticker
   designsystem/    Theme and shared components
+  testing/         Shared test fixtures (fake clock, predictable ids, Main dispatcher rule); testImplementation only
 build-logic/       Convention plugins: the single source of truth for all rules
 config/            detekt.yml, lint.xml, Compose stability config (one copy for everything)
 scripts/           new-module.sh, git hooks
@@ -59,7 +60,7 @@ android { namespace = "io.github.ddiling.mydayboard.feature.counter" }
 | `mydayboard.android.feature` | `feature/*` | Library + Compose + screenshot tests + Hilt (`hiltViewModel()`) + core dependencies |
 | `mydayboard.android.hilt` | `:app`, `feature/*` | Hilt with KSP: runtime, compiler, and `hilt-android-testing` for `@HiltAndroidTest` |
 | `mydayboard.android.library` | Android `core/*` | SDK levels, Java 17 |
-| `mydayboard.jvm.library` | `core/domain` | Plain Kotlin/JVM |
+| `mydayboard.jvm.library` | `core/domain`, `core/testing` | Plain Kotlin/JVM |
 | `mydayboard.android.compose` | Compose modules | Compose compiler, BOM, stability config |
 | `mydayboard.android.screenshot` | Features, design system | Roborazzi: every `@Preview` becomes a screenshot test |
 | `mydayboard.quality` | Every module | Detekt, ktlint (via Spotless), module rules, CI lifecycle tasks |
