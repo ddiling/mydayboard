@@ -35,7 +35,9 @@ class MainActivityTest {
     val composeRule = createAndroidComposeRule<MainActivity>()
 
     @Test
-    fun `the counter screen is shown and counts a tap`() {
+    fun `the counter opened from the dashboard counts a tap`() {
+        composeRule.onNodeWithTag(OPEN_COUNTER_TAG).performClick()
+
         composeRule.onNodeWithTag("tap_button").assertIsDisplayed()
 
         composeRule.onNodeWithTag("tap_button").performClick()

@@ -14,7 +14,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
-import io.github.ddiling.mydayboard.feature.counter.navigation.CounterDestination
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -24,10 +23,11 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 
 /**
- * The start destination creates its ViewModel with `hiltViewModel()`, which only works inside an
- * `@AndroidEntryPoint` activity. This test needs its own controller (a `TestNavHostController`), so it
- * cannot reuse [MainActivity], which builds its own. [HiltTestActivity] is that host. It lives in the
- * test sources, so it is registered with Robolectric here instead of in a manifest that would ship in the app.
+ * The counter (reachable from the start destination) creates its ViewModel with `hiltViewModel()`, which
+ * only works inside an `@AndroidEntryPoint` activity. This test needs its own controller
+ * (a `TestNavHostController`), so it cannot reuse [MainActivity],
+ * which builds its own. [HiltTestActivity] is that host. It lives in the
+ * test sources, so it is registered with Robolectric here instead of in a manifest that ships in the app.
  */
 @HiltAndroidTest
 @RunWith(RobolectricTestRunner::class)
@@ -40,7 +40,7 @@ class MyDayboardNavHostTest {
     val composeRule = createEmptyComposeRule()
 
     @Test
-    fun `the app starts on the counter destination`() {
+    fun `the app starts on the dashboard destination`() {
         val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
         shadowOf(context.packageManager).addActivityIfNotPresent(ComponentName(context, HiltTestActivity::class.java))
         lateinit var navController: TestNavHostController
@@ -50,12 +50,12 @@ class MyDayboardNavHostTest {
                 activity.setContent {
                     navController = TestNavHostController(LocalContext.current)
                     navController.navigatorProvider.addNavigator(ComposeNavigator())
-                    MyDayboardNavHost(navController = navController)
+                    MyDayboardNavHost(navController = navController, cards = emptySet())
                 }
             }
             composeRule.waitForIdle()
 
-            assertTrue(navController.currentBackStackEntry!!.destination.hasRoute<CounterDestination>())
+            assertTrue(navController.currentBackStackEntry!!.destination.hasRoute<DashboardDestination>())
         }
     }
 

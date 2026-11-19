@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.mydayboard.android.application)
     alias(libs.plugins.mydayboard.android.compose)
     alias(libs.plugins.mydayboard.android.hilt)
+    // For DashboardDestination, the one route :app owns itself.
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -14,11 +16,11 @@ android {
 dependencies {
     implementation(projects.feature.counter)
     implementation(projects.core.designsystem)
+    implementation(projects.core.dashboard)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
-    // Only the NavHost lives here; routes are defined by the features. The app declares no routes
-    // itself, so it needs the library but not the serialization compiler plugin.
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.kotlinx.serialization.core)
     testImplementation(libs.androidx.navigation.testing)
 }

@@ -22,9 +22,9 @@ class AppStartTest {
     val composeRule = createAndroidComposeRule<MainActivity>()
 
     @Test
-    fun `the app starts through its Hilt application and shows the counter`() {
+    fun `the app starts through its Hilt application and shows the dashboard`() {
         assertTrue(composeRule.activity.application is MyDayboardApplication)
 
-        composeRule.onNodeWithTag("tap_button").assertIsDisplayed()
+        composeRule.onNodeWithTag(OPEN_COUNTER_TAG).assertIsDisplayed()
     }
 }
