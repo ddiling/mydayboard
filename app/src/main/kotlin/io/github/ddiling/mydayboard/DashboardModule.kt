@@ -12,7 +12,7 @@ import io.github.ddiling.mydayboard.core.dashboard.DashboardCard
  */
 @Module
 @InstallIn(SingletonComponent::class)
-abstract class DashboardModule {
+interface DashboardModule {
     @Multibinds
-    abstract fun dashboardCards(): Set<DashboardCard>
+    fun dashboardCards(): Set<DashboardCard>
 }
