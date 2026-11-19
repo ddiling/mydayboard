@@ -197,3 +197,7 @@ runs the screenshot tests as no-ops and under-reports UI coverage.
 - **Navigation:** Navigation Compose. Each feature exposes a `NavGraphBuilder` extension, and `:app` composes the graphs.
 - **Build speed:** a remote build cache (Develocity or a self-hosted Gradle cache node). It matters more in a monorepo than anywhere else.
 - **Security:** CodeQL and GitHub's dependency-review action.
+
+## License
+
+Licensed under the [Apache License, Version 2.0](LICENSE).
