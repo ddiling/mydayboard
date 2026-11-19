@@ -9,97 +9,82 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-/** Contract for creating, ordering, renaming and deleting trackers. */
+/** Contract for creating, ordering and renaming trackers. */
 abstract class TrackerContractTest : TrackerRepositoryContractBase() {
     @Test
-    fun createdTrackerHasGeneratedIdAndClockTimestamps() =
+    fun `created tracker gets a generated id`() =
         runTest {
-            val tracker = repo.createTracker("Water", TrackerType.EVENT_COUNTER, earlier)
-
-            assertEquals("id-1", tracker.id)
-            assertEquals("Water", tracker.name)
-            assertEquals(earlier, tracker.startedAt)
-            assertEquals(start, tracker.createdAt)
-            assertEquals(start, tracker.updatedAt)
+            assertEquals("id-1", givenTracker().id)
         }
 
     @Test
-    fun createdTrackerAppearsInObservedTrackers() =
+    fun `created tracker keeps the given name type and start`() =
+        runTest {
+            val tracker = repo.createTracker("Water", TrackerType.DAYS_SINCE, timeBeforeTrackerStart)
+
+            assertEquals("Water", tracker.name)
+            assertEquals(TrackerType.DAYS_SINCE, tracker.type)
+            assertEquals(timeBeforeTrackerStart, tracker.startedAt)
+        }
+
+    @Test
+    fun `created tracker takes createdAt and updatedAt from the clock`() =
+        runTest {
+            val tracker = givenTracker()
+
+            assertEquals(now, tracker.createdAt)
+            assertEquals(now, tracker.updatedAt)
+        }
+
+    @Test
+    fun `created tracker appears in observed trackers`() =
         runTest {
             repo.observeTrackers().test {
                 assertEquals(emptyList<Any>(), awaitItem())
-                val tracker = repo.createTracker("Water", TrackerType.EVENT_COUNTER, start)
+                val tracker = givenTracker()
                 assertEquals(listOf(tracker), awaitItem())
             }
         }
 
     @Test
-    fun trackersAreOrderedByCreationTimeAscending() =
+    fun `trackers are ordered by creation time ascending`() =
         runTest {
-            val first = repo.createTracker("A", TrackerType.EVENT_COUNTER, start)
-            clock.advanceBy(step)
-            val second = repo.createTracker("B", TrackerType.DAYS_SINCE, start)
+            val first = givenTracker()
+            clock.advanceBy(clockAdvance)
+            val second = givenTracker()
 
             assertEquals(listOf(first, second), repo.observeTrackers().first())
         }
 
     @Test
-    fun renamingBumpsUpdatedAtAndKeepsCreatedAt() =
+    fun `renaming changes the name`() =
         runTest {
-            val tracker = repo.createTracker("A", TrackerType.EVENT_COUNTER, start)
-            clock.advanceBy(step)
+            val tracker = givenTracker()
 
-            repo.renameTracker(tracker.id, "B")
+            repo.renameTracker(tracker.id, "Coffee")
 
-            val renamed = repo.observeTracker(tracker.id).first()!!
-            assertEquals("B", renamed.name)
-            assertEquals(start, renamed.createdAt)
-            assertEquals(afterStep, renamed.updatedAt)
+            assertEquals("Coffee", repo.observeTracker(tracker.id).first()?.name)
         }
 
     @Test
-    fun deletedTrackerDisappearsFromTrackersList() =
+    fun `renaming bumps updatedAt`() =
         runTest {
-            val tracker = repo.createTracker("A", TrackerType.EVENT_COUNTER, start)
-            repo.deleteTracker(tracker.id)
+            val tracker = givenTracker()
+            clock.advanceBy(clockAdvance)
 
-            assertEquals(emptyList<Any>(), repo.observeTrackers().first())
+            repo.renameTracker(tracker.id, "Coffee")
+
+            assertEquals(nowAfterAdvance, repo.observeTracker(tracker.id).first()?.updatedAt)
         }
 
     @Test
-    fun observingDeletedTrackerEmitsNull() =
+    fun `renaming keeps createdAt`() =
         runTest {
-            val tracker = repo.createTracker("A", TrackerType.EVENT_COUNTER, start)
-            repo.observeTracker(tracker.id).test {
-                assertEquals(tracker, awaitItem())
-                repo.deleteTracker(tracker.id)
-                assertNull(awaitItem())
-            }
-        }
+            val tracker = givenTracker()
+            clock.advanceBy(clockAdvance)
 
-    @Test
-    fun observingMissingTrackerEmitsNull() =
-        runTest {
-            assertNull(repo.observeTracker("nope").first())
-        }
+            repo.renameTracker(tracker.id, "Coffee")
 
-    @Test
-    fun deletingTrackerHidesItsEventsButKeepsOthers() =
-        runTest {
-            val gone = repo.createTracker("A", TrackerType.EVENT_COUNTER, start)
-            val kept = repo.createTracker("B", TrackerType.EVENT_COUNTER, start)
-            repo.addEvent(gone.id, minute1)
-            val keptEvent = repo.addEvent(kept.id, minute2)!!
-
-            repo.deleteTracker(gone.id)
-
-            assertEquals(listOf(keptEvent), repo.observeAllEvents().first())
-            assertTrue(repo.observeEvents(gone.id).first().isEmpty())
-        }
-
-    @Test
-    fun eventsOfMissingTrackerAreEmpty() =
-        runTest {
-            assertTrue(repo.observeEvents("nope").first().isEmpty())
+            assertEquals(now, repo.observeTracker(tracker.id).first()?.createdAt)
         }
 }

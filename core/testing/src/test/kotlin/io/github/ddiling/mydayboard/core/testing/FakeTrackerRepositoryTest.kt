@@ -22,7 +22,21 @@ class FakeTrackerEventContractTest : TrackerEventContractTest() {
     ): TrackerRepository = fake(clock, ids)
 }
 
-class FakeTrackerNoOpContractTest : TrackerNoOpContractTest() {
+class FakeTrackerDeletionContractTest : TrackerDeletionContractTest() {
+    override fun createRepository(
+        clock: MutableClock,
+        ids: IdGenerator,
+    ): TrackerRepository = fake(clock, ids)
+}
+
+class FakeTrackerUnknownIdContractTest : TrackerUnknownIdContractTest() {
+    override fun createRepository(
+        clock: MutableClock,
+        ids: IdGenerator,
+    ): TrackerRepository = fake(clock, ids)
+}
+
+class FakeTrackerDeletedIdContractTest : TrackerDeletedIdContractTest() {
     override fun createRepository(
         clock: MutableClock,
         ids: IdGenerator,
