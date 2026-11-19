@@ -12,12 +12,6 @@ android {
 // Repositories are logic, so they get the same coverage floor as the domain.
 kover {
     reports {
-        // Hilt wiring (the `di` package and generated factories) holds no logic; the floor is for the repository.
-        filters {
-            excludes {
-                classes("*.di.*", "*_Factory", "*_Factory\$*", "hilt_aggregated_deps.*")
-            }
-        }
         verify {
             rule {
                 minBound(80)

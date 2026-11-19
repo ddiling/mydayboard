@@ -18,8 +18,8 @@ import javax.inject.Inject
 /**
  * [TrackerRepository] on Room. Deletes are soft (`deletedAt`), and unknown or deleted ids are no-ops.
  *
- * The event DAO queries do not check the parent tracker, so this class does: events of a deleted tracker are
- * hidden and event writes under it are ignored. Doing it here keeps the DAO queries simple.
+ * The event read queries do not check the parent tracker, so `observeEvents` does. Writes are single
+ * conditional statements in the DAOs, so a concurrent delete cannot be undone by a stale read-modify-write.
  */
 internal class OfflineTrackerRepository
     @Inject
@@ -61,42 +61,41 @@ internal class OfflineTrackerRepository
             id: String,
             name: String,
         ) {
-            val row = trackerDao.getActiveById(id) ?: return
-            trackerDao.update(row.copy(name = name, updatedAt = clock.millis()))
+            trackerDao.rename(id, name, now = clock.millis())
         }
 
         override suspend fun deleteTracker(id: String) {
-            val row = trackerDao.getActiveById(id) ?: return
-            val now = clock.millis()
-            trackerDao.update(row.copy(updatedAt = now, deletedAt = now))
+            trackerDao.softDelete(id, now = clock.millis())
         }
 
         override suspend fun addEvent(
             trackerId: String,
             occurredAt: Instant,
         ): TrackerEvent? {
-            if (trackerDao.getActiveById(trackerId) == null) return null
             val now = clock.instant()
             val event = TrackerEvent(ids.newId(), trackerId, occurredAt, createdAt = now, updatedAt = now)
-            eventDao.insert(event.toEntity())
-            return event
+            val inserted =
+                eventDao.insertForActiveTracker(
+                    event.id,
+                    trackerId,
+                    occurredAt.toEpochMilli(),
+                    now.toEpochMilli(),
+                )
+            return event.takeIf { inserted != NOT_INSERTED }
         }
 
         override suspend fun updateEventTime(
             eventId: String,
             occurredAt: Instant,
         ) {
-            val row = activeEvent(eventId) ?: return
-            eventDao.update(row.copy(occurredAt = occurredAt.toEpochMilli(), updatedAt = clock.millis()))
+            eventDao.updateOccurredAtIfActive(eventId, occurredAt.toEpochMilli(), now = clock.millis())
         }
 
         override suspend fun deleteEvent(eventId: String) {
-            val row = activeEvent(eventId) ?: return
-            val now = clock.millis()
-            eventDao.update(row.copy(updatedAt = now, deletedAt = now))
+            eventDao.softDeleteIfActive(eventId, now = clock.millis())
         }
 
-        /** The event, only while neither it nor its tracker is deleted. */
-        private suspend fun activeEvent(eventId: String) =
-            eventDao.getActiveById(eventId)?.takeIf { trackerDao.getActiveById(it.trackerId) != null }
+        private companion object {
+            const val NOT_INSERTED = -1L
+        }
     }

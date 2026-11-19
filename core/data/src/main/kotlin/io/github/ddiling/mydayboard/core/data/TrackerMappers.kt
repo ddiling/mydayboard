@@ -49,12 +49,17 @@ internal fun TrackerEvent.toEntity() =
     )
 
 /**
- * Maps by name and fails loudly on an unknown value: a type written by a newer app version must not
- * silently turn into a different kind of tracker.
+ * Exhaustive `when`s, so adding a type breaks the build here. An unknown stored string never reaches this
+ * code: Room's enum converter rejects it when reading the row.
  */
-internal fun TrackerEntityType.toDomain(): TrackerType = trackerTypeOf(name)
+internal fun TrackerEntityType.toDomain(): TrackerType =
+    when (this) {
+        TrackerEntityType.EVENT_COUNTER -> TrackerType.EVENT_COUNTER
+        TrackerEntityType.DAYS_SINCE -> TrackerType.DAYS_SINCE
+    }
 
-internal fun TrackerType.toEntity(): TrackerEntityType = TrackerEntityType.valueOf(name)
-
-internal fun trackerTypeOf(name: String): TrackerType =
-    TrackerType.entries.firstOrNull { it.name == name } ?: error("Unknown tracker type '$name'")
+internal fun TrackerType.toEntity(): TrackerEntityType =
+    when (this) {
+        TrackerType.EVENT_COUNTER -> TrackerEntityType.EVENT_COUNTER
+        TrackerType.DAYS_SINCE -> TrackerEntityType.DAYS_SINCE
+    }

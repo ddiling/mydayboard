@@ -7,8 +7,6 @@ import io.github.ddiling.mydayboard.core.domain.tracker.Tracker
 import io.github.ddiling.mydayboard.core.domain.tracker.TrackerEvent
 import io.github.ddiling.mydayboard.core.domain.tracker.TrackerType
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
-import org.junit.Assert.fail
 import org.junit.Test
 import java.time.Instant
 
@@ -45,17 +43,5 @@ class TrackerMappersTest {
         val entity = TrackerEvent("e1", "t1", startedAt, createdAt, updatedAt).toEntity()
 
         assertEquals(TrackerEventEntity("e1", "t1", 1_000, 2_000, 3_000, null), entity)
-    }
-
-    @Test
-    fun `an unknown stored type fails loudly with the value in the message`() {
-        val unknown = "FUTURE_TYPE"
-
-        try {
-            trackerTypeOf(unknown)
-            fail("expected IllegalStateException")
-        } catch (e: IllegalStateException) {
-            assertTrue(e.message.orEmpty().contains(unknown))
-        }
     }
 }
