@@ -11,9 +11,9 @@ import java.time.ZoneOffset
 
 /**
  * Shared fixtures of the repository contract tests. The contract is split by topic into
- * [TrackerContractTest] and [TrackerEventContractTest] (the deletion and no-op topics follow in
- * separate classes); the in-memory fake and the Room implementation each extend all of them, which is what
- * proves they behave identically.
+ * [TrackerContractTest], [TrackerEventContractTest], [TrackerDeletionContractTest],
+ * [TrackerUnknownIdContractTest] and [TrackerDeletedIdContractTest]; the in-memory fake and the Room
+ * implementation each extend all of them, which is what proves they behave identically.
  *
  * The `given...` helpers only set up state, so each test reads as arrange, act, assert.
  */
@@ -46,8 +46,13 @@ abstract class TrackerRepositoryContractBase {
         startedAt: Instant = now,
     ): Tracker = repo.createTracker("Water", type, startedAt)
 
+    protected suspend fun givenDeletedTracker(): Tracker = givenTracker().also { repo.deleteTracker(it.id) }
+
     protected suspend fun givenEvent(
         tracker: Tracker,
         occurredAt: Instant = oldestEventTime,
     ): TrackerEvent = repo.addEvent(tracker.id, occurredAt) ?: error("Tracker ${tracker.id} should accept events")
+
+    protected suspend fun givenDeletedEvent(tracker: Tracker): TrackerEvent =
+        givenEvent(tracker).also { repo.deleteEvent(it.id) }
 }
