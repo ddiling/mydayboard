@@ -112,4 +112,38 @@ class ObserveTrackerSummariesUseCaseTest {
                 assertEquals(1, (awaitItem().single() as TrackerSummary.Counter).summary.todayCount)
             }
         }
+
+    @Test
+    fun `an event added between ticks appears without waiting for the next tick`() =
+        runTest {
+            val tracker = repository.createTracker("Water", TrackerType.EVENT_COUNTER, startOfDay)
+
+            useCase().test {
+                tick()
+                awaitItem()
+
+                clock.advanceBy(Duration.ofSeconds(30))
+                val eventTimeAfterLastTick = clock.instant()
+                repository.addEvent(tracker.id, eventTimeAfterLastTick)
+
+                val summary = (awaitItem().single() as TrackerSummary.Counter).summary
+                assertEquals(1, summary.todayCount)
+                assertEquals(eventTimeAfterLastTick, summary.lastEventAt)
+            }
+        }
+
+    @Test
+    fun `a days since tracker restarts from its reset event`() =
+        runTest {
+            val tracker = repository.createTracker("Smoke free", TrackerType.DAYS_SINCE, warsaw(2026, 3, 7, 12))
+            val resetTime = warsaw(2026, 3, 9, 12)
+            repository.addEvent(tracker.id, resetTime)
+
+            useCase().test {
+                tick()
+                val summary = (awaitItem().single() as TrackerSummary.DaysSince).summary
+                assertEquals(resetTime, summary.currentStart)
+                assertEquals(1L, summary.currentDays)
+            }
+        }
 }

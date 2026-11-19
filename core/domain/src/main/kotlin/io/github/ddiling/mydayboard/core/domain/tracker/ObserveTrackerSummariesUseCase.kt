@@ -28,6 +28,10 @@ sealed interface TrackerSummary {
  * "today" and "days since" roll over at midnight without any data change. The zone is read from
  * [Clock.getZone] at each emission, so a time zone change is picked up at the next tick.
  *
+ * The ticker is only a trigger: "now" is always read from [clock] at the emission, never taken from the ticker's
+ * value, which can be up to a minute old when a repository change causes the recompute. Otherwise an event
+ * added just after a tick would count as "in the future" and stay hidden until the next tick.
+ *
  * The ticker is a constructor parameter so tests can drive time themselves. Hilt cannot use a Kotlin default
  * argument, so the production default lives in a separate `@Inject` constructor instead.
  */
@@ -40,7 +44,8 @@ class ObserveTrackerSummariesUseCase internal constructor(
     constructor(repository: TrackerRepository, clock: Clock) : this(repository, clock, ::minuteTicker)
 
     operator fun invoke(): Flow<List<TrackerSummary>> =
-        combine(repository.observeTrackers(), repository.observeAllEvents(), ticker(clock)) { trackers, events, now ->
+        combine(repository.observeTrackers(), repository.observeAllEvents(), ticker(clock)) { trackers, events, _ ->
+            val now = clock.instant()
             val zone = clock.zone
             val eventTimesByTracker = events.groupBy({ it.trackerId }, { it.occurredAt })
             trackers.map { tracker ->
