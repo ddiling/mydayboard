@@ -5,14 +5,14 @@ import org.junit.Test
 import java.io.File
 
 /**
- * Guards the export itself: `exportSchema = false` or a moved schema directory would leave
- * the next migration with no old schema to test against. That the file is also committed is
- * checked by CI ("Check that Room schemas are committed"), because compiling recreates it.
+ * Only checks that the version 1 schema file sits where migration tests will look for it, so
+ * deleting or moving it fails here. It cannot catch `exportSchema = false`: the file stays.
+ * That it is committed is checked by CI ("Check that Room schemas are committed").
  * Unit tests run in the module directory, so the path is relative to `core/database/`.
  */
 class MyDayboardDatabaseSchemaTest {
     @Test
-    fun `the schema of the current version is exported`() {
+    fun `the version 1 schema file is in the schemas directory`() {
         val version = 1
         val schema = File("schemas/${MyDayboardDatabase::class.java.name}/$version.json")
 
