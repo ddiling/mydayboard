@@ -4,6 +4,7 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.artifacts.ProjectDependency
+import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.SetProperty
 import org.gradle.api.tasks.Input
@@ -48,6 +49,26 @@ internal object ModuleRules {
 
     private const val LAYERS_HINT = "app, feature/ or core/"
 
+    private const val TESTING = ":core:testing"
+
+    /** Test configurations: `test…`, `androidTest…` and processors such as `kspTest`. */
+    private val testConfiguration = Regex("^(ksp|kapt)?(test|androidTest)", RegexOption.IGNORE_CASE)
+
+    /**
+     * `:core:testing` bundles JUnit, fakes and a hand-driven clock, so shipping it in a production
+     * configuration would put test code in the app. [configurations] maps each configuration of the
+     * module to the project paths it declares.
+     */
+    fun testingToolkitViolations(
+        module: String,
+        configurations: Map<String, Set<String>>,
+    ): List<String> =
+        configurations
+            .filter { (name, paths) -> TESTING in paths && !testConfiguration.containsMatchIn(name) }
+            .keys
+            .sorted()
+            .map { "$module declares $TESTING in `$it`; use it only in test configurations, e.g. testImplementation." }
+
     fun violations(
         module: String,
         dependencies: Collection<String>,
@@ -80,6 +101,15 @@ internal object ModuleRules {
     }
 }
 
+/** Project paths declared per configuration of this project. */
+internal fun Project.declaredProjectDependenciesByConfiguration(): Map<String, Set<String>> {
+    val self = path
+    return configurations.associate { configuration ->
+        val paths = configuration.dependencies.withType(ProjectDependency::class.java).map { it.path }
+        configuration.name to paths.filterTo(sortedSetOf()) { it != self }
+    }
+}
+
 /** Paths of all project dependencies declared in any configuration of this project. */
 internal fun Project.declaredProjectDependencyPaths(): Set<String> =
     configurations
@@ -95,9 +125,15 @@ abstract class CheckModuleDependenciesTask : DefaultTask() {
     @get:Input
     abstract val projectDependencies: SetProperty<String>
 
+    @get:Input
+    abstract val dependenciesByConfiguration: MapProperty<String, Set<String>>
+
     @TaskAction
     fun check() {
-        val violations = ModuleRules.violations(modulePath.get(), projectDependencies.get())
+        val module = modulePath.get()
+        val violations =
+            ModuleRules.violations(module, projectDependencies.get()) +
+                ModuleRules.testingToolkitViolations(module, dependenciesByConfiguration.get())
         if (violations.isNotEmpty()) {
             throw GradleException(
                 "Module dependency rules violated:\n" +

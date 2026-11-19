@@ -1,12 +1,11 @@
 package io.github.ddiling.mydayboard.core.testing
 
 import app.cash.turbine.test
+import io.github.ddiling.mydayboard.core.domain.tracker.Tracker
 import io.github.ddiling.mydayboard.core.domain.tracker.TrackerType
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /** Contract for creating, ordering and renaming trackers. */
@@ -43,7 +42,7 @@ abstract class TrackerContractTest : TrackerRepositoryContractBase() {
     fun `created tracker appears in observed trackers`() =
         runTest {
             repo.observeTrackers().test {
-                assertEquals(emptyList<Any>(), awaitItem())
+                assertEquals(emptyList<Tracker>(), awaitItem())
                 val tracker = givenTracker()
                 assertEquals(listOf(tracker), awaitItem())
             }

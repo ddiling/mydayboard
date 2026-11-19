@@ -22,6 +22,12 @@ naming:
     ignoreAnnotated: ['Composable', 'Test']
 
 style:
+  # Off by default, and it only runs with type resolution (detektMain/detektTest, wired into ciStaticAnalysis).
+  UnusedImport:
+    active: true
+  UnusedPrivateFunction:
+    # Previews are called by tooling, not code; type-resolved detekt runs would flag every one.
+    ignoreAnnotated: ['Preview', 'PreviewLightDark']
   MagicNumber:
     ignorePropertyDeclaration: true
     # dp/sp values in UI code and preview fixtures are not "magic".

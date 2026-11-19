@@ -2,6 +2,7 @@ package io.github.ddiling.mydayboard.core.database
 
 import android.database.sqlite.SQLiteConstraintException
 import app.cash.turbine.test
+import io.github.ddiling.mydayboard.core.database.model.TrackerEventEntity
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -86,7 +87,7 @@ class TrackerEventDaoTest {
 
                 trackerDao.update(tracker.copy(deletedAt = T0 + 1))
 
-                assertEquals(emptyList<Any>(), awaitItem())
+                assertEquals(emptyList<TrackerEventEntity>(), awaitItem())
             }
         }
 

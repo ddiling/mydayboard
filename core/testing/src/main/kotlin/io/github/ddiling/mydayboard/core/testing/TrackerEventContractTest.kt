@@ -1,11 +1,9 @@
 package io.github.ddiling.mydayboard.core.testing
 
 import app.cash.turbine.test
-import io.github.ddiling.mydayboard.core.domain.tracker.TrackerType
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -34,6 +32,19 @@ abstract class TrackerEventContractTest : TrackerRepositoryContractBase() {
             val ids = repo.observeEvents(tracker.id).first().map { it.id }
 
             assertEquals(ids.sortedDescending(), ids)
+        }
+
+    @Test
+    fun `all events across trackers are ordered by time then id descending`() =
+        runTest {
+            val first = givenTracker()
+            val second = givenTracker()
+            val newest = givenEvent(second, newestEventTime)
+            val tied = (0 until tiedCount).map { givenEvent(if (it % 2 == 0) first else second, oldestEventTime) }
+
+            val expected = listOf(newest) + tied.sortedByDescending { it.id }
+
+            assertEquals(expected, repo.observeAllEvents().first())
         }
 
     @Test

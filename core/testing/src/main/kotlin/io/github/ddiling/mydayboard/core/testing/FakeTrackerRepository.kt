@@ -8,6 +8,7 @@ import io.github.ddiling.mydayboard.core.domain.tracker.TrackerType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import java.time.Clock
@@ -25,7 +26,9 @@ class FakeTrackerRepository(
     private data class State(
         val trackers: List<Tracker> = emptyList(),
         val events: List<TrackerEvent> = emptyList(),
-    )
+    ) {
+        fun hasTracker(id: String) = trackers.any { it.id == id }
+    }
 
     private val state = MutableStateFlow(State())
 
@@ -44,7 +47,8 @@ class FakeTrackerRepository(
             .map { s -> s.events.filter { it.trackerId == trackerId }.sortedWith(eventOrder) }
             .distinctUntilChanged()
 
-    override fun observeAllEvents(): Flow<List<TrackerEvent>> = state.map { it.events }.distinctUntilChanged()
+    override fun observeAllEvents(): Flow<List<TrackerEvent>> =
+        state.map { s -> s.events.sortedWith(eventOrder) }.distinctUntilChanged()
 
     override suspend fun createTracker(
         name: String,
@@ -78,18 +82,14 @@ class FakeTrackerRepository(
         occurredAt: Instant,
     ): TrackerEvent? {
         val now = clock.instant()
-        var added: TrackerEvent? = null
-        state.update { s ->
-            added = null
-            if (s.trackers.none { it.id == trackerId }) {
-                s
-            } else {
-                val event = TrackerEvent(ids.newId(), trackerId, occurredAt, createdAt = now, updatedAt = now)
-                added = event
-                s.copy(events = s.events + event)
+        // Built outside `update`, whose lambda may run again when another writer races it.
+        val event = TrackerEvent(ids.newId(), trackerId, occurredAt, createdAt = now, updatedAt = now)
+        // The state the successful update started from decides whether the tracker existed.
+        val before =
+            state.getAndUpdate { s ->
+                if (s.hasTracker(trackerId)) s.copy(events = s.events + event) else s
             }
-        }
-        return added
+        return event.takeIf { before.hasTracker(trackerId) }
     }
 
     override suspend fun updateEventTime(
@@ -98,18 +98,8 @@ class FakeTrackerRepository(
     ) {
         val now = clock.instant()
         state.update { s ->
-            s.copy(
-                events =
-                    s.events.map {
-                        if (it.id ==
-                            eventId
-                        ) {
-                            it.copy(occurredAt = occurredAt, updatedAt = now)
-                        } else {
-                            it
-                        }
-                    },
-            )
+            val moved = { event: TrackerEvent -> event.copy(occurredAt = occurredAt, updatedAt = now) }
+            s.copy(events = s.events.map { event -> if (event.id == eventId) moved(event) else event })
         }
     }
 

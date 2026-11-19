@@ -46,4 +46,23 @@ class ModuleRulesTest {
     fun `modules outside the layers are rejected`() {
         assertEquals(1, ModuleRules.violations(":legacy", emptyList()).size)
     }
+
+    @Test
+    fun `the testing toolkit is allowed in test configurations`() {
+        val configurations =
+            listOf("testImplementation", "androidTestImplementation", "kspTest", "testDebugImplementation")
+                .associateWith { setOf(":core:testing") }
+
+        assertTrue(ModuleRules.testingToolkitViolations(":core:domain", configurations).isEmpty())
+    }
+
+    @Test
+    fun `the testing toolkit is rejected in production configurations and the message names them`() {
+        val configurations = mapOf("implementation" to setOf(":core:testing"), "api" to setOf(":core:domain"))
+
+        val violations = ModuleRules.testingToolkitViolations(":feature:counter", configurations)
+
+        assertEquals(1, violations.size)
+        assertTrue("implementation" in violations.single())
+    }
 }

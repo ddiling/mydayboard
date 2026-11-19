@@ -60,11 +60,23 @@ class QualityConventionPlugin : Plugin<Project> {
                     description = "Fails if this module depends on a module it must not (see ModuleRules.kt)."
                     modulePath.set(project.path)
                     projectDependencies.set(project.provider { project.declaredProjectDependencyPaths() })
+                    dependenciesByConfiguration.set(
+                        project.provider { project.declaredProjectDependenciesByConfiguration() },
+                    )
                 }
             tasks.matching { it.name == "check" }.configureEach { dependsOn(checkModuleDependencies) }
 
             registerCiTasks()
-            addToCiTask(CiTasks.STATIC_ANALYSIS, "spotlessCheck", "detekt", "checkModuleDependencies")
+            // detektMain/detektTest run with type resolution, which rules such as UnusedImport need;
+            // plain `detekt` does not, so those rules would silently never fire.
+            addToCiTask(
+                CiTasks.STATIC_ANALYSIS,
+                "spotlessCheck",
+                "detekt",
+                "detektMain",
+                "detektTest",
+                "checkModuleDependencies",
+            )
             // Runs the tests under coverage and fails if a module-specific minimum is not met.
             addToCiTask(CiTasks.TEST, "koverVerify")
         }

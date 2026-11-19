@@ -28,7 +28,10 @@ interface TrackerRepository {
      */
     fun observeEvents(trackerId: String): Flow<List<TrackerEvent>>
 
-    /** Events of all non-deleted trackers, for statistics across trackers. */
+    /**
+     * Events of all non-deleted trackers, for statistics across trackers. Newest first by `occurredAt`;
+     * events with the same time are ordered by id descending, so every implementation lists them alike.
+     */
     fun observeAllEvents(): Flow<List<TrackerEvent>>
 
     /** Creates a tracker; [startedAt] is stored as given. */
