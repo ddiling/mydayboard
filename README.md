@@ -23,6 +23,7 @@ core/
   dashboard/       The dashboard card contract: features contribute cards, :app renders them
   navigation/      The Destination marker for type-safe navigation routes (pure Kotlin)
   database/        Room database: tracker entities, DAOs, schema history
+  data/            Repositories: the Room implementation of the tracker repository, Hilt bindings for it, the clock and ids
   testing/         Shared test fixtures (fake clock, predictable ids, test zones); testImplementation only
 build-logic/       Convention plugins: the single source of truth for all rules
 config/            detekt.yml, lint.xml, Compose stability config (one copy for everything)
