@@ -1,7 +1,6 @@
 package io.github.ddiling.mydayboard.core.testing
 
-import app.cash.turbine.test
-import io.github.ddiling.mydayboard.core.domain.tracker.TrackerType
+import io.github.ddiling.mydayboard.core.domain.tracker.Tracker
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -28,7 +27,7 @@ abstract class TrackerDeletedIdContractTest : TrackerRepositoryContractBase() {
 
             repo.deleteTracker(tracker.id)
 
-            assertEquals(emptyList<Any>(), repo.observeTrackers().first())
+            assertEquals(emptyList<Tracker>(), repo.observeTrackers().first())
         }
 
     @Test

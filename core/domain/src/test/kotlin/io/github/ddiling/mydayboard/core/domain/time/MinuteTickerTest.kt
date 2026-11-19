@@ -16,7 +16,7 @@ import java.time.Instant
 import kotlin.time.toKotlinDuration
 
 class MinuteTickerTest {
-    private val start = warsaw(2026, 3, 2, 10, 0, 30)
+    private val start = warsaw(2026, 3, 2, 10, 0).plusSeconds(30)
     private val clock = MutableClock(start, TestZones.WARSAW)
 
     /**

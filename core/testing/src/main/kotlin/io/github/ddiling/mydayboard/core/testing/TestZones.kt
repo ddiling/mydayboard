@@ -25,6 +25,4 @@ fun warsaw(
     day: Int,
     hour: Int = 0,
     minute: Int = 0,
-    second: Int = 0,
-    nano: Int = 0,
-): Instant = ZonedDateTime.of(year, month, day, hour, minute, second, nano, TestZones.WARSAW).toInstant()
+): Instant = ZonedDateTime.of(year, month, day, hour, minute, 0, 0, TestZones.WARSAW).toInstant()

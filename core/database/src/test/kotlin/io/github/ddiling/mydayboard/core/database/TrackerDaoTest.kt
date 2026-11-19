@@ -1,6 +1,7 @@
 package io.github.ddiling.mydayboard.core.database
 
 import app.cash.turbine.test
+import io.github.ddiling.mydayboard.core.database.model.TrackerEntity
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -51,7 +52,7 @@ class TrackerDaoTest {
 
                 dao.update(tracker.copy(deletedAt = T0 + 1))
 
-                assertEquals(emptyList<Any>(), awaitItem())
+                assertEquals(emptyList<TrackerEntity>(), awaitItem())
             }
         }
 
