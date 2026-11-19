@@ -163,6 +163,7 @@ The signing key lives only in GitHub Secrets, never in the repo. Use Play App Si
 | Architecture | `checkModuleDependencies` | `ModuleRules.kt` | Move shared code to `core/` |
 | Visual regressions | Roborazzi screenshot tests from `@Preview`s | `*/src/test/screenshots/` | `./gradlew recordRoborazziDebug` (or the workflow) |
 | E2E | Maestro | `app/maestro/` | `maestro test app/maestro/` |
+| AI review script | pytest, hashed requirements | `.github/scripts/tests/` | `python3 -m venv .venv && .venv/bin/pip install -r .github/scripts/tests/requirements.txt && .venv/bin/python -m pytest .github/scripts/tests` |
 | Coverage | Kover per module, merged at the root. Minimum 80% on `core:domain` and on every feature's `*ViewModel` classes; UI is reported, never gated | `core/domain/build.gradle.kts` | `./gradlew :coverageReport` |
 | Compiler | Kotlin warnings treated as errors in CI, plus `progressiveMode` | `gradle.properties` | — |
 

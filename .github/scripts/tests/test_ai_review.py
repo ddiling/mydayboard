@@ -1,10 +1,11 @@
 """Tests for .github/scripts/ai_review.py.
 
-Run from the repository root:
+Run from the repository root (pytest is the only test dependency, see requirements.in):
 
-    python3 -m unittest discover -s .github/scripts/tests -v
+    python3 -m venv .venv && .venv/bin/pip install -r .github/scripts/tests/requirements.txt
+    .venv/bin/python -m pytest .github/scripts/tests -v
 
-Standard library only, like the script under test. No test touches the network: model calls and
+The script under test uses the standard library only. No test touches the network: model calls and
 HTTP are replaced by fakes. Each check asserts directly; nothing is asserted inside an except block,
 so a check that never runs cannot pass.
 """
