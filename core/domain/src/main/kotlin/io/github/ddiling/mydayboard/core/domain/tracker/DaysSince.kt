@@ -10,7 +10,8 @@ import java.time.temporal.ChronoUnit
  *
  * @property start when the streak began, in UTC.
  * @property end the reset that broke the streak, or `null` for the current streak, which is still running.
- * @property days whole calendar days the streak covered, counted as in [summarizeDaysSince].
+ * @property days calendar days from the start's local date to the end's local date in the zone (the number
+ *   of midnights crossed), counted as in [summarizeDaysSince].
  */
 data class Streak(
     val start: Instant,
@@ -38,6 +39,8 @@ data class DaysSinceSummary(
  *
  * The tracker's start and the resets, in time order, are the boundaries of the streaks: each pair of
  * neighbouring boundaries is a broken streak, and the last boundary up to [now] is the current one.
+ * Every recorded event is a reset, so two resets at the same instant each give a 0-day streak, and a
+ * reset at exactly [startedAt] counts too, because [validateEventTime] allows it.
  *
  * Days are **calendar days** in [zone], not 24-hour periods: a reset at 23:50 shows 1 day at 00:10 the
  * next morning. That is how people count ("3 days without"), and it stays correct on daylight-saving
@@ -47,7 +50,8 @@ data class DaysSinceSummary(
  *
  * Reset times before [startedAt] or after [now] are ignored. Validation ([validateEventTime]) keeps
  * them out, but a summary must not break on bad data, for example after the device clock was changed.
- * For the same reason a [startedAt] after [now] shows 0 days rather than a negative count.
+ * For the same reason a [startedAt] after [now] shows 0 days rather than a negative count, and then every
+ * reset is ignored, since none can be both at or after the start and at or before now.
  *
  * @param eventTimes the reset times in any order; they are sorted here.
  */

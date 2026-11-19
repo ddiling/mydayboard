@@ -155,12 +155,46 @@ class SummarizeDaysSinceTest {
     }
 
     @Test
-    fun `a start after now shows zero days instead of a negative count`() {
+    fun `a start after now shows zero days and ignores every reset`() {
         val startedAt = warsaw(2026, 11, 20, 8, 0)
+        val resets = listOf(warsaw(2026, 11, 18, 8, 0), warsaw(2026, 11, 19, 20, 0))
 
-        val summary = summarizeDaysSince(startedAt, emptyList(), warsaw(2026, 11, 19, 9, 0), warsawZone)
+        val summary = summarizeDaysSince(startedAt, resets, warsaw(2026, 11, 19, 9, 0), warsawZone)
 
-        assertEquals(0L, summary.currentDays)
+        assertEquals(
+            DaysSinceSummary(currentDays = 0, currentStart = startedAt, longestDays = 0, brokenStreaks = emptyList()),
+            summary,
+        )
+    }
+
+    @Test
+    fun `a reset exactly at the start lists a zero-day broken streak`() {
+        val startedAt = warsaw(2026, 11, 10, 8, 0)
+
+        val summary = summarizeDaysSince(startedAt, listOf(startedAt), warsaw(2026, 11, 19, 9, 0), warsawZone)
+
+        assertEquals(
+            DaysSinceSummary(
+                currentDays = 9,
+                currentStart = startedAt,
+                longestDays = 9,
+                brokenStreaks = listOf(Streak(start = startedAt, end = startedAt, days = 0)),
+            ),
+            summary,
+        )
+    }
+
+    @Test
+    fun `two resets at the same instant each break a streak`() {
+        val startedAt = warsaw(2026, 11, 10, 8, 0)
+        val reset = warsaw(2026, 11, 15, 8, 0)
+
+        val summary = summarizeDaysSince(startedAt, listOf(reset, reset), warsaw(2026, 11, 19, 9, 0), warsawZone)
+
+        assertEquals(
+            listOf(Streak(start = reset, end = reset, days = 0), Streak(start = startedAt, end = reset, days = 5)),
+            summary.brokenStreaks,
+        )
     }
 
     @Test
