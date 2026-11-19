@@ -23,7 +23,7 @@ sealed interface TrackerNameValidation {
 }
 
 /**
- * Checks a tracker name typed by the user (decision D8).
+ * Checks a tracker name typed by the user: after trimming it must have 1 to [MAX_TRACKER_NAME_LENGTH] characters.
  *
  * The name is trimmed first, so stray spaces from the keyboard never count against the limit or end up stored.
  * Duplicates are allowed: two trackers may share a name, and they are still told apart by their ids. The name is

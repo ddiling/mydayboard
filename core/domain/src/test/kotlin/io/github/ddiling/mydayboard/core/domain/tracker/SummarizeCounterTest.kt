@@ -37,6 +37,23 @@ class SummarizeCounterTest {
     }
 
     @Test
+    fun `today is the day of now in the given zone, not in UTC`() {
+        // 00:30 in Warsaw is still 2026-11-18 in UTC.
+        val justAfterMidnight = warsaw("2026-11-19T00:30")
+
+        val summary = summarizeCounter(listOf(warsaw("2026-11-19T00:10")), justAfterMidnight, WARSAW)
+
+        assertEquals(1, summary.todayCount)
+    }
+
+    @Test
+    fun `an event exactly at now counts`() {
+        val summary = summarizeCounter(listOf(now), now, WARSAW)
+
+        assertEquals(CounterSummary(todayCount = 1, lastEventAt = now, sinceLast = Duration.ZERO), summary)
+    }
+
+    @Test
     fun `the last event is the latest one whatever the input order`() {
         val events = listOf(warsaw("2026-11-19T08:00"), warsaw("2026-11-19T09:00"), warsaw("2026-11-17T20:00"))
 
