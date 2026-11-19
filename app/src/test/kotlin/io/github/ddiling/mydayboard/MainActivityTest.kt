@@ -17,9 +17,11 @@ import org.robolectric.annotation.Config
 /**
  * Starts the real [MainActivity] with the real Hilt graph on the JVM.
  *
- * Hilt checks the graph at compile time, but only this test proves it is wired at runtime: the
- * activity is an entry point, and `hiltViewModel()` creates CounterViewModel with its injected use case.
- * A missing `@AndroidEntryPoint` or binding makes the activity crash on start instead of showing the button.
+ * Hilt checks the graph at compile time (a missing binding fails `:app` compilation), but only this test
+ * proves it is wired at runtime: the activity is an entry point, and `hiltViewModel()` creates
+ * CounterViewModel with its injected use case. A missing `@AndroidEntryPoint` (on the activity) or
+ * `@HiltViewModel` (on the ViewModel) still compiles, but crashes on start instead of showing the button.
+ * The application itself is replaced by `HiltTestApplication` here; [AppStartTest] covers it.
  */
 @HiltAndroidTest
 @RunWith(RobolectricTestRunner::class)
