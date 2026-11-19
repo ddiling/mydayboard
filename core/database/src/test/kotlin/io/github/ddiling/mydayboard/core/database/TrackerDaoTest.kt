@@ -82,4 +82,43 @@ class TrackerDaoTest {
 
             assertEquals(renamed, dao.getActiveById("a"))
         }
+
+    @Test
+    fun `rename changes the name and updatedAt of an active tracker`() =
+        runTest {
+            dao.insert(tracker("a"))
+
+            val changed = dao.rename("a", "Renamed", T0 + 1)
+
+            assertEquals(1, changed)
+            assertEquals(tracker("a").copy(name = "Renamed", updatedAt = T0 + 1), dao.getActiveById("a"))
+        }
+
+    @Test
+    fun `rename does not bring back a soft-deleted tracker`() =
+        runTest {
+            dao.insert(tracker("a", deletedAt = T0 + 1))
+
+            val changed = dao.rename("a", "Renamed", T0 + 2)
+
+            assertEquals(0, changed)
+            assertNull(dao.getActiveById("a"))
+        }
+
+    @Test
+    fun `softDelete hides the tracker`() =
+        runTest {
+            dao.insert(tracker("a"))
+
+            val changed = dao.softDelete("a", T0 + 1)
+
+            assertEquals(1, changed)
+            assertNull(dao.getActiveById("a"))
+        }
+
+    @Test
+    fun `softDelete changes nothing for an unknown id`() =
+        runTest {
+            assertEquals(0, dao.softDelete("missing", T0 + 1))
+        }
 }

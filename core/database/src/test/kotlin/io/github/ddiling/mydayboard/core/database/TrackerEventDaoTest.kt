@@ -2,6 +2,7 @@ package io.github.ddiling.mydayboard.core.database
 
 import android.database.sqlite.SQLiteConstraintException
 import app.cash.turbine.test
+import io.github.ddiling.mydayboard.core.database.model.TrackerEventEntity
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -118,5 +119,79 @@ class TrackerEventDaoTest {
             val failure = runCatching { dao.insert(event("e", "missing")) }.exceptionOrNull()
 
             assertTrue("Expected a constraint failure, got $failure", failure is SQLiteConstraintException)
+        }
+
+    @Test
+    fun `insertForActiveTracker stores the event under an active tracker`() =
+        runTest {
+            trackerDao.insert(tracker("t"))
+
+            dao.insertForActiveTracker("e", "t", occurredAt = T0 + 5, now = T0 + 6)
+
+            assertEquals(
+                TrackerEventEntity("e", "t", occurredAt = T0 + 5, createdAt = T0 + 6, updatedAt = T0 + 6),
+                dao.getActiveById("e"),
+            )
+        }
+
+    @Test
+    fun `insertForActiveTracker stores nothing for a soft-deleted tracker`() =
+        runTest {
+            trackerDao.insert(tracker("t", deletedAt = T0 + 1))
+
+            val rowId = dao.insertForActiveTracker("e", "t", occurredAt = T0, now = T0)
+
+            assertEquals(-1L, rowId)
+            assertNull(dao.getActiveById("e"))
+        }
+
+    @Test
+    fun `insertForActiveTracker stores nothing for an unknown tracker without breaking the foreign key`() =
+        runTest {
+            val rowId = dao.insertForActiveTracker("e", "missing", occurredAt = T0, now = T0)
+
+            assertEquals(-1L, rowId)
+        }
+
+    @Test
+    fun `updateOccurredAtIfActive changes the time and updatedAt`() =
+        runTest {
+            trackerDao.insert(tracker("t"))
+            dao.insert(event("e", "t"))
+
+            val changed = dao.updateOccurredAtIfActive("e", occurredAt = T0 + 5, now = T0 + 6)
+
+            assertEquals(1, changed)
+            assertEquals(event("e", "t").copy(occurredAt = T0 + 5, updatedAt = T0 + 6), dao.getActiveById("e"))
+        }
+
+    @Test
+    fun `updateOccurredAtIfActive changes nothing under a soft-deleted tracker`() =
+        runTest {
+            trackerDao.insert(tracker("t", deletedAt = T0 + 1))
+            dao.insert(event("e", "t"))
+
+            assertEquals(0, dao.updateOccurredAtIfActive("e", occurredAt = T0 + 5, now = T0 + 6))
+        }
+
+    @Test
+    fun `softDeleteIfActive hides the event`() =
+        runTest {
+            trackerDao.insert(tracker("t"))
+            dao.insert(event("e", "t"))
+
+            val changed = dao.softDeleteIfActive("e", now = T0 + 1)
+
+            assertEquals(1, changed)
+            assertNull(dao.getActiveById("e"))
+        }
+
+    @Test
+    fun `softDeleteIfActive changes nothing under a soft-deleted tracker`() =
+        runTest {
+            trackerDao.insert(tracker("t", deletedAt = T0 + 1))
+            dao.insert(event("e", "t"))
+
+            assertEquals(0, dao.softDeleteIfActive("e", now = T0 + 2))
         }
 }

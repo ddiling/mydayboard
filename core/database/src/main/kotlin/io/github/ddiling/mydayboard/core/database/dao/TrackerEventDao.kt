@@ -42,4 +42,49 @@ interface TrackerEventDao {
 
     @Update
     suspend fun update(entity: TrackerEventEntity)
+
+    /**
+     * Inserts only while the tracker exists and is not deleted, checked in the same statement so a concurrent
+     * tracker delete cannot slip in between. Returns the new row id, or -1 when nothing was inserted.
+     */
+    @Query(
+        """
+        INSERT INTO tracker_events (id, tracker_id, occurred_at, created_at, updated_at)
+        SELECT :id, :trackerId, :occurredAt, :now, :now
+        WHERE EXISTS (SELECT 1 FROM trackers WHERE id = :trackerId AND deleted_at IS NULL)
+        """,
+    )
+    suspend fun insertForActiveTracker(
+        id: String,
+        trackerId: String,
+        occurredAt: Long,
+        now: Long,
+    ): Long
+
+    /** Changes nothing (returns 0) when the event or its tracker is missing or deleted. */
+    @Query(
+        """
+        UPDATE tracker_events SET occurred_at = :occurredAt, updated_at = :now
+        WHERE id = :id AND deleted_at IS NULL
+        AND tracker_id IN (SELECT id FROM trackers WHERE deleted_at IS NULL)
+        """,
+    )
+    suspend fun updateOccurredAtIfActive(
+        id: String,
+        occurredAt: Long,
+        now: Long,
+    ): Int
+
+    /** Changes nothing (returns 0) when the event or its tracker is missing or deleted. */
+    @Query(
+        """
+        UPDATE tracker_events SET updated_at = :now, deleted_at = :now
+        WHERE id = :id AND deleted_at IS NULL
+        AND tracker_id IN (SELECT id FROM trackers WHERE deleted_at IS NULL)
+        """,
+    )
+    suspend fun softDeleteIfActive(
+        id: String,
+        now: Long,
+    ): Int
 }
