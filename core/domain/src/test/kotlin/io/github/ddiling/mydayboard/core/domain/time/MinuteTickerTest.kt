@@ -21,8 +21,10 @@ class MinuteTickerTest {
 
     /**
      * Moves the clock and virtual time together, as real time moves both, and runs what became due. A step must
-     * not pass a tick: the ticker reads the clock only when it wakes. Tests then use `expectMostRecentItem()`,
-     * which fails at once if nothing came; `awaitItem()` would let runTest skip ahead and hide a late tick.
+     * not pass a tick: the ticker reads the clock only when it wakes. Stop 1 ms short of a tick before asserting
+     * silence: the clock moves before virtual time, so a tick up to the step early would otherwise go unseen.
+     * Tests then use `expectMostRecentItem()`, which fails at once if nothing came; `awaitItem()` would let
+     * runTest skip ahead and hide a late tick.
      */
     private fun TestScope.passTime(duration: Duration) {
         clock.advanceBy(duration)
@@ -44,9 +46,9 @@ class MinuteTickerTest {
             minuteTicker(clock).test {
                 expectMostRecentItem()
 
-                passTime(Duration.ofSeconds(29))
+                passTime(Duration.ofMillis(29_999))
                 expectNoEvents()
-                passTime(Duration.ofSeconds(1))
+                passTime(Duration.ofMillis(1))
 
                 assertEquals(warsaw(2026, 3, 2, 10, 1), expectMostRecentItem())
             }
@@ -61,9 +63,9 @@ class MinuteTickerTest {
                 passTime(Duration.ofSeconds(25))
                 assertEquals(warsaw(2026, 3, 2, 10, 1), expectMostRecentItem())
 
-                passTime(Duration.ofSeconds(54))
+                passTime(Duration.ofMillis(54_999))
                 expectNoEvents()
-                passTime(Duration.ofSeconds(1))
+                passTime(Duration.ofMillis(1))
 
                 assertEquals(warsaw(2026, 3, 2, 10, 2), expectMostRecentItem())
             }
