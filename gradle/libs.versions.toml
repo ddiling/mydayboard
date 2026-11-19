@@ -17,6 +17,9 @@ ksp = "2.3.14"
 # and testing artifacts share this one version: they must always match.
 hilt = "2.60.1"
 
+# --- Kotlin libraries --------------------------------------------------------
+kotlinx-coroutines = "1.11.0"
+
 # --- AndroidX ----------------------------------------------------------------
 androidx-core = "1.19.1"
 androidx-activity = "1.12.0"
@@ -33,8 +36,12 @@ javax-inject = "1"
 # --- Testing -----------------------------------------------------------------
 junit = "4.13.2"
 robolectric = "4.18"
+turbine = "1.2.1"
 
 [libraries]
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
+
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-core" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
 androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
@@ -58,6 +65,7 @@ javax-inject = { module = "javax.inject:javax.inject", version.ref = "javax-inje
 
 junit = { module = "junit:junit", version.ref = "junit" }
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
+turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
 roborazzi = { module = "io.github.takahirom.roborazzi:roborazzi", version.ref = "roborazzi" }
 roborazzi-compose = { module = "io.github.takahirom.roborazzi:roborazzi-compose", version.ref = "roborazzi" }
 roborazzi-compose-preview-scanner-support = { module = "io.github.takahirom.roborazzi:roborazzi-compose-preview-scanner-support", version.ref = "roborazzi" }
