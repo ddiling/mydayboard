@@ -15,6 +15,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import io.github.ddiling.mydayboard.feature.trackers.R
 import java.time.LocalDate
@@ -23,7 +24,11 @@ import java.time.format.FormatStyle
 
 private const val MILLIS_PER_DAY = 86_400_000L
 
-private val dateFormat: DateTimeFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
+/** Future starts would make the new tracker look empty from day one, so only today and the past can be picked. */
+internal fun isSelectableStartDate(
+    utcTimeMillis: Long,
+    today: LocalDate,
+): Boolean = utcTimeMillis / MILLIS_PER_DAY <= today.toEpochDay()
 
 /** The picker works in UTC midnights, so dates are converted by epoch day and no zone is involved. */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -34,6 +39,10 @@ internal fun StartDateField(
     onDateChange: (LocalDate) -> Unit,
 ) {
     var showPicker by remember { mutableStateOf(false) }
+    // Built per locale so a per-app language change is not stuck with the format captured at first use.
+    val locale = LocalConfiguration.current.locales[0]
+    val dateFormat =
+        remember(locale) { DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale) }
     OutlinedButton(onClick = { showPicker = true }, modifier = Modifier.fillMaxWidth()) {
         Text(stringResource(R.string.trackers_editor_start_date) + ": " + date.format(dateFormat))
     }
@@ -43,8 +52,7 @@ internal fun StartDateField(
                 initialSelectedDateMillis = date.toEpochDay() * MILLIS_PER_DAY,
                 selectableDates =
                     object : SelectableDates {
-                        override fun isSelectableDate(utcTimeMillis: Long) =
-                            utcTimeMillis / MILLIS_PER_DAY <= today.toEpochDay()
+                        override fun isSelectableDate(utcTimeMillis: Long) = isSelectableStartDate(utcTimeMillis, today)
                     },
             )
         DatePickerDialog(
