@@ -9,6 +9,9 @@ import kotlinx.coroutines.flow.getAndUpdate
 internal enum class UndoKind {
     /** A new event was added. */
     ADDED,
+
+    /** A days-since tracker was reset, which recorded an event that starts the new streak. */
+    RESET,
 }
 
 /** The one action that can still be undone: [eventId] is the event that action created. */
@@ -31,9 +34,12 @@ internal class QuickActionUndo(
     /** The undoable action, or null when there is none. */
     val pending: StateFlow<Undo?> = _pending.asStateFlow()
 
-    /** Makes the add action that created [eventId] the one that can be undone, dropping the previous one. */
-    fun register(eventId: String) {
-        _pending.value = Undo(eventId, UndoKind.ADDED)
+    /** Makes the [kind] action that created [eventId] the one that can be undone, dropping the previous one. */
+    fun register(
+        eventId: String,
+        kind: UndoKind,
+    ) {
+        _pending.value = Undo(eventId, kind)
     }
 
     /**

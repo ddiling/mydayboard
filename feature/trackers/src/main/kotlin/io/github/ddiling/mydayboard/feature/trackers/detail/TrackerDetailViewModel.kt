@@ -13,6 +13,7 @@ import io.github.ddiling.mydayboard.core.domain.tracker.TrackerType
 import io.github.ddiling.mydayboard.core.domain.tracker.counterTrend
 import io.github.ddiling.mydayboard.core.domain.tracker.dailyCounts
 import io.github.ddiling.mydayboard.core.domain.tracker.summarizeCounter
+import io.github.ddiling.mydayboard.core.domain.tracker.summarizeDaysSince
 import io.github.ddiling.mydayboard.feature.trackers.navigation.TrackerDetailDestination
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -52,7 +53,7 @@ internal class TrackerDetailViewModel
                 } else {
                     when (tracker.type) {
                         TrackerType.EVENT_COUNTER -> counterState(tracker, events, now, pendingUndo)
-                        TrackerType.DAYS_SINCE -> TrackerDetailUiState.DaysSince(tracker.name)
+                        TrackerType.DAYS_SINCE -> daysSinceState(tracker, events, now, pendingUndo)
                     }
                 }
             }.stateIn(
@@ -63,7 +64,14 @@ internal class TrackerDetailViewModel
 
         fun onPlusOne() {
             viewModelScope.launch {
-                repository.addEvent(trackerId, clock.instant())?.let { quickUndo.register(it.id) }
+                repository.addEvent(trackerId, clock.instant())?.let { quickUndo.register(it.id, UndoKind.ADDED) }
+            }
+        }
+
+        /** A reset is an event of a days-since tracker, so undoing it deletes that event like an undone +1. */
+        fun onReset() {
+            viewModelScope.launch {
+                repository.addEvent(trackerId, clock.instant())?.let { quickUndo.register(it.id, UndoKind.RESET) }
             }
         }
 
@@ -72,6 +80,32 @@ internal class TrackerDetailViewModel
         }
 
         fun onUndoDismissed() = quickUndo.dismiss()
+
+        private fun daysSinceState(
+            tracker: Tracker,
+            events: List<TrackerEvent>,
+            now: Instant,
+            pendingUndo: Undo?,
+        ): TrackerDetailUiState.DaysSince {
+            val zone = clock.zone
+            val summary = summarizeDaysSince(tracker.startedAt, events.map { it.occurredAt }, now, zone)
+            return TrackerDetailUiState.DaysSince(
+                name = tracker.name,
+                currentDays = summary.currentDays,
+                currentStart = summary.currentStart.atZone(zone).toLocalDate(),
+                longestDays = summary.longestDays,
+                brokenStreaks =
+                    summary.brokenStreaks.map {
+                        // A broken streak always has an end; the fallback only satisfies the nullable type.
+                        BrokenStreak(
+                            it.start.atZone(zone).toLocalDate(),
+                            (it.end ?: it.start).atZone(zone).toLocalDate(),
+                            it.days,
+                        )
+                    },
+                pendingUndo = pendingUndo,
+            )
+        }
 
         private fun counterState(
             tracker: Tracker,

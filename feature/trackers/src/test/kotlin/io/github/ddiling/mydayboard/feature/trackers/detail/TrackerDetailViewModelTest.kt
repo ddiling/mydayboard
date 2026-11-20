@@ -251,17 +251,4 @@ class TrackerDetailViewModelTest {
                 assertEquals(TrackerDetailUiState.NotFound, expectMostRecentItem())
             }
         }
-
-    @Test
-    fun `a days since tracker shows the placeholder state`() =
-        runTest {
-            val sugar = repository.createTracker("No sugar", TrackerType.DAYS_SINCE, startedLongAgo)
-            val viewModel = viewModelFor(sugar.id)
-
-            viewModel.uiState.test {
-                runCurrent()
-                skipItems(1)
-                assertEquals(TrackerDetailUiState.DaysSince("No sugar"), awaitItem())
-            }
-        }
 }
