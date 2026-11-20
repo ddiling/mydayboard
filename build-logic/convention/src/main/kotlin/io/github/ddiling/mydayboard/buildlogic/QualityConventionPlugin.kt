@@ -5,6 +5,7 @@ import dev.detekt.gradle.extensions.DetektExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
+import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.register
 
 /**
@@ -32,6 +33,12 @@ class QualityConventionPlugin : Plugin<Project> {
                 config.setFrom(rootProject.file("config/detekt/detekt.yml"))
                 // Park pre-existing findings with: ./gradlew detektBaseline
                 baseline.set(layout.projectDirectory.file("detekt-baseline.xml"))
+            }
+
+            // The project's own rules (NoAnyType, ...). The detekt task analyses src/main and src/test,
+            // so the rules cover test sources too.
+            dependencies {
+                add("detektPlugins", project(":core:detekt-rules"))
             }
 
             val ktlintVersion = libs.version("ktlint")

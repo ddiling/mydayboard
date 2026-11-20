@@ -32,3 +32,8 @@ style:
     ignorePropertyDeclaration: true
     # dp/sp values in UI code and preview fixtures are not "magic".
     ignoreAnnotated: ['Composable', 'Preview', 'PreviewLightDark']
+
+mydayboard:
+  NoAnyType:
+    # Mirrors ESLint's no-explicit-any: use exact types. Rule lives in core/detekt-rules.
+    active: true

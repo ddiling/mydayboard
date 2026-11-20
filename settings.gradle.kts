@@ -51,3 +51,5 @@ include(":core:navigation")
 include(":core:database")
 include(":core:data")
 include(":core:testing")
+// Custom detekt rules (rule set `mydayboard`), loaded into every module's detekt through `detektPlugins`.
+include(":core:detekt-rules")
