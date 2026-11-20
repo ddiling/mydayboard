@@ -84,6 +84,16 @@ class TrackerDetailScreenTest {
         assertEquals(1, undos)
     }
 
+    @Test
+    fun `undoing a deleted entry is worded as the entry deleted`() {
+        val pending = counter.copy(pendingUndo = Undo("event-1", UndoKind.DELETED))
+        composeRule.mainClock.autoAdvance = false
+        composeRule.setContent { TrackerDetailScreen(pending, TrackerDetailActions()) }
+        composeRule.mainClock.advanceTimeByFrame()
+
+        composeRule.onNodeWithText("Entry deleted").assertIsDisplayed()
+    }
+
     private val daysSince =
         TrackerDetailUiState.DaysSince(
             name = "No sugar",

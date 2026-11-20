@@ -81,7 +81,7 @@ class TrackerDetailDaysSinceViewModelTest {
                 assertEquals(0L, state.currentDays)
                 assertEquals(LocalDate.of(2026, 3, 2), state.currentStart)
                 assertEquals(
-                    listOf(BrokenStreak(startDate, LocalDate.of(2026, 3, 2), daysFromStartToNow)),
+                    listOf(BrokenStreak(startDate, LocalDate.of(2026, 3, 2), daysFromStartToNow, "id-2")),
                     state.brokenStreaks,
                 )
             }
@@ -114,8 +114,8 @@ class TrackerDetailDaysSinceViewModelTest {
             viewModel.uiState.test {
                 assertEquals(
                     listOf(
-                        BrokenStreak(LocalDate.of(2026, 2, 20), LocalDate.of(2026, 3, 1), 9L),
-                        BrokenStreak(startDate, LocalDate.of(2026, 2, 20), 19L),
+                        BrokenStreak(LocalDate.of(2026, 2, 20), LocalDate.of(2026, 3, 1), 9L, "id-3"),
+                        BrokenStreak(startDate, LocalDate.of(2026, 2, 20), 19L, "id-2"),
                     ),
                     latest(this).brokenStreaks,
                 )
