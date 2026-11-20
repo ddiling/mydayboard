@@ -31,12 +31,9 @@ internal class QuickActionUndo(
     /** The undoable action, or null when there is none. */
     val pending: StateFlow<Undo?> = _pending.asStateFlow()
 
-    /** Makes the action that created [eventId] the one that can be undone, dropping the previous one. */
-    fun register(
-        eventId: String,
-        kind: UndoKind = UndoKind.ADDED,
-    ) {
-        _pending.value = Undo(eventId, kind)
+    /** Makes the add action that created [eventId] the one that can be undone, dropping the previous one. */
+    fun register(eventId: String) {
+        _pending.value = Undo(eventId, UndoKind.ADDED)
     }
 
     /**
