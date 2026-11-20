@@ -24,6 +24,7 @@ Environment (set by .github/workflows/ai-review.yml):
 from __future__ import annotations
 
 import fnmatch
+import http.client
 import json
 import os
 import re
@@ -55,8 +56,9 @@ IGNORED_PATHS = (
 # After these statuses the same model is retried: 0 = no HTTP answer at all (network error, timeout),
 # 429 = rate limited, 5xx = server trouble or overload. Anything else is final for that model.
 RETRY_STATUSES = (0, 429, 500, 502, 503, 504)
-# Seconds to wait before retry N is N * this value. Tests set it to 0.
-RETRY_SECONDS = int(os.environ.get("AI_REVIEW_RETRY_SECONDS", "15"))
+# Seconds to wait before retry N is N * this value. Tests set it to 0. A float, like the budget below,
+# so a fractional value such as "0.5" does not crash the script on import.
+RETRY_SECONDS = float(os.environ.get("AI_REVIEW_RETRY_SECONDS", "15"))
 
 # One request may wait this long for an answer. A model that is silent for that long is not retried:
 # the next model in the list is more likely to answer than a second wait on the same one.
@@ -181,16 +183,44 @@ def parse_models(spec: str, environ: dict[str, str]) -> tuple[list[ModelEntry], 
     return entries, skipped
 
 
+# Git wraps a path in double quotes and C-style escapes when it holds a quote, a backslash, a control
+# character or (with the default core.quotePath) a non-ASCII byte: "a/caf\303\251.kt".
+_QUOTED_PATH = r'"(?:[^"\\]|\\.)*"'
+_DIFF_HEADER = re.compile(rf"diff --git (?:{_QUOTED_PATH}|a/.+?) ({_QUOTED_PATH}|b/.+)$")
+_C_ESCAPES = {"a": 7, "b": 8, "t": 9, "n": 10, "v": 11, "f": 12, "r": 13, '"': 34, "\\": 92}
+
+
+def unquote_git_path(path: str) -> str:
+    """Undo git's quoting of a path; an unquoted path is returned as it is."""
+    if len(path) < 2 or not (path.startswith('"') and path.endswith('"')):
+        return path
+    body, out, i = path[1:-1], bytearray(), 0
+    while i < len(body):
+        if body[i] == "\\" and i + 1 < len(body):
+            octal = body[i + 1 : i + 4]
+            if re.fullmatch(r"[0-7]{3}", octal):
+                out.append(int(octal, 8))
+                i += 4
+                continue
+            if body[i + 1] in _C_ESCAPES:
+                out.append(_C_ESCAPES[body[i + 1]])
+                i += 2
+                continue
+        out += body[i].encode()
+        i += 1
+    return out.decode(errors="replace")
+
+
 def split_diff(diff: str) -> list[tuple[str, str]]:
     """Split a unified diff into (path, text) blocks, one per file."""
     blocks: list[tuple[str, str]] = []
     path, lines = "", []
     for line in diff.splitlines(keepends=True):
-        match = re.match(r"diff --git a/(.+?) b/(.+)$", line.rstrip("\n"))
+        match = _DIFF_HEADER.match(line.rstrip("\r\n"))
         if match:
             if lines:
                 blocks.append((path, "".join(lines)))
-            path, lines = match.group(2), []
+            path, lines = unquote_git_path(match.group(1)).removeprefix("b/"), []
         lines.append(line)
     if lines:
         blocks.append((path, "".join(lines)))
@@ -255,6 +285,12 @@ def trusted_discussion(comments: list[dict]) -> list[dict]:
     return kept
 
 
+def neutralise_discussion_tags(body: str) -> str:
+    """The <discussion> tags must not be forgeable from inside a comment, in any spelling a model might
+    still read as a tag: any case, spaces or newlines inside, attributes."""
+    return re.sub(r"<\s*(/?)\s*discussion\b[^>]*>", r"[\1discussion]", body, flags=re.IGNORECASE)
+
+
 def format_discussion(comments: list[dict], budget: int) -> tuple[str, int]:
     """The discussion as prompt text within `budget` characters, and how many comments it holds.
 
@@ -266,8 +302,7 @@ def format_discussion(comments: list[dict], budget: int) -> tuple[str, int]:
         body = comment["body"]
         if len(body) > MAX_COMMENT_CHARS:
             body = body[:MAX_COMMENT_CHARS] + " [cut]"
-        # The closing tag must not be forgeable from inside a comment.
-        entry = f"[{comment['role']}]\n{body.replace('</discussion>', '</ discussion>')}\n"
+        entry = f"[{comment['role']}]\n{neutralise_discussion_tags(body)}\n"
         if used + len(entry) > budget:
             break
         chosen.append(entry)
@@ -322,12 +357,20 @@ def post_json(url: str, headers: dict[str, str], payload: dict) -> dict:
         timed_out = False
         try:
             with urllib.request.urlopen(request, timeout=REQUEST_TIMEOUT) as response:
-                return json.load(response)
+                body = response.read()
         except urllib.error.HTTPError as error:  # must come first: HTTPError is a subclass of URLError
             status, detail = error.code, error.read().decode(errors="replace")[:1000]
-        except (urllib.error.URLError, TimeoutError, ConnectionError) as error:
-            status, detail = 0, f"network error: {error}"  # DNS failure, reset, timeout
+        # http.client.HTTPException: the answer broke off half way (IncompleteRead) or was not HTTP.
+        except (urllib.error.URLError, TimeoutError, ConnectionError, http.client.HTTPException) as error:
+            status, detail = 0, f"network error: {error!r}"  # DNS failure, reset, timeout, broken answer
             timed_out = isinstance(error, TimeoutError) or isinstance(getattr(error, "reason", None), TimeoutError)
+        else:
+            try:
+                return json.loads(body)
+            except ValueError:
+                # E.g. a gateway's HTML maintenance page with status 200. A RuntimeError, so the caller
+                # moves on to the next model instead of the whole run ending here.
+                raise RuntimeError(f"answer is not JSON: {body[:200].decode(errors='replace')!r}") from None
         wait = RETRY_SECONDS * attempt
         # Retry only what can pass by itself, and only if the budget still covers the wait plus one more request.
         if status in RETRY_STATUSES and not timed_out and attempt < 3 and time_left() > wait + REQUEST_TIMEOUT:
@@ -351,6 +394,9 @@ def gemini_text(response: dict, limit: int) -> str:
     if reason == "MAX_TOKENS":
         # A half-finished review is worse than none: it would be posted as if it were complete.
         raise RuntimeError(f"answer cut off at {limit} tokens (finish reason: {reason})")
+    if reason not in (None, "STOP"):
+        # SAFETY, RECITATION, OTHER, ...: the answer was stopped early, so it is incomplete too.
+        raise RuntimeError(f"answer stopped early (finish reason: {reason})")
     return text
 
 
@@ -365,8 +411,12 @@ def openai_text(response: dict, limit: int) -> str:
     text = text.strip()
     if not text:
         raise RuntimeError(f"no answer text (finish reason: {choice.get('finish_reason')})")
-    if choice.get("finish_reason") == "length":
+    reason = choice.get("finish_reason")
+    if reason == "length":
         raise RuntimeError(f"answer cut off at {limit} tokens (finish reason: length)")
+    if reason not in (None, "stop"):
+        # content_filter, error, ...: the answer was stopped early, so it is incomplete too.
+        raise RuntimeError(f"answer stopped early (finish reason: {reason})")
     return text
 
 
@@ -376,7 +426,7 @@ def only_the_review(text: str) -> str:
     Some models think out loud before answering, without marking it, and that text must never be
     posted. The answer comes last, so the last heading wins (the notes may quote the format).
     No heading means the model ignored the format: fail, so the next model is tried."""
-    matches = list(re.finditer(r"## Summary[ \t]*\n", text))
+    matches = list(re.finditer(r"## Summary[ \t]*\r?\n", text))
     if not matches:
         raise RuntimeError("answer does not contain the required '## Summary' section")
     return text[matches[-1].start():]
