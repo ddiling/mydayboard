@@ -16,13 +16,12 @@ tags:
 - tapOn: "Save"
 - assertVisible: "No events yet" # the counter detail screen opened with an empty history
 - tapOn: "Add past entry"
-- tapOn:
-    id: "trackers_event_save"
+# Dialogs are separate windows without test-tag ids, so the dialog buttons are found by their text.
+- tapOn: "Save"
 - assertNotVisible: "No events yet"
 - tapOn:
     id: "trackers_detail_entry_.*"
-- tapOn:
-    id: "trackers_event_delete"
+- tapOn: "Delete entry"
 - assertVisible: "Entry deleted"
 - assertVisible: "No events yet"
 - tapOn: "Undo"
