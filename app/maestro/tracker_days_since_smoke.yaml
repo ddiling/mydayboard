@@ -16,9 +16,12 @@ tags:
 - tapOn: "Save"
 - assertVisible:
     id: "trackers_detail_reset"
+- assertVisible: "No earlier streaks yet"
 - tapOn:
     id: "trackers_detail_reset"
-- assertVisible: "Reset"
+# Only a real reset moves the previous streak into the earlier list, which hides the empty-state text.
+- assertNotVisible: "No earlier streaks yet"
 - assertVisible: "Undo"
 - tapOn: "Undo"
 - assertNotVisible: "Undo"
+- assertVisible: "No earlier streaks yet"
