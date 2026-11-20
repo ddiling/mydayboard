@@ -14,7 +14,6 @@ android {
 }
 
 dependencies {
-    implementation(projects.feature.counter)
     implementation(projects.feature.trackers)
     implementation(projects.core.data)
     implementation(projects.core.designsystem)

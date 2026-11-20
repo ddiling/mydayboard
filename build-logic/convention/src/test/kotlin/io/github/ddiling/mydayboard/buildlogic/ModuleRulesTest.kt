@@ -7,12 +7,12 @@ import org.junit.Test
 class ModuleRulesTest {
     @Test
     fun `the app may depend on features and core`() {
-        assertTrue(ModuleRules.violations(":app", listOf(":feature:counter", ":core:domain")).isEmpty())
+        assertTrue(ModuleRules.violations(":app", listOf(":feature:trackers", ":core:domain")).isEmpty())
     }
 
     @Test
     fun `features may depend on core`() {
-        assertTrue(ModuleRules.violations(":feature:counter", listOf(":core:designsystem")).isEmpty())
+        assertTrue(ModuleRules.violations(":feature:trackers", listOf(":core:designsystem")).isEmpty())
     }
 
     @Test
@@ -22,17 +22,17 @@ class ModuleRulesTest {
 
     @Test
     fun `a feature must not depend on another feature`() {
-        assertEquals(1, ModuleRules.violations(":feature:counter", listOf(":feature:alarms")).size)
+        assertEquals(1, ModuleRules.violations(":feature:trackers", listOf(":feature:alarms")).size)
     }
 
     @Test
     fun `a feature must not depend on the app`() {
-        assertEquals(1, ModuleRules.violations(":feature:counter", listOf(":app")).size)
+        assertEquals(1, ModuleRules.violations(":feature:trackers", listOf(":app")).size)
     }
 
     @Test
     fun `core must not depend on features or the app`() {
-        assertEquals(2, ModuleRules.violations(":core:domain", listOf(":feature:counter", ":app")).size)
+        assertEquals(2, ModuleRules.violations(":core:domain", listOf(":feature:trackers", ":app")).size)
     }
 
     @Test
@@ -60,7 +60,7 @@ class ModuleRulesTest {
     fun `the testing toolkit is rejected in production configurations and the message names them`() {
         val configurations = mapOf("implementation" to setOf(":core:testing"), "api" to setOf(":core:domain"))
 
-        val violations = ModuleRules.testingToolkitViolations(":feature:counter", configurations)
+        val violations = ModuleRules.testingToolkitViolations(":feature:trackers", configurations)
 
         assertEquals(1, violations.size)
         assertTrue("implementation" in violations.single())

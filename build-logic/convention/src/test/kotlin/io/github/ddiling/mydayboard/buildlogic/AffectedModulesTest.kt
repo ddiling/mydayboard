@@ -7,8 +7,8 @@ class AffectedModulesTest {
     // Mirrors the real graph: app -> features -> core.
     private val modules =
         listOf(
-            ModuleInfo(":app", "app", setOf(":feature:counter", ":feature:alarms", ":core:designsystem")),
-            ModuleInfo(":feature:counter", "feature/counter", setOf(":core:designsystem", ":core:domain")),
+            ModuleInfo(":app", "app", setOf(":feature:trackers", ":feature:alarms", ":core:designsystem")),
+            ModuleInfo(":feature:trackers", "feature/trackers", setOf(":core:designsystem", ":core:domain")),
             ModuleInfo(":feature:alarms", "feature/alarms", setOf(":core:designsystem")),
             ModuleInfo(":core:designsystem", "core/designsystem", emptySet()),
             ModuleInfo(":core:domain", "core/domain", emptySet()),
@@ -31,13 +31,13 @@ class AffectedModulesTest {
     @Test
     fun `a feature change affects the feature and the app`() {
         assertEquals(setOf(":feature:alarms", ":app"), affected("feature/alarms/src/main/kotlin/A.kt"))
-        assertEquals(setOf(":feature:counter", ":app"), affected("feature/counter/build.gradle.kts"))
+        assertEquals(setOf(":feature:trackers", ":app"), affected("feature/trackers/build.gradle.kts"))
     }
 
     @Test
     fun `a core change affects every module that depends on it transitively`() {
         assertEquals(
-            setOf(":core:domain", ":feature:counter", ":app"),
+            setOf(":core:domain", ":feature:trackers", ":app"),
             affected("core/domain/src/main/kotlin/A.kt"),
         )
         // :core:domain does not depend on the design system, so it is not affected.
@@ -47,8 +47,8 @@ class AffectedModulesTest {
     @Test
     fun `changes in several modules are combined`() {
         assertEquals(
-            setOf(":app", ":feature:alarms", ":feature:counter"),
-            affected("feature/alarms/B.kt", "feature/counter/A.kt"),
+            setOf(":app", ":feature:alarms", ":feature:trackers"),
+            affected("feature/alarms/B.kt", "feature/trackers/A.kt"),
         )
     }
 
@@ -66,7 +66,7 @@ class AffectedModulesTest {
 
     @Test
     fun `markdown-only changes affect nothing`() {
-        assertEquals(emptySet<String>(), affected("README.md", "feature/counter/README.md"))
+        assertEquals(emptySet<String>(), affected("README.md", "feature/trackers/README.md"))
     }
 
     @Test
@@ -76,8 +76,8 @@ class AffectedModulesTest {
 
     @Test
     fun `a directory prefix is not mistaken for a module`() {
-        // "feature/counter-extras" must not match the "feature/counter" module.
-        assertEquals(emptySet<String>(), affected("feature/counter-extras/A.kt"))
+        // "feature/trackers-extras" must not match the "feature/trackers" module.
+        assertEquals(emptySet<String>(), affected("feature/trackers-extras/A.kt"))
     }
 
     @Test

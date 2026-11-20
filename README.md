@@ -2,13 +2,15 @@
 
 One Android app built from independent Gradle modules (a dashboard shell plus one module per feature), with strict, automated quality rules.
 
+The app tracks things you do. A tracker is either an **event counter** (how many times today, with a 7-day trend) or a **days-since** tracker (time since the last event). The dashboard shows a trackers card with quick **+1** and **Reset** actions and an undo snackbar. Each tracker has a detail screen where entries can be added, edited with a custom date and time, deleted and restored. The UI is available in English and Polish.
+
 | Tool | Version |
 |---|---|
 | Android Gradle Plugin | 9.5.1 (built-in Kotlin) |
-| Kotlin | 2.4.20 |
-| Gradle | 9.7.0 |
+| Kotlin | 2.4.21 |
+| Gradle | 9.9.1 |
 | SDK levels | compile 37 · target 37 · min 26 |
-| Compose BOM | 2026.08.00 |
+| Compose BOM | 2026.09.00 |
 | JDK | 25 to run Gradle (see gradle/gradle-daemon-jvm.properties), bytecode target 17 |
 
 ## Layout
@@ -16,7 +18,7 @@ One Android app built from independent Gradle modules (a dashboard shell plus on
 ```
 app/               The application: a thin shell that owns navigation and the dashboard
 feature/
-  counter/         Event counter (placeholder for the first real tracker)
+  trackers/        Event counters and days-since trackers: list, detail, editor, entry editing, dashboard card
 core/
   domain/          Pure Kotlin business logic (no Android), incl. the clock, id generator and minute ticker
   designsystem/    Theme and shared components
@@ -24,6 +26,7 @@ core/
   navigation/      The Destination marker for type-safe navigation routes (pure Kotlin)
   database/        Room database: tracker entities, DAOs, schema history
   data/            Repositories: the Room implementation of the tracker repository, Hilt bindings for it, the clock and ids
+  detekt-rules/    Custom Detekt rules (NoAnyType)
   testing/         Shared test fixtures (fake clock, predictable ids, test zones); testImplementation only
 build-logic/       Convention plugins: the single source of truth for all rules
 config/            detekt.yml, lint.xml, Compose stability config (one copy for everything)
@@ -44,7 +47,7 @@ Nothing depends on `:app`. No feature depends on another feature. `core` never d
 Every module runs `checkModuleDependencies` as part of `check` and CI. It fails the build with a message like:
 
 ```
-:feature:counter -> :feature:alarms: feature/* may only depend on core/*.
+:feature:trackers -> :feature:alarms: feature/* may only depend on core/*.
 ```
 
 The rules are defined in `build-logic/.../ModuleRules.kt`, with unit tests.
@@ -55,7 +58,7 @@ All configuration lives in `build-logic`, `config/` and `gradle/libs.versions.to
 
 ```kotlin
 plugins { alias(libs.plugins.mydayboard.android.feature) }
-android { namespace = "io.github.ddiling.mydayboard.feature.counter" }
+android { namespace = "io.github.ddiling.mydayboard.feature.trackers" }
 ```
 
 | Convention plugin | Used by | Adds |
@@ -91,7 +94,7 @@ On pull requests, CI checks **only the modules affected by the change**:
 
 | You change | CI checks |
 |---|---|
-| `feature/dashboard/...` | `feature:counter`, `app` |
+| `feature/trackers/...` | `feature:trackers`, `app` |
 | `core/designsystem/...` | The design system, every feature and the app |
 | `build-logic/`, `gradle/`, `config/`, root build files, `.editorconfig`, workflows | Everything |
 | Only `*.md` | No module checks (formatting only) |
@@ -115,7 +118,7 @@ Each module has three lifecycle tasks: `ciStaticAnalysis`, `ciTest` and `ciAssem
 | Workflow | Trigger | What it does |
 |---|---|---|
 | `ci.yml` | Every PR and push to `main` | Static analysis, tests and assembly for affected modules, plus build-logic tests. On `main` it also publishes the merged coverage report as an artifact. Ends with one **`CI passed`** gate job. |
-| `e2e.yml` | `main`, nightly, manual, or PRs labelled `e2e` | One Maestro emulator job running the flows in `app/maestro/`. On PRs only with the `e2e` label. |
+| `e2e.yml` | `main`, nightly, manual, PRs to `main` that change the app or the flows, or PRs labelled `e2e` | One Maestro emulator job running the flows in `app/maestro/` (tracker create, dashboard quick add and undo, days-since reset, entry add, delete and restore). It retries once, and only for emulator connection errors; a failed assertion is never retried. |
 | `screenshots-record.yml` | Manual | Re-records all screenshot baselines on Linux and commits them to the branch |
 | `ai-review.yml` | PR opened or ready for review (not Dependabot), or a `/ai-review` comment | Posts an advisory review comment (a new one per run) from a free-tier model: Groq, then OpenRouter, then Google Gemini, the next taking over when one is overloaded, out of quota or too small for the diff. It also reads the earlier comments on the PR (its own reviews and replies from the owner, members and collaborators, nobody else), so a finding the maintainer already rejected is not repeated, and text after `/ai-review` can ask it a question. Dependabot PRs are reviewed only on demand. Needs at least one of the secrets `GROQ_API_KEY_REVIEW`, `OPENROUTER_API_KEY_REVIEW`, `GEMINI_API_KEY_REVIEW`. |
 | `release.yml` | Tag `vX.Y.Z` | Signed AAB → Play **internal** track → GitHub Release |
@@ -188,7 +191,7 @@ runs the screenshot tests as no-ops and under-reports UI coverage.
 
 ```bash
 ./scripts/install-git-hooks.sh
-./gradlew wrapper --gradle-version 9.7.0   # refresh the wrapper jar
+./gradlew wrapper --gradle-version 9.9.1   # refresh the wrapper jar
 ./gradlew spotlessApply                    # normalise formatting once
 ./gradlew recordRoborazziDebug             # create initial screenshot baselines (or use the workflow)
 ./gradlew check                            # everything, locally
@@ -197,8 +200,7 @@ runs the screenshot tests as no-ops and under-reports UI coverage.
 
 ## Recommended next steps
 
-- **Data layer:** `core:data` (repositories), `core:network` and `core:database`. Features depend on interfaces in `core:domain`.
-- **Navigation:** Navigation Compose. Each feature exposes a `NavGraphBuilder` extension, and `:app` composes the graphs.
+- **Network:** a `core:network` module for sync. Features depend on interfaces in `core:domain`.
 - **Build speed:** a remote build cache (Develocity or a self-hosted Gradle cache node). It matters more in a monorepo than anywhere else.
 - **Security:** CodeQL and GitHub's dependency-review action.
 

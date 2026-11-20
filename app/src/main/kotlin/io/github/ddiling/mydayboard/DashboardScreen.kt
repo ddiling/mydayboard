@@ -22,15 +22,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import io.github.ddiling.mydayboard.core.dashboard.DashboardCard
 import io.github.ddiling.mydayboard.core.dashboard.DashboardHost
-import io.github.ddiling.mydayboard.feature.counter.navigation.CounterDestination
 import io.github.ddiling.mydayboard.feature.trackers.navigation.TrackersListDestination
 
 internal const val OPEN_TRACKERS_TAG = "open_trackers"
-internal const val OPEN_COUNTER_TAG = "open_counter"
 
 /**
  * The dashboard: the cards (already in display order) in a list, or a hint when there are none.
- * The top bar opens the tracker list and, temporarily, the counter placeholder, which goes away with it.
+ * The top bar opens the tracker list.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,10 +47,6 @@ fun DashboardScreen(
                         onClick = { host.navigate(TrackersListDestination) },
                         modifier = Modifier.testTag(OPEN_TRACKERS_TAG),
                     ) { Text(stringResource(R.string.dashboard_open_trackers)) }
-                    TextButton(
-                        onClick = { host.navigate(CounterDestination) },
-                        modifier = Modifier.testTag(OPEN_COUNTER_TAG),
-                    ) { Text(stringResource(R.string.dashboard_open_counter)) }
                 },
             )
         },

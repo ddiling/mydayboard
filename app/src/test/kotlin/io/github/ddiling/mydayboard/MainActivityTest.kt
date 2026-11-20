@@ -2,9 +2,8 @@ package io.github.ddiling.mydayboard
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
-import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
@@ -19,8 +18,8 @@ import org.robolectric.annotation.Config
  *
  * Hilt checks the graph at compile time (a missing binding fails `:app` compilation), but only this test
  * proves it is wired at runtime: the activity is an entry point, and `hiltViewModel()` creates
- * CounterViewModel with its injected use case. A missing `@AndroidEntryPoint` (on the activity) or
- * `@HiltViewModel` (on the ViewModel) still compiles, but crashes on start instead of showing the button.
+ * the dashboard with the trackers card contributed through Hilt multibinding. A missing `@AndroidEntryPoint`
+ * (on the activity) or a missing card binding still compiles, but crashes on start or shows no card.
  * The application itself is replaced by `HiltTestApplication` here; [AppStartTest] covers it.
  */
 @HiltAndroidTest
@@ -34,14 +33,15 @@ class MainActivityTest {
     @get:Rule(order = 1)
     val composeRule = createAndroidComposeRule<MainActivity>()
 
+    private val emptyHint = "No trackers yet. Add one to start tracking."
+
     @Test
-    fun `the counter opened from the dashboard counts a tap`() {
-        composeRule.onNodeWithTag(OPEN_COUNTER_TAG).performClick()
+    fun `the dashboard shows the trackers card contributed through Hilt`() {
+        // The card loads its trackers from Room on a background thread, so wait for the empty state.
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithText(emptyHint).fetchSemanticsNodes().isNotEmpty()
+        }
 
-        composeRule.onNodeWithTag("tap_button").assertIsDisplayed()
-
-        composeRule.onNodeWithTag("tap_button").performClick()
-
-        composeRule.onNodeWithText("You tapped once").assertIsDisplayed()
+        composeRule.onNodeWithText(emptyHint).assertIsDisplayed()
     }
 }
