@@ -64,7 +64,7 @@ fun NavGraphBuilder.trackersGraph(navController: NavController) {
     }
 }
 
-private fun NavController.leaveEditor(
+internal fun NavController.leaveEditor(
     result: EditorResult,
     isEditing: Boolean,
 ) {
