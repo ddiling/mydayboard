@@ -193,6 +193,28 @@ class CheckEvidenceTest(unittest.TestCase):
         result = ai_review.check_evidence(review_with(finding("class Foo")), EVIDENCE_DIFF)
         self.assertIn(ai_review.EVIDENCE_WARNING, result)
 
+    def test_a_quote_shorter_than_the_minimum_does_not_count(self):
+        result = ai_review.check_evidence(review_with(finding("}")), "@@ -1 +1 @@\n+}\n")
+        self.assertIn(ai_review.EVIDENCE_WARNING, result)
+
+    def test_an_empty_quote_does_not_count(self):
+        result = ai_review.check_evidence(review_with(finding("")), EVIDENCE_DIFF)
+        self.assertIn(ai_review.EVIDENCE_WARNING, result)
+
+    def test_a_quote_matching_only_the_second_files_header_does_not_count(self):
+        diff = EVIDENCE_DIFF + "diff --git a/app/Bar.kt b/app/Bar.kt\n--- a/app/Bar.kt\n+++ b/app/Bar.kt\n"
+        result = ai_review.check_evidence(review_with(finding("b/app/Bar.kt")), diff)
+        self.assertIn(ai_review.EVIDENCE_WARNING, result)
+
+    def test_a_quote_from_the_part_cut_off_for_the_model_does_not_count(self):
+        full = EVIDENCE_DIFF + "+    val onlyInTheCutOffPart = 1\n"
+        seen = ai_review.seen_by_model(full, len(EVIDENCE_DIFF) + 5)
+        result = ai_review.check_evidence(review_with(finding("val onlyInTheCutOffPart = 1")), seen)
+        self.assertIn(ai_review.EVIDENCE_WARNING, result)
+
+    def test_the_prompt_asks_for_a_whole_line_of_at_least_ten_characters(self):
+        self.assertIn("at least 10 characters", ai_review.REVIEW_RULES)
+
     def test_each_finding_is_judged_on_its_own_and_the_footer_counts_them(self):
         review = review_with(finding("removed line"), finding("nonsense"), finding(None))
         checked = ai_review.check_evidence(review, EVIDENCE_DIFF)

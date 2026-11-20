@@ -83,7 +83,8 @@ A list ordered by severity. Start every item with one of: 🔴 Critical, 🟠 Hi
 Then give `path:line` (the new-file line, from the hunk headers), what is wrong, why it matters,
 and a concrete fix. Put a second line right after the item's first line:
 Evidence: `<one line copied exactly from the diff, without the leading +, - or space>`
-The quote must be a line that shows the problem. A script checks every quote against the diff and
+The quote must be a whole, distinctive line that shows the problem, at least 10 characters long:
+not a lone brace or a short fragment. A script checks every quote against the diff and
 flags the finding as unverified when it is missing, so if you cannot quote a line that proves a
 finding, do not report it. Report only real problems: bugs, security, broken project guidelines,
 missing tests for new logic. Do not restate the diff, do not praise, do not ask the author to
@@ -270,11 +271,20 @@ def _split_findings(review: str) -> tuple[str, list[list[str]], str]:
     return head, blocks, "\n".join(lines[end:])
 
 
+MIN_QUOTE_CHARS = 10  # shorter quotes (a lone "}") match almost any diff and prove nothing
+
+
+def seen_by_model(diff: str, limit: int) -> str:
+    """The diff exactly as the model got it: cut at the provider's limit, so a quote from the cut-off
+    part, which the model never saw, cannot count as evidence."""
+    return truncate(diff, limit)[0]
+
+
 def _quote_in_diff(block: list[str], content: list[str]) -> bool:
     for line in block:
         if match := EVIDENCE_LINE.match(line):
             quote = _squash(match.group(1))
-            return bool(quote) and any(quote in candidate for candidate in content)
+            return len(quote) >= MIN_QUOTE_CHARS and any(quote in candidate for candidate in content)
     return False
 
 
@@ -519,7 +529,7 @@ def generate_review(
             failures.append(f"{entry.label}: not tried, out of time")
             return None
         limit = entry.provider.max_diff_chars
-        text, truncated = truncate(diff, limit)
+        text, truncated = seen_by_model(diff, limit), len(diff) > limit
         # The history must not crowd out the diff: a fifth of the diff budget, so the small free tiers cope.
         discussion, count = format_discussion(comments, limit // 5)
         try:
@@ -589,7 +599,7 @@ def main() -> int:
         print(error)
         return 1
 
-    review = check_evidence(review, diff)
+    review = check_evidence(review, seen_by_model(diff, entry.provider.max_diff_chars))
     footer = f"_Automated review of `{meta['headRefOid'][:7]}` by `{entry.label}`. Advisory only: it can be wrong._"
     footer += skipped_note(skipped_files)
     footer += evidence_note(review)
