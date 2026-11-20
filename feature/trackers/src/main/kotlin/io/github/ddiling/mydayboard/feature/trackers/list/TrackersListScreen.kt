@@ -123,7 +123,7 @@ private fun TrackerListItem.trailingText(): String =
     }
 
 @Composable
-private fun Duration?.asLastEventText(): String =
+internal fun Duration?.asLastEventText(): String =
     when {
         this == null -> stringResource(R.string.trackers_no_events)
         toParts() == DurationParts.JustNow -> asText()

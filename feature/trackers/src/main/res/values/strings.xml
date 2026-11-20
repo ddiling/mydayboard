@@ -32,4 +32,13 @@
         <item quantity="one">%d day</item>
         <item quantity="other">%d days</item>
     </plurals>
+    <string name="trackers_detail_plus_one">+1</string>
+    <string name="trackers_detail_added">Added</string>
+    <string name="trackers_detail_undo">Undo</string>
+    <string name="trackers_detail_last_days">Last 7 days</string>
+    <string name="trackers_detail_history">History</string>
+    <string name="trackers_trend_up">More than the week before</string>
+    <string name="trackers_trend_down">Fewer than the week before</string>
+    <string name="trackers_trend_flat">Same as the week before</string>
+    <string name="trackers_trend_not_enough_data">Not enough data for a trend yet</string>
 </resources>

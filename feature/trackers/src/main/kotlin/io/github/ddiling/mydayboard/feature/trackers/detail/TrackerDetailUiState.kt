@@ -3,6 +3,8 @@ package io.github.ddiling.mydayboard.feature.trackers.detail
 import io.github.ddiling.mydayboard.core.domain.tracker.DayCount
 import io.github.ddiling.mydayboard.core.domain.tracker.Trend
 import java.time.Duration
+import java.time.LocalDate
+import java.time.LocalTime
 
 /** What the detail screen shows. [Loading] lasts until the first emission; [NotFound] is e.g. a deleted tracker. */
 internal sealed interface TrackerDetailUiState {
@@ -17,6 +19,7 @@ internal sealed interface TrackerDetailUiState {
         val sinceLast: Duration?, // null: no event yet
         val lastDays: List<DayCount>, // oldest first, the last one is today
         val trend: Trend,
+        val history: List<HistoryDay>, // newest day first
         val pendingUndo: Undo?,
     ) : TrackerDetailUiState
 
@@ -25,3 +28,9 @@ internal sealed interface TrackerDetailUiState {
         val name: String,
     ) : TrackerDetailUiState
 }
+
+/** The events of one local calendar day; [times] are local times, newest first. */
+internal data class HistoryDay(
+    val date: LocalDate,
+    val times: List<LocalTime>,
+)
