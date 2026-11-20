@@ -122,6 +122,20 @@ class ValidateTrackerNameTest {
     }
 
     @Test
+    fun `a narrow no-break space collapses to one space`() {
+        val result = validateTrackerName("Coffee\u202Fbreak")
+
+        assertEquals(TrackerNameValidation.Valid("Coffee break"), result)
+    }
+
+    @Test
+    fun `a next-line character collapses to one space`() {
+        val result = validateTrackerName("Coffee\u0085break")
+
+        assertEquals(TrackerNameValidation.Valid("Coffee break"), result)
+    }
+
+    @Test
     fun `a name of only a control character is blank`() {
         val result = validateTrackerName("\u0007")
 

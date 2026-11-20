@@ -1,0 +1,20 @@
+# E2E smoke test: create a tracker on a real Android runtime.
+# Name validation runs only on the device here; JVM unit tests cannot catch Android-only failures
+# (such as a regex flag the Android engine rejects).
+# Run: maestro test app/maestro/   (emulator running, debug APK installed)
+appId: io.github.ddiling.mydayboard.debug
+name: Trackers - create a tracker
+tags:
+  - smoke
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    id: "open_trackers"
+- tapOn: "Add tracker"
+- tapOn: "Name"
+- inputText: "Water"
+- tapOn: "Save"
+- assertVisible: "Tracker details"
+- back
+- assertVisible: "Water"
