@@ -7,7 +7,6 @@
     <string name="trackers_no_events">No events yet</string>
     <string name="trackers_last_ago">%s ago</string>
     <string name="trackers_detail_placeholder">Tracker details</string>
-    <string name="trackers_edit">Edit</string>
     <string name="trackers_editor_new_title">New tracker</string>
     <string name="trackers_editor_edit_title">Edit tracker</string>
     <string name="trackers_editor_back">Back</string>
@@ -24,6 +23,7 @@
     <string name="trackers_editor_cancel">Cancel</string>
     <string name="trackers_editor_ok">OK</string>
     <string name="trackers_editor_not_found">Tracker not found</string>
+    <string name="trackers_editor_placeholder">Tracker editor</string>
     <string name="trackers_duration_just_now">Just now</string>
     <string name="trackers_duration_minutes">%d min</string>
     <string name="trackers_duration_hours">%d h</string>
