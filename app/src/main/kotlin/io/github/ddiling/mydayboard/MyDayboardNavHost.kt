@@ -9,6 +9,7 @@ import androidx.navigation.compose.composable
 import io.github.ddiling.mydayboard.core.dashboard.DashboardCard
 import io.github.ddiling.mydayboard.core.dashboard.sortedDashboardCards
 import io.github.ddiling.mydayboard.feature.counter.navigation.counterScreen
+import io.github.ddiling.mydayboard.feature.trackers.navigation.trackersGraph
 
 /**
  * The navigation graph of the app. Each feature contributes its destinations as a
@@ -32,5 +33,6 @@ fun MyDayboardNavHost(
             DashboardScreen(cards = sortedCards, host = host)
         }
         counterScreen()
+        trackersGraph(navController)
     }
 }

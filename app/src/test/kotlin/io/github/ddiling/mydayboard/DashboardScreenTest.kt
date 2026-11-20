@@ -14,6 +14,7 @@ import io.github.ddiling.mydayboard.core.dashboard.DashboardCard
 import io.github.ddiling.mydayboard.core.dashboard.DashboardHost
 import io.github.ddiling.mydayboard.core.navigation.Destination
 import io.github.ddiling.mydayboard.feature.counter.navigation.CounterDestination
+import io.github.ddiling.mydayboard.feature.trackers.navigation.TrackersListDestination
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.junit.Assert.assertEquals
@@ -77,7 +78,16 @@ class DashboardScreenTest {
     }
 
     @Test
-    fun `the top bar action navigates to the counter`() {
+    fun `the trackers action navigates to the tracker list`() {
+        composeRule.setContent { DashboardScreen(cards = emptyList(), host = host) }
+
+        composeRule.onNodeWithTag(OPEN_TRACKERS_TAG).performClick()
+
+        assertEquals(listOf<Destination>(TrackersListDestination), host.navigated)
+    }
+
+    @Test
+    fun `the temporary counter action navigates to the counter`() {
         composeRule.setContent { DashboardScreen(cards = emptyList(), host = host) }
 
         composeRule.onNodeWithTag(OPEN_COUNTER_TAG).performClick()
