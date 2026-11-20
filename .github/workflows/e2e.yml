@@ -1,20 +1,26 @@
 # End-to-end tests with Maestro on an Android emulator.
-# Runs on main, nightly, on demand, and on every PR that changes what ends up in the app or the flows
-# (sources, resources, build files, Maestro flows). The "e2e" label forces a run on any other PR.
-# The rule is automatic because a forgotten label let a broken flow reach main.
+# Runs on main, nightly, on demand, and on a PR when both hold:
+#   - it targets main, so it is next in line to merge. A PR stacked on another branch is skipped: its
+#     changes are tested once the PR below it merges and GitHub retargets it to main, which re-runs this.
+#   - it changes what ends up in the app or the flows (sources, resources, build files, Maestro flows).
+# The "e2e" label forces a run on any PR. The rule is automatic because a forgotten label once let a
+# broken flow reach main.
 name: E2E
 
 on:
   push:
     branches: [main]
   pull_request:
-    types: [opened, synchronize, reopened, labeled]
+    # edited: a retarget to main (the PR below merged). Title or body edits are filtered out below.
+    types: [opened, synchronize, reopened, labeled, edited]
   schedule:
     - cron: "0 3 * * *"
   workflow_dispatch:
 
+# A new push cancels the older run of the same PR. Edit and label events get their own group, so that
+# editing the PR description or adding any label never cancels a running test.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ contains(fromJSON('["edited","labeled"]'), github.event.action) && github.event.action || 'code' }}
   cancel-in-progress: true
 
 permissions:
@@ -52,8 +58,14 @@ jobs:
     if: >-
       !cancelled() && (
         github.event_name != 'pull_request' ||
-        needs.changes.outputs.app == 'true' ||
-        contains(github.event.pull_request.labels.*.name, 'e2e')
+        (
+          (github.event.action != 'edited' || github.event.changes.base.ref.from != '') &&
+          (github.event.action != 'labeled' || github.event.label.name == 'e2e') &&
+          (
+            contains(github.event.pull_request.labels.*.name, 'e2e') ||
+            (github.event.pull_request.base.ref == 'main' && needs.changes.outputs.app == 'true')
+          )
+        )
       )
     runs-on: ubuntu-latest
     timeout-minutes: 45
@@ -99,9 +111,9 @@ jobs:
           target: google_apis
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          # One script line per command: the action runs each line as its own shell.
           script: |
-            adb install -r app/build/outputs/apk/debug/app-debug.apk
-            maestro test app/maestro/ --format junit --output build/maestro/report.xml --debug-output build/maestro/debug
+            .github/scripts/run_maestro.sh
 
       - name: Upload Maestro results
         if: always()
