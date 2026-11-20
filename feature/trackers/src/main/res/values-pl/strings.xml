@@ -6,7 +6,6 @@
     <string name="trackers_today_count">dziś: %d</string>
     <string name="trackers_no_events">Brak zdarzeń</string>
     <string name="trackers_last_ago">%s temu</string>
-    <string name="trackers_detail_placeholder">Szczegóły trackera</string>
     <string name="trackers_edit">Edytuj</string>
     <string name="trackers_editor_new_title">Nowy tracker</string>
     <string name="trackers_editor_edit_title">Edytuj tracker</string>
@@ -36,6 +35,13 @@
     </plurals>
     <string name="trackers_detail_plus_one">+1</string>
     <string name="trackers_detail_added">Dodano</string>
+    <string name="trackers_detail_reset">Resetuj</string>
+    <string name="trackers_detail_reset_done">Zresetowano</string>
+    <string name="trackers_detail_since">Od %s</string>
+    <string name="trackers_detail_longest">Najdłuższa seria: %s</string>
+    <string name="trackers_detail_earlier">Wcześniejsze serie</string>
+    <string name="trackers_detail_earlier_none">Brak wcześniejszych serii</string>
+    <string name="trackers_detail_range">%1$s – %2$s</string>
     <string name="trackers_detail_undo">Cofnij</string>
     <string name="trackers_detail_last_days">Ostatnie 7 dni</string>
     <string name="trackers_detail_history">Historia</string>

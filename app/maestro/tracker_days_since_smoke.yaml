@@ -1,0 +1,24 @@
+# E2E smoke test: create a days-since tracker, reset it and undo the reset.
+# Run: maestro test app/maestro/   (emulator running, debug APK installed)
+appId: io.github.ddiling.mydayboard.debug
+name: Trackers - reset a days-since tracker and undo
+tags:
+  - smoke
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    id: "open_trackers"
+- tapOn: "Add tracker"
+- tapOn: "Name"
+- inputText: "No sugar"
+- tapOn: "Days since"
+- tapOn: "Save"
+- assertVisible:
+    id: "trackers_detail_reset"
+- tapOn:
+    id: "trackers_detail_reset"
+- assertVisible: "Reset"
+- assertVisible: "Undo"
+- tapOn: "Undo"
+- assertNotVisible: "Undo"

@@ -73,7 +73,7 @@ private fun TrendLabel(trend: Trend) {
 }
 
 @Composable
-private fun SectionTitle(titleRes: Int) {
+internal fun SectionTitle(titleRes: Int) {
     Text(
         stringResource(titleRes),
         style = MaterialTheme.typography.titleMedium,
@@ -82,7 +82,7 @@ private fun SectionTitle(titleRes: Int) {
 }
 
 @Composable
-private fun LabeledRow(
+internal fun LabeledRow(
     label: String,
     value: String,
 ) {
@@ -100,6 +100,6 @@ private fun HistoryDayBlock(day: HistoryDay) {
     }
 }
 
-private fun LocalDate.formatted(): String = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).format(this)
+internal fun LocalDate.formatted(): String = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).format(this)
 
 private fun LocalTime.formatted(): String = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT).format(this)
