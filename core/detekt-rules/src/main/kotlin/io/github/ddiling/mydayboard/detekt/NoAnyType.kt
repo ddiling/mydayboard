@@ -9,6 +9,8 @@ import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.KtNullableType
 import org.jetbrains.kotlin.psi.KtParameter
 import org.jetbrains.kotlin.psi.KtSuperTypeListEntry
+import org.jetbrains.kotlin.psi.KtTypeConstraint
+import org.jetbrains.kotlin.psi.KtTypeParameter
 import org.jetbrains.kotlin.psi.KtTypeReference
 import org.jetbrains.kotlin.psi.KtUserType
 
@@ -18,18 +20,20 @@ import org.jetbrains.kotlin.psi.KtUserType
  *
  * The one unavoidable use is the parameter of `override fun equals(other: Any?)`, which the language fixes.
  * Supertype lists (`: Any()`) are not type usages in this sense and are left alone.
+ * Generic bounds (`<T : Any>`, `where T : Any`) are allowed: they only say "T is non-null", they do not
+ * loosen a type.
  */
 class NoAnyType(
     config: Config,
 ) : Rule(config, "`Any` is not an exact type. Use the precise type or a generic instead.") {
     override fun visitTypeReference(typeReference: KtTypeReference) {
         super.visitTypeReference(typeReference)
-        if (typeReference.isAny() && !typeReference.isEqualsParameter() && !typeReference.isSupertype()) {
+        if (typeReference.isAny() && !typeReference.isAllowedUse()) {
             report(
                 Finding(
                     Entity.from(typeReference),
                     "`Any` hides the real type. Use the exact type (or a generic / sealed type); " +
-                        "only `override fun equals(other: Any?)` may use `Any`.",
+                        "only `override fun equals(other: Any?)` and generic bounds like `<T : Any>` may use `Any`.",
                 ),
             )
         }
@@ -54,4 +58,8 @@ class NoAnyType(
 
     private fun KtTypeReference.isSupertype(): Boolean =
         parent is KtSuperTypeListEntry || parent?.parent is KtSuperTypeListEntry
+
+    private fun KtTypeReference.isGenericBound(): Boolean = parent is KtTypeParameter || parent is KtTypeConstraint
+
+    private fun KtTypeReference.isAllowedUse(): Boolean = isEqualsParameter() || isSupertype() || isGenericBound()
 }
