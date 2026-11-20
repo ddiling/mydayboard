@@ -27,8 +27,10 @@ import javax.inject.Inject
 /**
  * Shows one tracker and lets the user add events to it. "Today" is the local calendar day in the clock's
  * current zone, and the state is recomputed every minute, so the count resets after midnight and "since last"
- * keeps moving without any user action. Sharing stops 5 s after the screen goes away, which keeps the data
- * across a rotation but stops the minute ticker once the screen is really gone.
+ * keeps moving without any user action. The ticker only triggers the recomputation: every run reads a fresh
+ * `clock.instant()`, because the tick's own instant can be up to a minute old and would hide an event the
+ * user just added (the summaries ignore events after "now"). Sharing stops 5 s after the screen goes away,
+ * which keeps the data across a rotation but stops the minute ticker once the screen is really gone.
  */
 @HiltViewModel
 internal class TrackerDetailViewModel
@@ -47,7 +49,8 @@ internal class TrackerDetailViewModel
                 repository.observeEvents(trackerId),
                 minuteTicker(clock),
                 quickUndo.pending,
-            ) { tracker, events, now, pendingUndo ->
+            ) { tracker, events, _, pendingUndo ->
+                val now = clock.instant()
                 if (tracker == null) {
                     TrackerDetailUiState.NotFound
                 } else {

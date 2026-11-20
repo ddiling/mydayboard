@@ -88,6 +88,41 @@ class TrackerDetailDaysSinceViewModelTest {
         }
 
     @Test
+    fun `a reset pressed between ticks shows zero days at once`() =
+        runTest {
+            val viewModel = viewModelFor(givenSugarTracker())
+
+            viewModel.uiState.test {
+                latest(this)
+                clock.advanceBy(Duration.ofSeconds(30))
+                viewModel.onReset()
+
+                assertEquals(0L, latest(this).currentDays)
+            }
+        }
+
+    @Test
+    fun `broken streaks are listed newest first`() =
+        runTest {
+            val tracker = givenSugarTracker()
+            val firstReset = warsaw(2026, 2, 20)
+            val secondReset = warsaw(2026, 3, 1)
+            repository.addEvent(tracker.id, firstReset)
+            repository.addEvent(tracker.id, secondReset)
+            val viewModel = viewModelFor(tracker)
+
+            viewModel.uiState.test {
+                assertEquals(
+                    listOf(
+                        BrokenStreak(LocalDate.of(2026, 2, 20), LocalDate.of(2026, 3, 1), 9L),
+                        BrokenStreak(startDate, LocalDate.of(2026, 2, 20), 19L),
+                    ),
+                    latest(this).brokenStreaks,
+                )
+            }
+        }
+
+    @Test
     fun `the longest streak updates when the current one beats it`() =
         runTest {
             val tracker = givenSugarTracker()

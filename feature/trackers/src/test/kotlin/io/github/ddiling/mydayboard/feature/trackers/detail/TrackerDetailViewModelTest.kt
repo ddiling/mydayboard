@@ -155,6 +155,23 @@ class TrackerDetailViewModelTest {
         }
 
     @Test
+    fun `plus one pressed between ticks counts at once`() =
+        runTest {
+            val viewModel = viewModelFor(givenCounter().id)
+
+            viewModel.uiState.test {
+                runCurrent()
+                skipItems(2)
+
+                clock.advanceBy(Duration.ofSeconds(30))
+                viewModel.onPlusOne()
+                runCurrent()
+
+                assertEquals(1, (awaitItem() as TrackerDetailUiState.Counter).todayCount)
+            }
+        }
+
+    @Test
     fun `plus one makes the new event undoable`() =
         runTest {
             val water = givenCounter()
