@@ -10,7 +10,7 @@ spotless = "8.11.0"
 ktlint = "1.8.0"
 kover = "0.9.11"
 roborazzi = "1.79.0"
-composable-preview-scanner = "0.9.1"
+composable-preview-scanner = "0.10.0"
 # KSP 2.x is versioned independently of Kotlin and supports AGP 9 built-in Kotlin.
 ksp = "2.3.14"
 # The Hilt Gradle plugin requires AGP 9 since 2.59. The plugin, runtime, compiler
