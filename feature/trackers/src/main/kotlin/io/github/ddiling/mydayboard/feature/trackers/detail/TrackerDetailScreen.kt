@@ -13,18 +13,14 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -79,7 +75,7 @@ internal fun TrackerDetailScreen(
     modifier: Modifier = Modifier,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
-    UndoSnackbar(uiState.pendingUndo(), snackbarHostState, actions)
+    UndoSnackbar(uiState.pendingUndo(), snackbarHostState, actions.onUndo, actions.onUndoDismissed)
     uiState.editor()?.let { EventTimeDialog(it, DateFormat.is24HourFormat(LocalContext.current), actions.entryDialog) }
     Scaffold(
         modifier = modifier,
@@ -123,35 +119,6 @@ internal fun TrackerDetailScreen(
             is TrackerDetailUiState.DaysSince -> {
                 DaysSinceContent(uiState, actions.onEditEntry, contentModifier)
             }
-        }
-    }
-}
-
-/**
- * Shows the undo offer for as long as [undo] is set. A newer action changes the key, which cancels the old
- * snackbar without reporting it as dismissed (that report would clear the newer action).
- */
-@Composable
-private fun UndoSnackbar(
-    undo: Undo?,
-    host: SnackbarHostState,
-    actions: TrackerDetailActions,
-) {
-    val message =
-        stringResource(
-            when (undo?.kind) {
-                UndoKind.RESET -> R.string.trackers_detail_reset_done
-                UndoKind.DELETED -> R.string.trackers_detail_entry_deleted
-                UndoKind.ADDED, null -> R.string.trackers_detail_added
-            },
-        )
-    val undoLabel = stringResource(R.string.trackers_detail_undo)
-    val currentActions by rememberUpdatedState(actions)
-    LaunchedEffect(undo) {
-        if (undo == null) return@LaunchedEffect
-        when (host.showSnackbar(message, undoLabel, duration = SnackbarDuration.Long)) {
-            SnackbarResult.ActionPerformed -> currentActions.onUndo()
-            SnackbarResult.Dismissed -> currentActions.onUndoDismissed()
         }
     }
 }

@@ -57,4 +57,6 @@
     <string name="trackers_event_error_future">Czas nie może być w przyszłości</string>
     <string name="trackers_event_error_before_start">Czas nie może być przed rozpoczęciem śledzenia</string>
     <string name="trackers_event_delete">Usuń wpis</string>
+    <string name="trackers_card_plus_one_description">Dodaj jeden do %1$s</string>
+    <string name="trackers_card_reset_description">Zresetuj %1$s</string>
 </resources>
