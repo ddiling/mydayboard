@@ -117,4 +117,28 @@ class TrackersDashboardCardContentTest {
 
         assertEquals(1, undos)
     }
+
+    @Test
+    fun `clicking a row dismisses the pending undo before opening the detail`() {
+        val orderedEvents = mutableListOf<String>()
+        val orderedHost =
+            object : DashboardHost {
+                override val snackbarHostState = SnackbarHostState()
+
+                override fun navigate(destination: Destination) {
+                    orderedEvents += "navigated"
+                }
+            }
+        composeRule.setContent {
+            TrackersDashboardCardContent(
+                TrackersDashboardCardUiState.Content(listOf(water), Undo("event-1", UndoKind.ADDED)),
+                actions.copy(onUndoDismissed = { orderedEvents += "dismissed" }),
+                orderedHost,
+            )
+        }
+
+        composeRule.onNodeWithTag("trackers_card_row_water-id").performClick()
+
+        assertEquals(listOf("dismissed", "navigated"), orderedEvents)
+    }
 }

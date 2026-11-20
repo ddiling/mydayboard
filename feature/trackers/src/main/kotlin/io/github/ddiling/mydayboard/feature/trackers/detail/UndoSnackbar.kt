@@ -1,9 +1,11 @@
 package io.github.ddiling.mydayboard.feature.trackers.detail
 
+import androidx.activity.compose.LocalActivity
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
@@ -12,8 +14,13 @@ import io.github.ddiling.mydayboard.feature.trackers.R
 
 /**
  * Shows the undo offer for as long as [undo] is set. A newer action changes the key, which cancels the old
- * snackbar without reporting it as dismissed (that report would clear the newer action). Shared by the detail
- * screen and the dashboard card so both word and time the offer the same way.
+ * snackbar without reporting it as dismissed (that report would clear the newer action). The offer also lives
+ * only as long as its snackbar can be seen: when this composable leaves composition (a dashboard card scrolled
+ * off-screen, navigation to another screen) with an undo still pending, it is reported as dismissed, so the
+ * offer never reappears later for an old action. A configuration change (rotation, dark mode, locale) also
+ * disposes the composition but keeps the ViewModel, so it is not reported: the snackbar comes back with the
+ * recreated activity. Shared by the detail screen and the dashboard card so both
+ * word and time the offer the same way.
  */
 @Composable
 internal fun UndoSnackbar(
@@ -33,6 +40,13 @@ internal fun UndoSnackbar(
     val undoLabel = stringResource(R.string.trackers_detail_undo)
     val currentOnUndo by rememberUpdatedState(onUndo)
     val currentOnDismissed by rememberUpdatedState(onUndoDismissed)
+    val currentUndo by rememberUpdatedState(undo)
+    val activity = LocalActivity.current
+    DisposableEffect(Unit) {
+        onDispose {
+            if (currentUndo != null && activity?.isChangingConfigurations != true) currentOnDismissed()
+        }
+    }
     LaunchedEffect(undo) {
         if (undo == null) return@LaunchedEffect
         when (host.showSnackbar(message, undoLabel, duration = SnackbarDuration.Long)) {

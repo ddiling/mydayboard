@@ -33,6 +33,8 @@ private val ActionButtonMinHeight = 48.dp
  * Stateless so tests and previews need no ViewModel. The rows are a plain [Column], not a lazy list: the
  * dashboard already scrolls its cards in a `LazyColumn`, and a nested list scrolling the same way crashes.
  * Navigation and the undo snackbar go through [host], because the dashboard owns the screen they live on.
+ * A row click dismisses the pending undo first: the detail screen it opens has its own snackbar, so the offer
+ * must not outlive the card.
  */
 @Composable
 internal fun TrackersDashboardCardContent(
@@ -50,7 +52,10 @@ internal fun TrackersDashboardCardContent(
         } else {
             Column(Modifier.padding(vertical = 8.dp)) {
                 content.rows.forEach { row ->
-                    TrackerRow(row, actions, onClick = { host.navigate(TrackerDetailDestination(row.id)) })
+                    TrackerRow(row, actions, onClick = {
+                        actions.onUndoDismissed()
+                        host.navigate(TrackerDetailDestination(row.id))
+                    })
                 }
             }
         }
