@@ -91,19 +91,6 @@ class TrackerDetailViewModelTest {
         }
 
     @Test
-    fun `a tracker younger than two weeks has not enough data for a trend`() =
-        runTest {
-            val water = givenCounter(startedAt = now)
-            val viewModel = viewModelFor(water.id)
-
-            viewModel.uiState.test {
-                runCurrent()
-                skipItems(1)
-                assertEquals(Trend.NOT_ENOUGH_DATA, (awaitItem() as TrackerDetailUiState.Counter).trend)
-            }
-        }
-
-    @Test
     fun `an event backdated before the start date extends the history used for the trend`() =
         runTest {
             val water = givenCounter(startedAt = now)

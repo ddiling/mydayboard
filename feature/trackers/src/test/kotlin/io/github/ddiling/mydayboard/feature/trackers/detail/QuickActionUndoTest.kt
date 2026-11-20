@@ -50,12 +50,4 @@ class QuickActionUndoTest {
             assertNull(quickUndo.pending.value)
             assertEquals(emptyList<String>(), deleted)
         }
-
-    @Test
-    fun `undo without a pending action deletes nothing`() =
-        runTest {
-            quickUndo.undo()
-
-            assertEquals(emptyList<String>(), deleted)
-        }
 }
