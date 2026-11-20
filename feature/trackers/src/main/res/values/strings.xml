@@ -55,4 +55,6 @@
     <string name="trackers_event_error_future">The time can\'t be in the future</string>
     <string name="trackers_event_error_before_start">The time can\'t be before the tracker started</string>
     <string name="trackers_event_delete">Delete entry</string>
+    <string name="trackers_card_plus_one_description">Add one to %1$s</string>
+    <string name="trackers_card_reset_description">Reset %1$s</string>
 </resources>

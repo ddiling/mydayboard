@@ -1,0 +1,25 @@
+# E2E smoke test: the trackers card on the dashboard adds an event with +1 and undoes it.
+# Maestro matches text as a regex, so "+1" is not used; the button is found by its content description.
+# Run: maestro test app/maestro/   (emulator running, debug APK installed)
+appId: io.github.ddiling.mydayboard.debug
+name: Trackers - quick add and undo from the dashboard
+tags:
+  - smoke
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    id: "open_trackers"
+- tapOn: "Add tracker"
+- tapOn: "Name"
+- inputText: "Water"
+- tapOn: "Save"
+- assertVisible: "Last 7 days" # the counter detail screen opened
+- back # the list
+- back # the dashboard
+- assertVisible: "Today: 0.*" # the row is one text, "Today: 0 · No events yet", and Maestro matches the whole text
+- tapOn: "Add one to Water"
+- assertVisible: "Added"
+- assertVisible: "Today: 1.*"
+- tapOn: "Undo"
+- assertVisible: "Today: 0.*"
