@@ -117,6 +117,17 @@ class DiffTest(unittest.TestCase):
         self.assertIn("requirements.txt", kept)
         self.assertIn("requirements.in", kept)
 
+    def test_room_schema_exports_are_ignored(self):
+        path = "core/database/schemas/io.github.ddiling.mydayboard.core.database.MyDayboardDatabase/2.json"
+        _, skipped = ai_review.filter_diff(f"diff --git a/{path} b/{path}\n+x\n")
+        self.assertEqual(skipped, [path])
+
+    def test_json_in_another_schemas_folder_is_still_reviewed(self):
+        path = "feature/api/schemas/user.json"
+        kept, skipped = ai_review.filter_diff(f"diff --git a/{path} b/{path}\n+x\n")
+        self.assertEqual(skipped, [])
+        self.assertIn(path, kept)
+
     def test_gradlew_bat_is_ignored_too(self):
         _, skipped = ai_review.filter_diff("diff --git a/gradlew.bat b/gradlew.bat\n+x\n")
         self.assertEqual(skipped, ["gradlew.bat"])
