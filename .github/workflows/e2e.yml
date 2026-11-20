@@ -1,5 +1,7 @@
 # End-to-end tests with Maestro on an Android emulator.
-# Runs on main, nightly, on demand, and on PRs labelled "e2e".
+# Runs on main, nightly, on demand, and on every PR that changes what ends up in the app or the flows
+# (sources, resources, build files, Maestro flows). The "e2e" label forces a run on any other PR.
+# The rule is automatic because a forgotten label let a broken flow reach main.
 name: E2E
 
 on:
@@ -19,9 +21,40 @@ permissions:
   contents: read
 
 jobs:
+  changes:
+    name: Detect app changes
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    outputs:
+      app: ${{ steps.diff.outputs.app }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Did the PR change the app or the flows?
+        id: diff
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          changed=$(git diff --name-only "$BASE_SHA...$HEAD_SHA")
+          echo "$changed"
+          # Main sources and resources of any module, the app, Maestro flows, the build, and this workflow.
+          pattern='^(app/|(core|feature)/[^/]+/src/main/|(core|feature)/[^/]+/build\.gradle\.kts$|build-logic/|gradle/|[^/]+\.gradle\.kts$|gradle\.properties$|\.github/workflows/e2e\.yml$)'
+          if grep -qE "$pattern" <<< "$changed"; then app=true; else app=false; fi
+          echo "app=$app" | tee -a "$GITHUB_OUTPUT"
+
   maestro:
     name: Maestro
-    if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'e2e')
+    needs: changes
+    # `changes` is skipped outside PRs, so `!cancelled()` keeps this job from being skipped with it.
+    if: >-
+      !cancelled() && (
+        github.event_name != 'pull_request' ||
+        needs.changes.outputs.app == 'true' ||
+        contains(github.event.pull_request.labels.*.name, 'e2e')
+      )
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
