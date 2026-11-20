@@ -33,7 +33,7 @@ class TrackersDashboardCardViewModelTest {
     val mainRule = MainDispatcherRule(StandardTestDispatcher())
 
     private val now = warsaw(2026, 3, 2, 10)
-    private val fiveMinutes = Duration.ofMinutes(5)
+    private val gapSinceLastEvent = Duration.ofMinutes(5)
     private val clock = MutableClock(now, TestZones.WARSAW)
     private val repository = FakeTrackerRepository(clock, SequentialIdGenerator())
 
@@ -47,12 +47,18 @@ class TrackersDashboardCardViewModelTest {
         runTest {
             val water = repository.createTracker("Water", TrackerType.EVENT_COUNTER, now)
             val sugar = repository.createTracker("No sugar", TrackerType.DAYS_SINCE, warsaw(2026, 2, 27, 8))
-            repository.addEvent(water.id, now - fiveMinutes)
+            repository.addEvent(water.id, now - gapSinceLastEvent)
 
             viewModel.uiState.test {
                 assertEquals(TrackersDashboardCardUiState.Loading, awaitItem())
                 runCurrent()
-                val counter = TrackersDashboardRow.Counter(water.id, "Water", todayCount = 1, sinceLast = fiveMinutes)
+                val counter =
+                    TrackersDashboardRow.Counter(
+                        water.id,
+                        "Water",
+                        todayCount = 1,
+                        sinceLast = gapSinceLastEvent,
+                    )
                 val daysSince = TrackersDashboardRow.DaysSince(sugar.id, "No sugar", days = 3)
                 assertEquals(TrackersDashboardCardUiState.Content(listOf(counter, daysSince), null), awaitItem())
             }
