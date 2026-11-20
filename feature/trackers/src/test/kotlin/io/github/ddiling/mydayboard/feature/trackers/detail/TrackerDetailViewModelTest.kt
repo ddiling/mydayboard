@@ -1,6 +1,7 @@
 package io.github.ddiling.mydayboard.feature.trackers.detail
 
 import androidx.lifecycle.SavedStateHandle
+import app.cash.turbine.ReceiveTurbine
 import app.cash.turbine.test
 import io.github.ddiling.mydayboard.core.domain.tracker.DayCount
 import io.github.ddiling.mydayboard.core.domain.tracker.TrackerType
@@ -14,6 +15,7 @@ import io.github.ddiling.mydayboard.core.testing.warsaw
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -24,6 +26,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import java.time.Duration
+import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -46,8 +49,34 @@ class TrackerDetailViewModelTest {
     private fun viewModelFor(trackerId: String) =
         TrackerDetailViewModel(SavedStateHandle(mapOf("trackerId" to trackerId)), repository, clock)
 
-    private suspend fun givenCounter(startedAt: java.time.Instant = startedLongAgo) =
+    private suspend fun givenCounter(startedAt: Instant = startedLongAgo) =
         repository.createTracker("Water", TrackerType.EVENT_COUNTER, startedAt)
+
+    private suspend fun TestScope.trendWith(
+        startedAt: Instant,
+        eventAt: Instant,
+    ): Trend? {
+        val water = givenCounter(startedAt)
+        repository.addEvent(water.id, eventAt)
+        var trend: Trend? = null
+        viewModelFor(water.id).uiState.test {
+            runCurrent()
+            skipItems(1)
+            trend = (awaitItem() as TrackerDetailUiState.Counter).trend
+        }
+        return trend
+    }
+
+    private suspend fun TestScope.givenPlusOnePressed(
+        turbine: ReceiveTurbine<TrackerDetailUiState>,
+        viewModel: TrackerDetailViewModel,
+    ) {
+        runCurrent()
+        turbine.skipItems(2)
+        viewModel.onPlusOne()
+        runCurrent()
+        turbine.skipItems(1)
+    }
 
     @Test
     fun `an unknown tracker is not found`() =
@@ -93,15 +122,17 @@ class TrackerDetailViewModelTest {
     @Test
     fun `an event backdated before the start date extends the history used for the trend`() =
         runTest {
-            val water = givenCounter(startedAt = now)
-            repository.addEvent(water.id, warsaw(2026, 2, 10, 12))
-            val viewModel = viewModelFor(water.id)
+            val trend = trendWith(startedAt = now, eventAt = warsaw(2026, 2, 10, 12))
 
-            viewModel.uiState.test {
-                runCurrent()
-                skipItems(1)
-                assertEquals(Trend.FLAT, (awaitItem() as TrackerDetailUiState.Counter).trend)
-            }
+            assertEquals(Trend.FLAT, trend)
+        }
+
+    @Test
+    fun `an old start date gives a recent first event enough history for a trend`() =
+        runTest {
+            val trend = trendWith(startedAt = warsaw(2026, 2, 10), eventAt = warsaw(2026, 3, 2, 9))
+
+            assertEquals(Trend.FLAT, trend)
         }
 
     @Test
@@ -152,15 +183,10 @@ class TrackerDetailViewModelTest {
     @Test
     fun `undo removes the added event and the count goes back`() =
         runTest {
-            val water = givenCounter()
-            val viewModel = viewModelFor(water.id)
+            val viewModel = viewModelFor(givenCounter().id)
 
             viewModel.uiState.test {
-                runCurrent()
-                skipItems(2)
-                viewModel.onPlusOne()
-                runCurrent()
-                skipItems(1)
+                givenPlusOnePressed(this, viewModel)
 
                 viewModel.onUndo()
                 runCurrent()
@@ -174,15 +200,10 @@ class TrackerDetailViewModelTest {
     @Test
     fun `dismissing the undo keeps the event`() =
         runTest {
-            val water = givenCounter()
-            val viewModel = viewModelFor(water.id)
+            val viewModel = viewModelFor(givenCounter().id)
 
             viewModel.uiState.test {
-                runCurrent()
-                skipItems(2)
-                viewModel.onPlusOne()
-                runCurrent()
-                skipItems(1)
+                givenPlusOnePressed(this, viewModel)
 
                 viewModel.onUndoDismissed()
                 runCurrent()
