@@ -61,7 +61,6 @@ internal class TrackerDetailViewModel
                 TrackerDetailUiState.Loading,
             )
 
-        /** Adds an event now and makes it the one the snackbar can undo. */
         fun onPlusOne() {
             viewModelScope.launch {
                 repository.addEvent(trackerId, clock.instant())?.let { quickUndo.register(it.id) }

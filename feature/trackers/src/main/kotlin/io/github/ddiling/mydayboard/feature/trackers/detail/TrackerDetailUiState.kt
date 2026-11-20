@@ -6,11 +6,10 @@ import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 
-/** What the tracker detail screen shows. [Loading] lasts until the first emission, so "not found" never flashes. */
+/** What the detail screen shows. [Loading] lasts until the first emission; [NotFound] is e.g. a deleted tracker. */
 internal sealed interface TrackerDetailUiState {
     data object Loading : TrackerDetailUiState
 
-    /** The tracker does not exist (any more), e.g. it was deleted from the editor. */
     data object NotFound : TrackerDetailUiState
 
     /** An event counter, as display-ready values so a preview needs no repository or clock. */
