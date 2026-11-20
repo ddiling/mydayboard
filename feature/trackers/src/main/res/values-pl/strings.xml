@@ -34,4 +34,13 @@
         <item quantity="many">%d dni</item>
         <item quantity="other">%d dnia</item>
     </plurals>
+    <string name="trackers_detail_plus_one">+1</string>
+    <string name="trackers_detail_added">Dodano</string>
+    <string name="trackers_detail_undo">Cofnij</string>
+    <string name="trackers_detail_last_days">Ostatnie 7 dni</string>
+    <string name="trackers_detail_history">Historia</string>
+    <string name="trackers_trend_up">Więcej niż tydzień wcześniej</string>
+    <string name="trackers_trend_down">Mniej niż tydzień wcześniej</string>
+    <string name="trackers_trend_flat">Tyle samo co tydzień wcześniej</string>
+    <string name="trackers_trend_not_enough_data">Za mało danych na trend</string>
 </resources>
