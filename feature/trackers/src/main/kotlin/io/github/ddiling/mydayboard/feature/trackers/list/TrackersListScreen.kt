@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -76,7 +77,7 @@ internal fun TrackersListScreen(
             }
 
             is TrackersListUiState.Content -> {
-                LazyColumn(contentModifier) {
+                LazyColumn(contentModifier, contentPadding = PaddingValues(bottom = FAB_CLEARANCE)) {
                     items(uiState.items, key = { it.id }) { item ->
                         TrackerRow(item, Modifier.clickable { onTrackerClick(item.id) })
                     }
@@ -160,3 +161,6 @@ private fun TrackersListContentPreview() {
 private fun TrackersListLargeFontPreview() {
     PreviewSurface { TrackersListScreen(TrackersListUiState.Content(previewItems), {}, {}) }
 }
+
+// Extended FAB height (56.dp) plus its 16.dp margins: keeps the last row from sitting under it.
+private val FAB_CLEARANCE = 88.dp
