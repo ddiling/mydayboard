@@ -50,4 +50,11 @@
     <string name="trackers_trend_down">Mniej niż tydzień wcześniej</string>
     <string name="trackers_trend_flat">Tyle samo co tydzień wcześniej</string>
     <string name="trackers_trend_not_enough_data">Za mało danych na trend</string>
+    <string name="trackers_event_add_title">Dodaj wcześniejszy wpis</string>
+    <string name="trackers_event_edit_title">Edytuj wpis</string>
+    <string name="trackers_event_date">Data: %1$s</string>
+    <string name="trackers_event_time">Godzina: %1$s</string>
+    <string name="trackers_event_error_future">Czas nie może być w przyszłości</string>
+    <string name="trackers_event_error_before_start">Czas nie może być przed rozpoczęciem śledzenia</string>
+    <string name="trackers_event_delete">Usuń wpis</string>
 </resources>

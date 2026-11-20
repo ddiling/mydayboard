@@ -48,4 +48,11 @@
     <string name="trackers_trend_down">Fewer than the week before</string>
     <string name="trackers_trend_flat">Same as the week before</string>
     <string name="trackers_trend_not_enough_data">Not enough data for a trend yet</string>
+    <string name="trackers_event_add_title">Add past entry</string>
+    <string name="trackers_event_edit_title">Edit entry</string>
+    <string name="trackers_event_date">Date: %1$s</string>
+    <string name="trackers_event_time">Time: %1$s</string>
+    <string name="trackers_event_error_future">The time can\'t be in the future</string>
+    <string name="trackers_event_error_before_start">The time can\'t be before the tracker started</string>
+    <string name="trackers_event_delete">Delete entry</string>
 </resources>
