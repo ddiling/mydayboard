@@ -1,10 +1,13 @@
 package io.github.ddiling.mydayboard.feature.trackers.detail
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -15,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -29,6 +33,7 @@ import java.time.format.FormatStyle
 @Composable
 internal fun CounterContent(
     counter: TrackerDetailUiState.Counter,
+    onEntryClick: (eventId: String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(modifier, contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 88.dp)) {
@@ -40,7 +45,7 @@ internal fun CounterContent(
         }
         item { SectionTitle(R.string.trackers_detail_history) }
         if (counter.history.isEmpty()) item { Text(stringResource(R.string.trackers_no_events)) }
-        items(counter.history) { day -> HistoryDayBlock(day) }
+        items(counter.history) { day -> HistoryDayBlock(day, onEntryClick) }
     }
 }
 
@@ -93,10 +98,23 @@ internal fun LabeledRow(
 }
 
 @Composable
-private fun HistoryDayBlock(day: HistoryDay) {
-    Column(Modifier.padding(vertical = 8.dp)) {
+private fun HistoryDayBlock(
+    day: HistoryDay,
+    onEntryClick: (eventId: String) -> Unit,
+) {
+    Column(Modifier.padding(top = 8.dp)) {
         Text(day.date.formatted(), style = MaterialTheme.typography.labelLarge)
-        day.entries.forEach { entry -> Text(entry.time.formatted()) }
+        day.entries.forEach { entry ->
+            // A tap opens the entry for editing; the row is at least 48 dp tall so it is easy to hit.
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 48.dp)
+                    .clickable { onEntryClick(entry.eventId) }
+                    .testTag("trackers_detail_entry_${entry.eventId}"),
+                contentAlignment = Alignment.CenterStart,
+            ) { Text(entry.time.formatted()) }
+        }
     }
 }
 

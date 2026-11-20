@@ -1,0 +1,28 @@
+# E2E smoke test: add a past entry (left at its default of now), then delete it and undo the delete.
+# The pickers are not driven here: only a real device shows how they behave.
+# Run: maestro test app/maestro/   (emulator running, debug APK installed)
+appId: io.github.ddiling.mydayboard.debug
+name: Trackers - add, delete and restore an entry
+tags:
+  - smoke
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    id: "open_trackers"
+- tapOn: "Add tracker"
+- tapOn: "Name"
+- inputText: "Water"
+- tapOn: "Save"
+- assertVisible: "No events yet" # the counter detail screen opened with an empty history
+- tapOn: "Add past entry"
+# Dialogs are separate windows without test-tag ids, so the dialog buttons are found by their text.
+- tapOn: "Save"
+- assertNotVisible: "No events yet"
+- tapOn:
+    id: "trackers_detail_entry_.*"
+- tapOn: "Delete entry"
+- assertVisible: "Entry deleted"
+- assertVisible: "No events yet"
+- tapOn: "Undo"
+- assertNotVisible: "No events yet"

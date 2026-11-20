@@ -4,16 +4,20 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import io.github.ddiling.mydayboard.core.domain.tracker.Trend
+import io.github.ddiling.mydayboard.feature.trackers.event.EntryMode
+import io.github.ddiling.mydayboard.feature.trackers.event.EventTimeEditorState
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import java.time.LocalDate
+import java.time.LocalTime
 
 @RunWith(RobolectricTestRunner::class)
 class TrackerDetailScreenTest {
@@ -92,6 +96,52 @@ class TrackerDetailScreenTest {
         composeRule.mainClock.advanceTimeByFrame()
 
         composeRule.onNodeWithText("Entry deleted").assertIsDisplayed()
+    }
+
+    @Test
+    fun `the add past entry action calls onAddPastEntry`() {
+        var adds = 0
+        composeRule.setContent { TrackerDetailScreen(counter, TrackerDetailActions(onAddPastEntry = { adds++ })) }
+
+        composeRule.onNodeWithContentDescription("Add past entry").performClick()
+
+        assertEquals(1, adds)
+    }
+
+    @Test
+    fun `tapping a history row calls onEditEntry with that event id`() {
+        val edited = mutableListOf<String>()
+        val day = HistoryDay(LocalDate.of(2026, 3, 2), listOf(HistoryEntry("e7", LocalTime.of(9, 30))))
+        val actions = TrackerDetailActions(onEditEntry = { edited += it })
+        composeRule.setContent { TrackerDetailScreen(counter.copy(history = listOf(day)), actions) }
+
+        composeRule.onNodeWithTag("trackers_detail_entry_e7").performClick()
+
+        assertEquals(listOf("e7"), edited)
+    }
+
+    @Test
+    fun `tapping a broken streak calls onEditEntry with the reset that ended it`() {
+        val edited = mutableListOf<String>()
+        val streak = BrokenStreak(LocalDate.of(2026, 2, 1), LocalDate.of(2026, 2, 20), 19, endedByEventId = "r2")
+        composeRule.setContent {
+            TrackerDetailScreen(
+                daysSince.copy(brokenStreaks = listOf(streak)),
+                TrackerDetailActions(onEditEntry = { edited += it }),
+            )
+        }
+
+        composeRule.onNodeWithTag("trackers_detail_entry_r2").performClick()
+
+        assertEquals(listOf("r2"), edited)
+    }
+
+    @Test
+    fun `an open editor shows the entry dialog`() {
+        val editor = EventTimeEditorState(EntryMode.Add, LocalDate.of(2026, 3, 2), LocalTime.of(8, 15), null)
+        composeRule.setContent { TrackerDetailScreen(counter.copy(editor = editor), TrackerDetailActions()) }
+
+        composeRule.onNodeWithTag("trackers_event_save").assertIsDisplayed()
     }
 
     private val daysSince =
