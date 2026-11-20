@@ -111,8 +111,11 @@ class TrackerDetailViewModelTest {
                 assertEquals(listOf(DayCount(today.minusDays(1), 1), DayCount(today, 2)), counter.lastDays.takeLast(2))
                 assertEquals(
                     listOf(
-                        HistoryDay(today, listOf(LocalTime.of(9, 30), LocalTime.of(8, 0))),
-                        HistoryDay(today.minusDays(1), listOf(LocalTime.of(20, 0))),
+                        HistoryDay(
+                            today,
+                            listOf(HistoryEntry("id-3", LocalTime.of(9, 30)), HistoryEntry("id-4", LocalTime.of(8, 0))),
+                        ),
+                        HistoryDay(today.minusDays(1), listOf(HistoryEntry("id-2", LocalTime.of(20, 0)))),
                     ),
                     counter.history,
                 )

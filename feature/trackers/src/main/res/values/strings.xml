@@ -41,6 +41,7 @@
     <string name="trackers_detail_earlier_none">No earlier streaks yet</string>
     <string name="trackers_detail_range">%1$s – %2$s</string>
     <string name="trackers_detail_undo">Undo</string>
+    <string name="trackers_detail_entry_deleted">Entry deleted</string>
     <string name="trackers_detail_last_days">Last 7 days</string>
     <string name="trackers_detail_history">History</string>
     <string name="trackers_trend_up">More than the week before</string>

@@ -28,8 +28,11 @@ private val previewCounter =
         trend = Trend.UP,
         history =
             listOf(
-                HistoryDay(previewToday, listOf(LocalTime.of(9, 30), LocalTime.of(8, 5))),
-                HistoryDay(previewToday.minusDays(1), listOf(LocalTime.of(20, 0))),
+                HistoryDay(
+                    previewToday,
+                    listOf(HistoryEntry("e3", LocalTime.of(9, 30)), HistoryEntry("e2", LocalTime.of(8, 5))),
+                ),
+                HistoryDay(previewToday.minusDays(1), listOf(HistoryEntry("e1", LocalTime.of(20, 0)))),
             ),
         pendingUndo = null,
     )

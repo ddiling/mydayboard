@@ -14,6 +14,8 @@ import io.github.ddiling.mydayboard.core.domain.tracker.counterTrend
 import io.github.ddiling.mydayboard.core.domain.tracker.dailyCounts
 import io.github.ddiling.mydayboard.core.domain.tracker.summarizeCounter
 import io.github.ddiling.mydayboard.core.domain.tracker.summarizeDaysSince
+import io.github.ddiling.mydayboard.feature.trackers.event.EventTimeEditor
+import io.github.ddiling.mydayboard.feature.trackers.event.EventTimeEditorState
 import io.github.ddiling.mydayboard.feature.trackers.navigation.TrackerDetailDestination
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -25,12 +27,13 @@ import java.time.Instant
 import javax.inject.Inject
 
 /**
- * Shows one tracker and lets the user add events to it. "Today" is the local calendar day in the clock's
- * current zone, and the state is recomputed every minute, so the count resets after midnight and "since last"
- * keeps moving without any user action. The ticker only triggers the recomputation: every run reads a fresh
- * `clock.instant()`, because the tick's own instant can be up to a minute old and would hide an event the
- * user just added (the summaries ignore events after "now"). Sharing stops 5 s after the screen goes away,
- * which keeps the data across a rotation but stops the minute ticker once the screen is really gone.
+ * Shows one tracker and lets the user add events to it, or change or delete them through [entryEditor].
+ * "Today" is the local calendar day in the clock's current zone, and the state is recomputed every minute,
+ * so the count resets after midnight and "since last" keeps moving without any user action. The ticker only
+ * triggers the recomputation: every run reads a fresh `clock.instant()`, because the tick's own instant can
+ * be up to a minute old and would hide an event the user just added (the summaries ignore events after
+ * "now"). Sharing stops 5 s after the screen goes away, which keeps the data across a rotation but stops the
+ * minute ticker once the screen is really gone.
  */
 @HiltViewModel
 internal class TrackerDetailViewModel
@@ -41,7 +44,11 @@ internal class TrackerDetailViewModel
         private val clock: Clock,
     ) : ViewModel() {
         private val trackerId: String = savedStateHandle.toRoute<TrackerDetailDestination>().trackerId
-        private val quickUndo = QuickActionUndo(repository::deleteEvent)
+        private val quickUndo = QuickActionUndo(repository::deleteEvent, repository::restoreEvent)
+
+        /** The add / edit / delete entry dialog; the screen calls its actions and reads its state from [uiState]. */
+        val entryEditor =
+            EventTimeEditor(viewModelScope, trackerId, repository, clock) { quickUndo.register(it, UndoKind.DELETED) }
 
         val uiState: StateFlow<TrackerDetailUiState> =
             combine(
@@ -49,14 +56,15 @@ internal class TrackerDetailViewModel
                 repository.observeEvents(trackerId),
                 minuteTicker(clock),
                 quickUndo.pending,
-            ) { tracker, events, _, pendingUndo ->
+                entryEditor.state,
+            ) { tracker, events, _, pendingUndo, editor ->
                 val now = clock.instant()
                 if (tracker == null) {
                     TrackerDetailUiState.NotFound
                 } else {
                     when (tracker.type) {
-                        TrackerType.EVENT_COUNTER -> counterState(tracker, events, now, pendingUndo)
-                        TrackerType.DAYS_SINCE -> daysSinceState(tracker, events, now, pendingUndo)
+                        TrackerType.EVENT_COUNTER -> counterState(tracker, events, now, pendingUndo, editor)
+                        TrackerType.DAYS_SINCE -> daysSinceState(tracker, events, now, pendingUndo, editor)
                     }
                 }
             }.stateIn(
@@ -89,24 +97,31 @@ internal class TrackerDetailViewModel
             events: List<TrackerEvent>,
             now: Instant,
             pendingUndo: Undo?,
+            editor: EventTimeEditorState?,
         ): TrackerDetailUiState.DaysSince {
             val zone = clock.zone
             val summary = summarizeDaysSince(tracker.startedAt, events.map { it.occurredAt }, now, zone)
+            // The summary ignores resets outside startedAt..now, so only those can have ended a streak. Resets at
+            // the same instant are interchangeable, so the order among them does not matter.
+            val resets = events.filter { it.occurredAt in tracker.startedAt..now }.sortedByDescending { it.occurredAt }
             return TrackerDetailUiState.DaysSince(
                 name = tracker.name,
                 currentDays = summary.currentDays,
                 currentStart = summary.currentStart.atZone(zone).toLocalDate(),
                 longestDays = summary.longestDays,
+                // Both lists are newest first: the k-th broken streak was ended by the k-th newest reset.
                 brokenStreaks =
-                    summary.brokenStreaks.map {
+                    summary.brokenStreaks.zip(resets).map { (streak, reset) ->
                         // A broken streak always has an end; the fallback only satisfies the nullable type.
                         BrokenStreak(
-                            it.start.atZone(zone).toLocalDate(),
-                            (it.end ?: it.start).atZone(zone).toLocalDate(),
-                            it.days,
+                            streak.start.atZone(zone).toLocalDate(),
+                            (streak.end ?: streak.start).atZone(zone).toLocalDate(),
+                            streak.days,
+                            endedByEventId = reset.id,
                         )
                     },
                 pendingUndo = pendingUndo,
+                editor = editor,
             )
         }
 
@@ -115,6 +130,7 @@ internal class TrackerDetailViewModel
             events: List<TrackerEvent>,
             now: Instant,
             pendingUndo: Undo?,
+            editor: EventTimeEditorState?,
         ): TrackerDetailUiState.Counter {
             val zone = clock.zone
             val today = now.atZone(zone).toLocalDate()
@@ -130,6 +146,7 @@ internal class TrackerDetailViewModel
                 trend = counterTrend(times, historyStart, today, zone),
                 history = events.toHistory(),
                 pendingUndo = pendingUndo,
+                editor = editor,
             )
         }
 
@@ -137,9 +154,10 @@ internal class TrackerDetailViewModel
             val zone = clock.zone
             // Sorting by instant first keeps a repeated local hour (clocks going back) in the right order.
             return sortedByDescending { it.occurredAt }
-                .map { it.occurredAt.atZone(zone) }
-                .groupBy { it.toLocalDate() }
-                .map { (date, moments) -> HistoryDay(date, moments.map { it.toLocalTime() }) }
+                .groupBy { it.occurredAt.atZone(zone).toLocalDate() }
+                .map { (date, day) ->
+                    HistoryDay(date, day.map { HistoryEntry(it.id, it.occurredAt.atZone(zone).toLocalTime()) })
+                }
         }
 
         private companion object {

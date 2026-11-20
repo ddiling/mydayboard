@@ -43,6 +43,7 @@
     <string name="trackers_detail_earlier_none">Brak wcześniejszych serii</string>
     <string name="trackers_detail_range">%1$s – %2$s</string>
     <string name="trackers_detail_undo">Cofnij</string>
+    <string name="trackers_detail_entry_deleted">Wpis usunięty</string>
     <string name="trackers_detail_last_days">Ostatnie 7 dni</string>
     <string name="trackers_detail_history">Historia</string>
     <string name="trackers_trend_up">Więcej niż tydzień wcześniej</string>

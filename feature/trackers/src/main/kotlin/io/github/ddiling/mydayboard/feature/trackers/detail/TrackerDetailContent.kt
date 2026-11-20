@@ -96,7 +96,7 @@ internal fun LabeledRow(
 private fun HistoryDayBlock(day: HistoryDay) {
     Column(Modifier.padding(vertical = 8.dp)) {
         Text(day.date.formatted(), style = MaterialTheme.typography.labelLarge)
-        day.times.forEach { time -> Text(time.formatted()) }
+        day.entries.forEach { entry -> Text(entry.time.formatted()) }
     }
 }
 

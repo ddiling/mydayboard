@@ -24,9 +24,9 @@ private val previewWithHistory =
         longestDays = 30,
         brokenStreaks =
             listOf(
-                BrokenStreak(previewToday.minusDays(40), previewToday.minusDays(12), 28),
-                BrokenStreak(previewToday.minusDays(70), previewToday.minusDays(40), 30),
-                BrokenStreak(previewToday.minusDays(71), previewToday.minusDays(70), 1),
+                BrokenStreak(previewToday.minusDays(40), previewToday.minusDays(12), 28, "r3"),
+                BrokenStreak(previewToday.minusDays(70), previewToday.minusDays(40), 30, "r2"),
+                BrokenStreak(previewToday.minusDays(71), previewToday.minusDays(70), 1, "r1"),
             ),
     )
 

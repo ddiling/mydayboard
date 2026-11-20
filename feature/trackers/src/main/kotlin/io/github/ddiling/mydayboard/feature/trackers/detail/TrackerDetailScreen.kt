@@ -132,6 +132,7 @@ private fun UndoSnackbar(
         stringResource(
             when (undo?.kind) {
                 UndoKind.RESET -> R.string.trackers_detail_reset_done
+                UndoKind.DELETED -> R.string.trackers_detail_entry_deleted
                 UndoKind.ADDED, null -> R.string.trackers_detail_added
             },
         )

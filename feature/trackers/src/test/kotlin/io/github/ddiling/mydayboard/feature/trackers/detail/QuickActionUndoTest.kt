@@ -7,7 +7,8 @@ import org.junit.Test
 
 class QuickActionUndoTest {
     private val deleted = mutableListOf<String>()
-    private val quickUndo = QuickActionUndo { deleted += it }
+    private val restored = mutableListOf<String>()
+    private val quickUndo = QuickActionUndo(deleteEvent = { deleted += it }, restoreEvent = { restored += it })
 
     @Test
     fun `a registered action is pending`() {
@@ -56,5 +57,26 @@ class QuickActionUndoTest {
 
             assertNull(quickUndo.pending.value)
             assertEquals(emptyList<String>(), deleted)
+        }
+
+    @Test
+    fun `undoing a deleted entry restores that event and deletes nothing`() =
+        runTest {
+            quickUndo.register("e1", UndoKind.DELETED)
+
+            quickUndo.undo()
+
+            assertEquals(listOf("e1"), restored)
+            assertEquals(emptyList<String>(), deleted)
+        }
+
+    @Test
+    fun `undoing an added event restores nothing`() =
+        runTest {
+            quickUndo.register("e1", UndoKind.ADDED)
+
+            quickUndo.undo()
+
+            assertEquals(emptyList<String>(), restored)
         }
 }
