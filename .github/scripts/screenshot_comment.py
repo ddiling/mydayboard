@@ -14,6 +14,7 @@ import subprocess
 import sys
 
 MARKER = "<!-- screenshots -->"
+BOT_LOGIN = "github-actions[bot]"
 REPO = "ddiling/mydayboard"
 MAX_IMAGES = 12
 SCREENSHOT_DIR = "/src/test/screenshots/"
@@ -52,26 +53,36 @@ def parse_name_status(output: str) -> list[tuple[str, str]]:
     return entries
 
 
-def build_body(changes: list[tuple[str, str]], base_sha: str, head_sha: str) -> str:
+def build_body(changes: list[tuple[str, str]], before_sha: str, head_sha: str) -> str:
+    """`before_sha` must be the merge-base: the commit the PR branched from, so "before" is what it changed."""
+    removed = sorted(path for status, path in changes if status == "D")
+    present = [change for change in changes if change[0] != "D"]
     if not changes:
         return f"{MARKER}\n## Screenshots\n\nNo screenshot changes."
-    ordered = sorted(changes, key=lambda change: _is_light_first(change[1]))
+    removed_lines = [f"Removed: {len(removed)} baselines"] if removed else []
+    removed_lines += [f"- `{module_of(path)}` {preview_label(path)}" for path in removed]
+    if not present:
+        return "\n".join([MARKER, "## Screenshots", "", *removed_lines])
+    ordered = sorted(present, key=lambda change: _is_light_first(change[1]))
     shown, hidden = ordered[:MAX_IMAGES], ordered[MAX_IMAGES:]
     lines = [MARKER, "## Screenshots", "", f"Changed baselines at `{head_sha[:7]}`.", ""]
     lines += ["| Module | Preview | Before | After |", "| --- | --- | --- | --- |"]
     for status, path in shown:
-        before = f"![before]({raw_url(base_sha, path)})" if status == "M" else "new"
+        before = f"![before]({raw_url(before_sha, path)})" if status == "M" else "new"
         after = f"![after]({raw_url(head_sha, path)})"
         lines.append(f"| `{module_of(path)}` | {preview_label(path)} | {before} | {after} |")
     if hidden:
         lines += ["", f"and {len(hidden)} more:", ""]
         lines += [f"- `{module_of(path)}` {preview_label(path)}: [{status}]({raw_url(head_sha, path)})" for status, path in hidden]
+    if removed_lines:
+        lines += ["", *removed_lines]
     return "\n".join(lines)
 
 
 def find_comment_id(comments: list[dict]) -> int | None:
+    """Only the workflow's own comments count, so a foreign comment with the marker is never edited."""
     for comment in comments:
-        if MARKER in comment.get("body", ""):
+        if MARKER in comment.get("body", "") and comment.get("user", {}).get("login") == BOT_LOGIN:
             return comment["id"]
     return None
 
@@ -84,8 +95,12 @@ def _gh(*args: str, stdin: str | None = None) -> str:
 def main() -> int:
     base_sha, head_sha = os.environ["BASE_SHA"], os.environ["HEAD_SHA"]
     pr, repo = os.environ["PR_NUMBER"], os.environ["GITHUB_REPOSITORY"]
+    merge_base = subprocess.run(
+        ["git", "merge-base", base_sha, head_sha], capture_output=True, text=True, check=True,
+    ).stdout.strip()
+    # --no-renames: a renamed baseline is a delete plus an add, so the new name still gets an image.
     diff = subprocess.run(
-        ["git", "diff", "--name-status", "--diff-filter=AM", f"{base_sha}...{head_sha}"],
+        ["git", "diff", "--name-status", "--no-renames", "--diff-filter=AMD", merge_base, head_sha],
         capture_output=True, text=True, check=True,
     ).stdout
     changes = parse_name_status(diff)
@@ -94,7 +109,7 @@ def main() -> int:
     if not changes and existing is None:
         print("No screenshot changes and no comment to update.")
         return 0
-    payload = json.dumps({"body": build_body(changes, base_sha, head_sha)})
+    payload = json.dumps({"body": build_body(changes, merge_base, head_sha)})
     if existing is None:
         _gh("api", f"repos/{repo}/issues/{pr}/comments", "--input", "-", stdin=payload)
     else:

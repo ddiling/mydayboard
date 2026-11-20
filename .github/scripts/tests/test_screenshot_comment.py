@@ -9,6 +9,8 @@ import screenshot_comment as sc  # noqa: E402
 
 BASE = "b" * 40
 HEAD = "a" * 40
+MERGE_BASE = "c" * 40
+BOT = {"login": sc.BOT_LOGIN}
 PREFIX = "feature/trackers/src/test/screenshots/io.x.TrackerKt."
 
 
@@ -50,8 +52,31 @@ class ScreenshotCommentTest(unittest.TestCase):
         self.assertEqual(sc.parse_name_status(output), [("A", shot("X"))])
 
     def test_find_comment_id_matches_the_marker_only(self):
-        comments = [{"id": 1, "body": "hello"}, {"id": 2, "body": f"{sc.MARKER}\nx"}]
+        comments = [{"id": 1, "body": "hello", "user": BOT}, {"id": 2, "body": f"{sc.MARKER}\nx", "user": BOT}]
         self.assertEqual(sc.find_comment_id(comments), 2)
+
+    def test_find_comment_id_ignores_a_marker_comment_from_another_author(self):
+        comments = [{"id": 1, "body": f"{sc.MARKER}\nx", "user": {"login": "someone"}}]
+        self.assertIsNone(sc.find_comment_id(comments))
+
+    def test_before_link_uses_the_sha_it_is_given_so_the_caller_can_pass_the_merge_base(self):
+        body = sc.build_body([("M", shot("ListPreview"))], MERGE_BASE, HEAD)
+        self.assertIn(f"/{MERGE_BASE}/{shot('ListPreview')}", body)
+
+    def test_parse_keeps_deleted_screenshots(self):
+        self.assertEqual(sc.parse_name_status(f"D\t{shot('X')}\n"), [("D", shot("X"))])
+
+    def test_only_deleted_baselines_are_listed_as_removed_without_images(self):
+        body = sc.build_body([("D", shot("OldPreview")), ("D", shot("GonePreview"))], BASE, HEAD)
+        self.assertIn("Removed: 2 baselines", body)
+        self.assertIn("OldPreview (Light)", body)
+        self.assertNotIn("No screenshot changes", body)
+        self.assertNotIn("![", body)
+
+    def test_removed_line_is_added_below_the_table_when_images_also_changed(self):
+        body = sc.build_body([("A", shot("NewPreview")), ("D", shot("OldPreview"))], BASE, HEAD)
+        self.assertIn("![after]", body)
+        self.assertIn("Removed: 1 baselines", body)
 
     def test_find_comment_id_is_none_without_a_marker(self):
         self.assertIsNone(sc.find_comment_id([{"id": 1, "body": "hello"}]))
