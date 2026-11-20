@@ -64,4 +64,12 @@ interface TrackerRepository {
 
     /** Soft-deletes the event. Also what Undo of an added event uses. */
     suspend fun deleteEvent(eventId: String)
+
+    /**
+     * Brings a deleted event back: clears its deletion and bumps `updatedAt` from the injected clock.
+     * It is what Undo of a deleted entry uses. Changes nothing, without throwing, for an unknown id,
+     * for an event that is not deleted, and for an event of a deleted tracker (that tracker still
+     * hides its events).
+     */
+    suspend fun restoreEvent(eventId: String)
 }

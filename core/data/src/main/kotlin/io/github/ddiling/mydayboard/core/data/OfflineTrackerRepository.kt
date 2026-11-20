@@ -95,6 +95,10 @@ internal class OfflineTrackerRepository
             eventDao.softDeleteIfActive(eventId, now = clock.millis())
         }
 
+        override suspend fun restoreEvent(eventId: String) {
+            eventDao.restoreIfDeleted(eventId, now = clock.millis())
+        }
+
         private companion object {
             const val NOT_INSERTED = -1L
         }

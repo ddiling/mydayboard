@@ -88,4 +88,41 @@ abstract class TrackerDeletionContractTest : TrackerRepositoryContractBase() {
 
             assertEquals(listOf(kept), repo.observeEvents(tracker.id).first())
         }
+
+    @Test
+    fun `restoring a deleted event shows it again`() =
+        runTest {
+            val tracker = givenTracker()
+            val event = givenDeletedEvent(tracker)
+
+            repo.restoreEvent(event.id)
+
+            assertEquals(listOf(event), repo.observeEvents(tracker.id).first())
+        }
+
+    @Test
+    fun `restoring a deleted event bumps updatedAt and keeps createdAt`() =
+        runTest {
+            val tracker = givenTracker()
+            val event = givenDeletedEvent(tracker)
+            clock.advanceBy(clockAdvance)
+
+            repo.restoreEvent(event.id)
+
+            val restored = repo.observeEvents(tracker.id).first().single()
+            assertEquals(nowAfterAdvance, restored.updatedAt)
+            assertEquals(event.createdAt, restored.createdAt)
+        }
+
+    @Test
+    fun `restoring an event that is not deleted keeps its updatedAt`() =
+        runTest {
+            val tracker = givenTracker()
+            val event = givenEvent(tracker)
+            clock.advanceBy(clockAdvance)
+
+            repo.restoreEvent(event.id)
+
+            assertEquals(listOf(event), repo.observeEvents(tracker.id).first())
+        }
 }

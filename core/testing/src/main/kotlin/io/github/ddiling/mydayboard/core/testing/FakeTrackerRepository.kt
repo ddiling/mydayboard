@@ -16,8 +16,9 @@ import java.time.Instant
 
 /**
  * In-memory [TrackerRepository] for ViewModel tests. It passes the same contract tests as the Room
- * implementation, so a test using it sees the behaviour production will have. Deleted rows are simply
- * dropped, because the domain cannot tell them from missing ones.
+ * implementation, so a test using it sees the behaviour production will have. Deleted trackers are
+ * dropped with their events, because the domain cannot tell them from missing ones. Deleted events are
+ * kept aside only so that [restoreEvent] can bring them back.
  */
 class FakeTrackerRepository(
     private val clock: Clock,
@@ -26,6 +27,7 @@ class FakeTrackerRepository(
     private data class State(
         val trackers: List<Tracker> = emptyList(),
         val events: List<TrackerEvent> = emptyList(),
+        val deletedEvents: List<TrackerEvent> = emptyList(),
     ) {
         fun hasTracker(id: String) = trackers.any { it.id == id }
     }
@@ -73,7 +75,11 @@ class FakeTrackerRepository(
 
     override suspend fun deleteTracker(id: String) {
         state.update { s ->
-            s.copy(trackers = s.trackers.filter { it.id != id }, events = s.events.filter { it.trackerId != id })
+            s.copy(
+                trackers = s.trackers.filter { it.id != id },
+                events = s.events.filter { it.trackerId != id },
+                deletedEvents = s.deletedEvents.filter { it.trackerId != id },
+            )
         }
     }
 
@@ -104,6 +110,20 @@ class FakeTrackerRepository(
     }
 
     override suspend fun deleteEvent(eventId: String) {
-        state.update { s -> s.copy(events = s.events.filter { it.id != eventId }) }
+        state.update { s ->
+            val gone = s.events.firstOrNull { it.id == eventId } ?: return@update s
+            s.copy(events = s.events - gone, deletedEvents = s.deletedEvents + gone)
+        }
+    }
+
+    override suspend fun restoreEvent(eventId: String) {
+        val now = clock.instant()
+        state.update { s ->
+            val back = s.deletedEvents.firstOrNull { it.id == eventId } ?: return@update s
+            s.copy(
+                events = s.events + back.copy(updatedAt = now),
+                deletedEvents = s.deletedEvents - back,
+            )
+        }
     }
 }

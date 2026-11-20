@@ -219,4 +219,34 @@ class TrackerEventDaoTest {
             assertEquals(0, changed)
             assertEquals(T0 to deletedAt, database.updatedAndDeletedAt("tracker_events", "e"))
         }
+
+    @Test
+    fun `restoreIfDeleted shows a deleted event again and bumps updatedAt`() =
+        runTest {
+            trackerDao.insert(tracker("t"))
+            dao.insert(event("e", "t", deletedAt = T0 + 1))
+
+            val changed = dao.restoreIfDeleted("e", now = T0 + 2)
+
+            assertEquals(1, changed)
+            assertEquals(T0 + 2 to null, database.updatedAndDeletedAt("tracker_events", "e"))
+        }
+
+    @Test
+    fun `restoreIfDeleted changes nothing for an event that is not deleted`() =
+        runTest {
+            trackerDao.insert(tracker("t"))
+            dao.insert(event("e", "t"))
+
+            assertEquals(0, dao.restoreIfDeleted("e", now = T0 + 2))
+        }
+
+    @Test
+    fun `restoreIfDeleted changes nothing under a soft-deleted tracker`() =
+        runTest {
+            trackerDao.insert(tracker("t", deletedAt = T0 + 1))
+            dao.insert(event("e", "t", deletedAt = T0 + 1))
+
+            assertEquals(0, dao.restoreIfDeleted("e", now = T0 + 2))
+        }
 }
