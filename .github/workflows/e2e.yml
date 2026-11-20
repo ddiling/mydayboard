@@ -1,7 +1,8 @@
 # End-to-end tests with Maestro on an Android emulator.
 # Runs on main, nightly, on demand, and on a PR when both hold:
-#   - it targets main, so it is next in line to merge. A PR stacked on another branch is skipped: its
-#     changes are tested once the PR below it merges and GitHub retargets it to main, which re-runs this.
+#   - it targets main, so it is next in line to merge. A PR stacked on another branch is skipped: after
+#     the PR below it is squash-merged, it must be rebased onto main (or it shows the merged commits
+#     again), and that push runs this. GitHub's automatic retarget alone starts no run.
 #   - it changes what ends up in the app or the flows (sources, resources, build files, Maestro flows).
 # The "e2e" label forces a run on any PR. The rule is automatic because a forgotten label once let a
 # broken flow reach main.
@@ -11,17 +12,16 @@ on:
   push:
     branches: [main]
   pull_request:
-    # edited: a retarget to main (the PR below merged). Title or body edits are filtered out below.
-    types: [opened, synchronize, reopened, labeled, edited]
+    types: [opened, synchronize, reopened, labeled]
   schedule:
     - cron: "0 3 * * *"
   workflow_dispatch:
 
-# A new push, a retarget to main or the "e2e" label cancels the older run of the same PR ("code" group).
-# Events that test nothing (a title or body edit, any other label) get a group of their own (the run id):
-# concurrency acts before the job's `if:`, so a shared group would let them cancel a real run.
+# A new push or the "e2e" label cancels the older run of the same PR ("code" group). Adding any other
+# label tests nothing, so it gets a group of its own (the run id): concurrency acts before the job's
+# `if:`, so a shared group would let it cancel a real run.
 concurrency:
-  group: "${{ github.workflow }}-${{ github.ref }}-${{ ((github.event.action == 'edited' && github.event.changes.base.ref.from == '') || (github.event.action == 'labeled' && github.event.label.name != 'e2e')) && github.run_id || 'code' }}"
+  group: "${{ github.workflow }}-${{ github.ref }}-${{ (github.event.action == 'labeled' && github.event.label.name != 'e2e') && github.run_id || 'code' }}"
   cancel-in-progress: true
 
 permissions:
@@ -60,7 +60,6 @@ jobs:
       !cancelled() && (
         github.event_name != 'pull_request' ||
         (
-          (github.event.action != 'edited' || github.event.changes.base.ref.from != '') &&
           (github.event.action != 'labeled' || github.event.label.name == 'e2e') &&
           (
             contains(github.event.pull_request.labels.*.name, 'e2e') ||
