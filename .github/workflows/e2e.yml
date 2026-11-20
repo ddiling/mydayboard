@@ -2,7 +2,8 @@
 # Runs on main, nightly, on demand, and on a PR when both hold:
 #   - it targets main, so it is next in line to merge. A PR stacked on another branch is skipped: after
 #     the PR below it is squash-merged, it must be rebased onto main (or it shows the merged commits
-#     again), and that push runs this. GitHub's automatic retarget alone starts no run.
+#     again), and that push runs this. GitHub's automatic retarget is not a reliable trigger: it
+#     started a run for one of three retargeted PRs.
 #   - it changes what ends up in the app or the flows (sources, resources, build files, Maestro flows).
 # The "e2e" label forces a run on any PR. The rule is automatic because a forgotten label once let a
 # broken flow reach main.
