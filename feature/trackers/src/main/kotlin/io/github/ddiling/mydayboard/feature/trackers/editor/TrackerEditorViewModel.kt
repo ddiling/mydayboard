@@ -78,12 +78,14 @@ internal class TrackerEditorViewModel
             if (!state.canSave || valid == null) return
             _uiState.update { it.copy(isSaving = true) }
             viewModelScope.launch {
-                if (trackerId == null) {
-                    repository.createTracker(valid.name, state.type, state.startedAt())
-                } else {
-                    repository.renameTracker(trackerId, valid.name)
-                }
-                _uiState.update { it.copy(result = EditorResult.Saved) }
+                val savedId =
+                    if (trackerId == null) {
+                        repository.createTracker(valid.name, state.type, state.startedAt()).id
+                    } else {
+                        repository.renameTracker(trackerId, valid.name)
+                        trackerId
+                    }
+                _uiState.update { it.copy(result = EditorResult.Saved(savedId)) }
             }
         }
 

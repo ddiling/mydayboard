@@ -101,7 +101,7 @@ class TrackerEditorViewModelTest {
             val created = trackers().single()
             assertEquals("Walk dog", created.name)
             assertEquals(TrackerType.DAYS_SINCE, created.type)
-            assertEquals(EditorResult.Saved, createViewModel.uiState.value.result)
+            assertEquals(EditorResult.Saved(created.id), createViewModel.uiState.value.result)
         }
 
     @Test
@@ -201,7 +201,7 @@ class TrackerEditorViewModelTest {
             val renamed = trackers().single()
             assertEquals("Tea", renamed.name)
             assertEquals(clock.instant(), renamed.updatedAt)
-            assertEquals(EditorResult.Saved, viewModel.uiState.value.result)
+            assertEquals(EditorResult.Saved(tracker.id), viewModel.uiState.value.result)
         }
 
     @Test

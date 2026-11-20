@@ -5,8 +5,17 @@ import io.github.ddiling.mydayboard.core.domain.tracker.TrackerType
 import io.github.ddiling.mydayboard.core.domain.tracker.validateTrackerName
 import java.time.LocalDate
 
-/** How the editor was left, so navigation can react once and the screen does not need to know the routes. */
-internal enum class EditorResult { Saved, Deleted }
+/**
+ * How the editor was left, so navigation can react and the screen does not need to know the routes. [Saved]
+ * carries the id because after creating, navigation opens that new tracker.
+ */
+internal sealed interface EditorResult {
+    data class Saved(
+        val trackerId: String,
+    ) : EditorResult
+
+    data object Deleted : EditorResult
+}
 
 /** Whether the tracker being edited has been looked up yet, and whether it exists. */
 internal enum class EditorLoad { Loading, Ready, NotFound }
