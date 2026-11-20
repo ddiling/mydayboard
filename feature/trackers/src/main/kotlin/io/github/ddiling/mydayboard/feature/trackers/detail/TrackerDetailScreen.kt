@@ -62,7 +62,10 @@ internal fun TrackerDetailScreen(
                 title = { Text(counter?.name ?: (uiState as? TrackerDetailUiState.DaysSince)?.name.orEmpty()) },
                 actions = {
                     if (uiState is TrackerDetailUiState.Counter || uiState is TrackerDetailUiState.DaysSince) {
-                        TextButton(actions.onEditClick) { Text(stringResource(R.string.trackers_edit)) }
+                        TextButton(onClick = {
+                            actions.onUndoDismissed()
+                            actions.onEditClick()
+                        }) { Text(stringResource(R.string.trackers_edit)) }
                     }
                 },
             )

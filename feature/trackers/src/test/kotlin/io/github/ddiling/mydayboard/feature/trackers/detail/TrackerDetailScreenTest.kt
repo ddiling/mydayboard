@@ -48,6 +48,24 @@ class TrackerDetailScreenTest {
     }
 
     @Test
+    fun `the edit action clears the pending undo so it does not come back after returning`() {
+        var dismissals = 0
+        val pending = counter.copy(pendingUndo = Undo("event-1", UndoKind.ADDED))
+        composeRule.mainClock.autoAdvance = false
+        composeRule.setContent {
+            TrackerDetailScreen(
+                pending,
+                TrackerDetailActions(onUndoDismissed = { dismissals++ }),
+            )
+        }
+        composeRule.mainClock.advanceTimeByFrame()
+
+        composeRule.onNodeWithText("Edit").performClick()
+
+        assertEquals(1, dismissals)
+    }
+
+    @Test
     fun `a pending undo shows a snackbar whose action calls onUndo`() {
         var undos = 0
         val pending = counter.copy(pendingUndo = Undo("event-1", UndoKind.ADDED))
