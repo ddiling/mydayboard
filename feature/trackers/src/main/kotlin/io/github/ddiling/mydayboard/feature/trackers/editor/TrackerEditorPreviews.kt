@@ -11,47 +11,44 @@ import java.time.LocalDate
 
 private val previewDate = LocalDate.of(2026, 3, 2)
 
-private fun previewState(
-    name: String = "",
-    nameEdited: Boolean = false,
-    type: TrackerType = TrackerType.EVENT_COUNTER,
-    startDate: LocalDate = previewDate,
-    isEditing: Boolean = false,
-    load: EditorLoad = EditorLoad.Ready,
-) = TrackerEditorUiState(load, isEditing, name, nameEdited, type, startDate, previewDate)
+private val blankState =
+    TrackerEditorUiState(startDate = previewDate, today = previewDate, load = EditorLoad.Ready)
 
 @PreviewLightDark
 @Composable
 private fun TrackerEditorCreateEmptyPreview() {
-    PreviewSurface { TrackerEditorScreen(previewState(), TrackerEditorActions()) }
+    PreviewSurface { TrackerEditorScreen(blankState, TrackerEditorActions()) }
 }
 
 @PreviewLightDark
 @Composable
 private fun TrackerEditorCreateErrorPreview() {
     PreviewSurface {
-        TrackerEditorScreen(previewState("x".repeat(MAX_TRACKER_NAME_LENGTH + 1), true), TrackerEditorActions())
+        TrackerEditorScreen(
+            blankState.copy(name = "x".repeat(MAX_TRACKER_NAME_LENGTH + 1), nameEdited = true),
+            TrackerEditorActions(),
+        )
     }
 }
 
 @PreviewLightDark
 @Composable
 private fun TrackerEditorDaysSincePreview() {
-    val state = previewState("No sugar", true, TrackerType.DAYS_SINCE, previewDate.minusDays(12))
+    val state = blankState.copy(name = "No sugar", type = TrackerType.DAYS_SINCE, startDate = previewDate.minusDays(12))
     PreviewSurface { TrackerEditorScreen(state, TrackerEditorActions()) }
 }
 
 @PreviewLightDark
 @Composable
 private fun TrackerEditorEditPreview() {
-    PreviewSurface { TrackerEditorScreen(previewState("Water", isEditing = true), TrackerEditorActions()) }
+    PreviewSurface { TrackerEditorScreen(blankState.copy(name = "Water", isEditing = true), TrackerEditorActions()) }
 }
 
 @PreviewLightDark
 @Composable
 private fun TrackerEditorNotFoundPreview() {
     PreviewSurface {
-        TrackerEditorScreen(previewState(isEditing = true, load = EditorLoad.NotFound), TrackerEditorActions())
+        TrackerEditorScreen(blankState.copy(isEditing = true, load = EditorLoad.NotFound), TrackerEditorActions())
     }
 }
 
@@ -59,5 +56,10 @@ private fun TrackerEditorNotFoundPreview() {
 @Preview(name = "Large font dark", fontScale = 2f, uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun TrackerEditorLargeFontPreview() {
-    PreviewSurface { TrackerEditorScreen(previewState("Water", true, isEditing = true), TrackerEditorActions()) }
+    PreviewSurface {
+        TrackerEditorScreen(
+            blankState.copy(name = "Water", nameEdited = true, isEditing = true),
+            TrackerEditorActions(),
+        )
+    }
 }

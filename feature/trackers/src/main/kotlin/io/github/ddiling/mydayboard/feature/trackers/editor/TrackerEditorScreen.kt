@@ -35,7 +35,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.ddiling.mydayboard.core.domain.tracker.TrackerNameValidation
 import io.github.ddiling.mydayboard.core.domain.tracker.TrackerType
 import io.github.ddiling.mydayboard.feature.trackers.R
-import java.time.LocalDate
 
 /** Hilt provides the ViewModel; [onResult] lets navigation decide where each way of leaving goes. */
 @Composable
