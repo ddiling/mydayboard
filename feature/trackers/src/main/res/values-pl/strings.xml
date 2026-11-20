@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="trackers_duration_just_now">Przed chwilą</string>
+    <string name="trackers_duration_minutes">%d min</string>
+    <string name="trackers_duration_hours">%d godz.</string>
+    <string name="trackers_duration_hours_minutes">%1$d godz. %2$d min</string>
+    <plurals name="trackers_days">
+        <item quantity="one">%d dzień</item>
+        <item quantity="few">%d dni</item>
+        <item quantity="many">%d dni</item>
+        <item quantity="other">%d dnia</item>
+    </plurals>
+</resources>

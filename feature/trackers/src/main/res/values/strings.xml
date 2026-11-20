@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="trackers_duration_just_now">Just now</string>
+    <string name="trackers_duration_minutes">%d min</string>
+    <string name="trackers_duration_hours">%d h</string>
+    <string name="trackers_duration_hours_minutes">%1$d h %2$d min</string>
+    <plurals name="trackers_days">
+        <item quantity="one">%d day</item>
+        <item quantity="other">%d days</item>
+    </plurals>
+</resources>
