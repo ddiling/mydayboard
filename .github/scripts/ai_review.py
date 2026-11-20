@@ -44,6 +44,7 @@ USER_AGENT = "ai-review-script/1.0"
 # Generated or binary files add cost, not signal.
 IGNORED_PATHS = (
     "*/src/test/screenshots/*",
+    "*/schemas/*.json",  # Room exports: generated, large, reviewed by the migration tests
     "*lint-baseline.xml",
     "gradle/wrapper/*",
     "gradlew",
