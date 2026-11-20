@@ -39,10 +39,8 @@ internal fun StartDateField(
     onDateChange: (LocalDate) -> Unit,
 ) {
     var showPicker by remember { mutableStateOf(false) }
-    // Built per locale so a per-app language change is not stuck with the format captured at first use.
-    val locale = LocalConfiguration.current.locales[0]
-    val dateFormat =
-        remember(locale) { DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale) }
+    val locale = LocalConfiguration.current.locales[0] // not cached globally: the app language can change
+    val dateFormat = remember(locale) { DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale) }
     OutlinedButton(onClick = { showPicker = true }, modifier = Modifier.fillMaxWidth()) {
         Text(stringResource(R.string.trackers_editor_start_date) + ": " + date.format(dateFormat))
     }

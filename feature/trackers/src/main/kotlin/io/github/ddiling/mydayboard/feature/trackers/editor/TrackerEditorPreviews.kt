@@ -11,8 +11,7 @@ import java.time.LocalDate
 
 private val previewDate = LocalDate.of(2026, 3, 2)
 
-private val blankState =
-    TrackerEditorUiState(startDate = previewDate, today = previewDate, load = EditorLoad.Ready)
+private val blankState = TrackerEditorUiState(startDate = previewDate, today = previewDate, load = EditorLoad.Ready)
 
 @PreviewLightDark
 @Composable
@@ -47,19 +46,14 @@ private fun TrackerEditorEditPreview() {
 @PreviewLightDark
 @Composable
 private fun TrackerEditorNotFoundPreview() {
-    PreviewSurface {
-        TrackerEditorScreen(blankState.copy(isEditing = true, load = EditorLoad.NotFound), TrackerEditorActions())
-    }
+    val state = blankState.copy(isEditing = true, load = EditorLoad.NotFound)
+    PreviewSurface { TrackerEditorScreen(state, TrackerEditorActions()) }
 }
 
 @Preview(name = "Large font light", fontScale = 2f)
 @Preview(name = "Large font dark", fontScale = 2f, uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun TrackerEditorLargeFontPreview() {
-    PreviewSurface {
-        TrackerEditorScreen(
-            blankState.copy(name = "Water", nameEdited = true, isEditing = true),
-            TrackerEditorActions(),
-        )
-    }
+    val state = blankState.copy(name = "Water", nameEdited = true, isEditing = true)
+    PreviewSurface { TrackerEditorScreen(state, TrackerEditorActions()) }
 }
