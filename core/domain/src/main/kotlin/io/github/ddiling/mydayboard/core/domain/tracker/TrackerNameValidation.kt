@@ -24,9 +24,6 @@ sealed interface TrackerNameValidation {
     ) : TrackerNameValidation
 }
 
-/** Any run of Unicode whitespace, including line breaks and tabs. `(?U)` makes `\s` match beyond ASCII. */
-private val WHITESPACE_RUN = Regex("""(?U)\s+""")
-
 /**
  * Checks a tracker name typed by the user: after normalizing it must have 1 to [MAX_TRACKER_NAME_LENGTH] code
  * points, at least one of them visible. The name is normalized silently instead of rejected, in this order:
@@ -49,7 +46,7 @@ private val WHITESPACE_RUN = Regex("""(?U)\s+""")
  * and predictable, and the limit only has to keep names reasonably short.
  */
 fun validateTrackerName(raw: String): TrackerNameValidation {
-    val name = Normalizer.normalize(raw, Normalizer.Form.NFC).replace(WHITESPACE_RUN, " ").trim()
+    val name = collapseWhitespace(Normalizer.normalize(raw, Normalizer.Form.NFC)).trim()
     val codePoints = name.codePointCount(0, name.length)
     // An empty name is Blank too: every one of its zero code points is invisible.
     return when {
@@ -58,6 +55,32 @@ fun validateTrackerName(raw: String): TrackerNameValidation {
         else -> TrackerNameValidation.Valid(name)
     }
 }
+
+/**
+ * Replaces every run of Unicode whitespace (line breaks, tabs, no-break and other wide spaces) with one space.
+ *
+ * Plain code, not a regex: the JVM needs the `(?U)` flag for a Unicode `\s`, and Android's ICU regex engine
+ * rejects that flag at runtime, so a regex would pass the JVM unit tests and crash on a device.
+ */
+private fun collapseWhitespace(text: String): String =
+    buildString {
+        var inRun = false
+        text.codePoints().forEach { codePoint ->
+            if (isUnicodeWhitespace(codePoint)) {
+                if (!inRun) append(' ')
+                inRun = true
+            } else {
+                appendCodePoint(codePoint)
+                inRun = false
+            }
+        }
+    }
+
+/** Unicode White_Space: ASCII whitespace, NEL (U+0085), and space (incl. no-break), line and paragraph separators. */
+private fun isUnicodeWhitespace(codePoint: Int): Boolean =
+    Character.isWhitespace(codePoint) || Character.isSpaceChar(codePoint) || codePoint == NEXT_LINE
+
+private const val NEXT_LINE = 0x85
 
 private fun isInvisible(codePoint: Int): Boolean {
     val category = Character.getType(codePoint)
