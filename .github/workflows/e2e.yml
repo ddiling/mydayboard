@@ -17,10 +17,11 @@ on:
     - cron: "0 3 * * *"
   workflow_dispatch:
 
-# A new push cancels the older run of the same PR. Edit and label events get their own group, so that
-# editing the PR description or adding any label never cancels a running test.
+# A new push, a retarget to main or the "e2e" label cancels the older run of the same PR ("code" group).
+# Events that test nothing (a title or body edit, any other label) get a group of their own (the run id):
+# concurrency acts before the job's `if:`, so a shared group would let them cancel a real run.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}-${{ contains(fromJSON('["edited","labeled"]'), github.event.action) && github.event.action || 'code' }}
+  group: "${{ github.workflow }}-${{ github.ref }}-${{ ((github.event.action == 'edited' && github.event.changes.base.ref.from == '') || (github.event.action == 'labeled' && github.event.label.name != 'e2e')) && github.run_id || 'code' }}"
   cancel-in-progress: true
 
 permissions:
@@ -46,8 +47,8 @@ jobs:
         run: |
           changed=$(git diff --name-only "$BASE_SHA...$HEAD_SHA")
           echo "$changed"
-          # Main sources and resources of any module, the app, Maestro flows, the build, and this workflow.
-          pattern='^(app/|(core|feature)/[^/]+/src/main/|(core|feature)/[^/]+/build\.gradle\.kts$|build-logic/|gradle/|[^/]+\.gradle\.kts$|gradle\.properties$|\.github/workflows/e2e\.yml$)'
+          # Main sources and resources of any module, the app, Maestro flows, the build, and this workflow and its script.
+          pattern='^(app/|(core|feature)/[^/]+/src/main/|(core|feature)/[^/]+/build\.gradle\.kts$|build-logic/|gradle/|[^/]+\.gradle\.kts$|gradle\.properties$|\.github/workflows/e2e\.yml$|\.github/scripts/run_maestro\.sh$)'
           if grep -qE "$pattern" <<< "$changed"; then app=true; else app=false; fi
           echo "app=$app" | tee -a "$GITHUB_OUTPUT"
 
