@@ -5,7 +5,7 @@ import org.gradle.api.Project
 /** A module as the affected-module calculation sees it: no Gradle types, easy to fake in tests. */
 internal data class ModuleInfo(
     val path: String,
-    /** Project directory relative to the repository root, e.g. `feature/counter`. */
+    /** Project directory relative to the repository root, e.g. `feature/trackers`. */
     val directory: String,
     /** Gradle paths of the project dependencies this module declares. */
     val dependencies: Set<String>,

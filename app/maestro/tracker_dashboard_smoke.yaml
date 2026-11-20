@@ -1,4 +1,4 @@
-# E2E smoke test: the trackers card on the dashboard adds an event with +1 and undoes it.
+# E2E smoke test: from the empty dashboard, the trackers card creates a tracker, then adds an event with +1 and undoes it.
 # Maestro matches text as a regex, so "+1" is not used; the button is found by its content description.
 # Run: maestro test app/maestro/   (emulator running, debug APK installed)
 appId: io.github.ddiling.mydayboard.debug
@@ -8,15 +8,15 @@ tags:
 ---
 - launchApp:
     clearState: true
+- assertVisible: "No trackers yet.*" # the card's empty state
 - tapOn:
-    id: "open_trackers"
-- tapOn: "Add tracker"
+    id: "trackers_card_add" # the card's button, not the list's
 - tapOn: "Name"
 - inputText: "Water"
 - tapOn: "Save"
 - assertVisible: "Last 7 days" # the counter detail screen opened
-- back # the list
-- back # the dashboard
+- back # the editor was replaced by the detail screen, so Back lands on the dashboard
+- assertNotVisible: "No trackers yet.*"
 - assertVisible: "Today: 0.*" # the row is one text, "Today: 0 · No events yet", and Maestro matches the whole text
 - tapOn: "Add one to Water"
 - assertVisible: "Added"

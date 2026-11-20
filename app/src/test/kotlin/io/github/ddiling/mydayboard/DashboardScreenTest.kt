@@ -13,7 +13,6 @@ import androidx.compose.ui.test.performClick
 import io.github.ddiling.mydayboard.core.dashboard.DashboardCard
 import io.github.ddiling.mydayboard.core.dashboard.DashboardHost
 import io.github.ddiling.mydayboard.core.navigation.Destination
-import io.github.ddiling.mydayboard.feature.counter.navigation.CounterDestination
 import io.github.ddiling.mydayboard.feature.trackers.navigation.TrackersListDestination
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -84,15 +83,6 @@ class DashboardScreenTest {
         composeRule.onNodeWithTag(OPEN_TRACKERS_TAG).performClick()
 
         assertEquals(listOf<Destination>(TrackersListDestination), host.navigated)
-    }
-
-    @Test
-    fun `the temporary counter action navigates to the counter`() {
-        composeRule.setContent { DashboardScreen(cards = emptyList(), host = host) }
-
-        composeRule.onNodeWithTag(OPEN_COUNTER_TAG).performClick()
-
-        assertEquals(listOf<Destination>(CounterDestination), host.navigated)
     }
 
     private fun card(tag: String) =
