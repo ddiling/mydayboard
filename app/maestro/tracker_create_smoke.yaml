@@ -15,6 +15,6 @@ tags:
 - tapOn: "Name"
 - inputText: "Water"
 - tapOn: "Save"
-- assertVisible: "Tracker details"
+- assertVisible: "Last 7 days" # the counter detail screen opened
 - back
 - assertVisible: "Water"
