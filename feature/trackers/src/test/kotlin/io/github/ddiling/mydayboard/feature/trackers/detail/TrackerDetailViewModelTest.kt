@@ -155,6 +155,23 @@ class TrackerDetailViewModelTest {
         }
 
     @Test
+    fun `plus one pressed between ticks counts at once`() =
+        runTest {
+            val viewModel = viewModelFor(givenCounter().id)
+
+            viewModel.uiState.test {
+                runCurrent()
+                skipItems(2)
+
+                clock.advanceBy(Duration.ofSeconds(30))
+                viewModel.onPlusOne()
+                runCurrent()
+
+                assertEquals(1, (awaitItem() as TrackerDetailUiState.Counter).todayCount)
+            }
+        }
+
+    @Test
     fun `plus one makes the new event undoable`() =
         runTest {
             val water = givenCounter()
@@ -249,19 +266,6 @@ class TrackerDetailViewModelTest {
                 runCurrent()
 
                 assertEquals(TrackerDetailUiState.NotFound, expectMostRecentItem())
-            }
-        }
-
-    @Test
-    fun `a days since tracker shows the placeholder state`() =
-        runTest {
-            val sugar = repository.createTracker("No sugar", TrackerType.DAYS_SINCE, startedLongAgo)
-            val viewModel = viewModelFor(sugar.id)
-
-            viewModel.uiState.test {
-                runCurrent()
-                skipItems(1)
-                assertEquals(TrackerDetailUiState.DaysSince("No sugar"), awaitItem())
             }
         }
 }

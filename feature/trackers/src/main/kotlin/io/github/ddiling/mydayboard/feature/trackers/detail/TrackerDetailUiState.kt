@@ -23,9 +23,14 @@ internal sealed interface TrackerDetailUiState {
         val pendingUndo: Undo?,
     ) : TrackerDetailUiState
 
-    /** Placeholder until the days-since detail arrives. */
+    /** A days-since tracker, as display-ready values: dates are local dates in the clock's zone. */
     data class DaysSince(
         val name: String,
+        val currentDays: Long,
+        val currentStart: LocalDate,
+        val longestDays: Long,
+        val brokenStreaks: List<BrokenStreak>, // newest first
+        val pendingUndo: Undo?,
     ) : TrackerDetailUiState
 }
 
@@ -33,4 +38,11 @@ internal sealed interface TrackerDetailUiState {
 internal data class HistoryDay(
     val date: LocalDate,
     val times: List<LocalTime>,
+)
+
+/** A finished streak of a days-since tracker, from the day it started to the day a reset ended it. */
+internal data class BrokenStreak(
+    val start: LocalDate,
+    val end: LocalDate,
+    val days: Long,
 )

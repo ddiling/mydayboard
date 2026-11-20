@@ -11,15 +11,22 @@ class QuickActionUndoTest {
 
     @Test
     fun `a registered action is pending`() {
-        quickUndo.register("e1")
+        quickUndo.register("e1", UndoKind.ADDED)
 
         assertEquals(Undo("e1", UndoKind.ADDED), quickUndo.pending.value)
     }
 
     @Test
+    fun `the registered kind is kept so the message can match the action`() {
+        quickUndo.register("e1", UndoKind.RESET)
+
+        assertEquals(Undo("e1", UndoKind.RESET), quickUndo.pending.value)
+    }
+
+    @Test
     fun `undo deletes the registered event and clears it`() =
         runTest {
-            quickUndo.register("e1")
+            quickUndo.register("e1", UndoKind.ADDED)
 
             quickUndo.undo()
 
@@ -30,8 +37,8 @@ class QuickActionUndoTest {
     @Test
     fun `a second action replaces the first so only the latest can be undone`() =
         runTest {
-            quickUndo.register("first")
-            quickUndo.register("second")
+            quickUndo.register("first", UndoKind.ADDED)
+            quickUndo.register("second", UndoKind.ADDED)
 
             quickUndo.undo()
             quickUndo.undo()
@@ -42,7 +49,7 @@ class QuickActionUndoTest {
     @Test
     fun `dismiss clears the action without deleting anything`() =
         runTest {
-            quickUndo.register("e1")
+            quickUndo.register("e1", UndoKind.ADDED)
 
             quickUndo.dismiss()
             quickUndo.undo()
