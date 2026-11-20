@@ -87,4 +87,20 @@ interface TrackerEventDao {
         id: String,
         now: Long,
     ): Int
+
+    /**
+     * Brings a soft-deleted event back. Changes nothing (returns 0) when the event is missing or not
+     * deleted, or its tracker is missing or deleted, so a deleted tracker keeps hiding its events.
+     */
+    @Query(
+        """
+        UPDATE tracker_events SET updated_at = :now, deleted_at = NULL
+        WHERE id = :id AND deleted_at IS NOT NULL
+        AND tracker_id IN (SELECT id FROM trackers WHERE deleted_at IS NULL)
+        """,
+    )
+    suspend fun restoreIfDeleted(
+        id: String,
+        now: Long,
+    ): Int
 }

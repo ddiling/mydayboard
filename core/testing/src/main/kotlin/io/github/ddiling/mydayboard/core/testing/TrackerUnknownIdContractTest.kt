@@ -74,4 +74,14 @@ abstract class TrackerUnknownIdContractTest : TrackerRepositoryContractBase() {
 
             assertEquals(listOf(event), repo.observeAllEvents().first())
         }
+
+    @Test
+    fun `restoring an unknown event changes nothing`() =
+        runTest {
+            val event = givenEvent(givenTracker())
+
+            repo.restoreEvent("nope")
+
+            assertEquals(listOf(event), repo.observeAllEvents().first())
+        }
 }

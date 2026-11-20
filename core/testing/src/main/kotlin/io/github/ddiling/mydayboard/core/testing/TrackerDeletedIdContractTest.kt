@@ -89,4 +89,16 @@ abstract class TrackerDeletedIdContractTest : TrackerRepositoryContractBase() {
 
             assertTrue(repo.observeEvents(tracker.id).first().isEmpty())
         }
+
+    @Test
+    fun `restoring an event of a deleted tracker changes nothing`() =
+        runTest {
+            val tracker = givenTracker()
+            val event = givenDeletedEvent(tracker)
+            repo.deleteTracker(tracker.id)
+
+            repo.restoreEvent(event.id)
+
+            assertTrue(repo.observeAllEvents().first().isEmpty())
+        }
 }
