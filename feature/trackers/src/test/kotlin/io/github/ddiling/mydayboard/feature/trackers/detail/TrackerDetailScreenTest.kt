@@ -1,7 +1,10 @@
 package io.github.ddiling.mydayboard.feature.trackers.detail
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import io.github.ddiling.mydayboard.core.domain.tracker.Trend
@@ -10,6 +13,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import java.time.LocalDate
 
 @RunWith(RobolectricTestRunner::class)
 class TrackerDetailScreenTest {
@@ -78,6 +82,58 @@ class TrackerDetailScreenTest {
         composeRule.onNodeWithText("Undo").performClick()
 
         assertEquals(1, undos)
+    }
+
+    private val daysSince =
+        TrackerDetailUiState.DaysSince(
+            name = "No sugar",
+            currentDays = 3,
+            currentStart = LocalDate.of(2026, 3, 2),
+            longestDays = 5,
+            brokenStreaks = emptyList<BrokenStreak>(),
+            pendingUndo = null,
+        )
+
+    @Test
+    fun `the reset button calls onReset`() {
+        var resets = 0
+        composeRule.setContent { TrackerDetailScreen(daysSince, TrackerDetailActions(onReset = { resets++ })) }
+
+        composeRule.onNodeWithTag("trackers_detail_reset").performClick()
+
+        assertEquals(1, resets)
+    }
+
+    @Test
+    fun `a pending reset undo shows a reset snackbar whose action calls onUndo`() {
+        var undos = 0
+        val pending = daysSince.copy(pendingUndo = Undo("event-1", UndoKind.RESET))
+        composeRule.mainClock.autoAdvance = false
+        composeRule.setContent { TrackerDetailScreen(pending, TrackerDetailActions(onUndo = { undos++ })) }
+        composeRule.mainClock.advanceTimeByFrame()
+
+        // The button is also labelled "Reset", so the snackbar message is the other node with that text.
+        composeRule.onNode(hasText("Reset") and hasTestTag("trackers_detail_reset").not()).assertIsDisplayed()
+        composeRule.onNodeWithText("Undo").performClick()
+
+        assertEquals(1, undos)
+    }
+
+    @Test
+    fun `the edit action works for a days since tracker`() {
+        var edits = 0
+        composeRule.setContent { TrackerDetailScreen(daysSince, TrackerDetailActions(onEditClick = { edits++ })) }
+
+        composeRule.onNodeWithText("Edit").performClick()
+
+        assertEquals(1, edits)
+    }
+
+    @Test
+    fun `the days are stated in words`() {
+        composeRule.setContent { TrackerDetailScreen(daysSince, TrackerDetailActions()) }
+
+        composeRule.onNodeWithText("3 days").assertIsDisplayed()
     }
 
     @Test

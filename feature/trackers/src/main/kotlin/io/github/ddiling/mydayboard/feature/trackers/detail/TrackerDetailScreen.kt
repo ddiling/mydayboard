@@ -24,6 +24,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -40,11 +41,18 @@ internal fun TrackerDetailRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val actions =
-        TrackerDetailActions(viewModel::onPlusOne, viewModel::onUndo, viewModel::onUndoDismissed, onEditClick, onBack)
+        TrackerDetailActions(
+            onPlusOne = viewModel::onPlusOne,
+            onReset = viewModel::onReset,
+            onUndo = viewModel::onUndo,
+            onUndoDismissed = viewModel::onUndoDismissed,
+            onEditClick = onEditClick,
+            onBack = onBack,
+        )
     TrackerDetailScreen(uiState, actions, modifier)
 }
 
-/** The +1 button stays reachable at the bottom while the lists scroll; the undo offer appears as a snackbar. */
+/** The +1 or Reset button stays reachable while the lists scroll; the undo offer appears as a snackbar. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun TrackerDetailScreen(
@@ -53,13 +61,12 @@ internal fun TrackerDetailScreen(
     modifier: Modifier = Modifier,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
-    val counter = uiState as? TrackerDetailUiState.Counter
-    UndoSnackbar(counter?.pendingUndo, snackbarHostState, actions)
+    UndoSnackbar(uiState.pendingUndo(), snackbarHostState, actions)
     Scaffold(
         modifier = modifier,
         topBar = {
             TopAppBar(
-                title = { Text(counter?.name ?: (uiState as? TrackerDetailUiState.DaysSince)?.name.orEmpty()) },
+                title = { Text(uiState.title()) },
                 actions = {
                     if (uiState is TrackerDetailUiState.Counter || uiState is TrackerDetailUiState.DaysSince) {
                         TextButton(onClick = {
@@ -72,10 +79,21 @@ internal fun TrackerDetailScreen(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
-            if (counter != null) {
-                ExtendedFloatingActionButton(onClick = actions.onPlusOne) {
-                    Text(stringResource(R.string.trackers_detail_plus_one))
+            when (uiState) {
+                is TrackerDetailUiState.Counter -> {
+                    ExtendedFloatingActionButton(onClick = actions.onPlusOne) {
+                        Text(stringResource(R.string.trackers_detail_plus_one))
+                    }
                 }
+
+                is TrackerDetailUiState.DaysSince -> {
+                    ExtendedFloatingActionButton(
+                        onClick = actions.onReset,
+                        modifier = Modifier.testTag("trackers_detail_reset"),
+                    ) { Text(stringResource(R.string.trackers_detail_reset)) }
+                }
+
+                TrackerDetailUiState.Loading, TrackerDetailUiState.NotFound -> {}
             }
         },
     ) { padding ->
@@ -94,9 +112,7 @@ internal fun TrackerDetailScreen(
             }
 
             is TrackerDetailUiState.DaysSince -> {
-                Box(contentModifier, contentAlignment = Alignment.Center) {
-                    Text(stringResource(R.string.trackers_detail_placeholder))
-                }
+                DaysSinceContent(uiState, contentModifier)
             }
         }
     }
@@ -112,7 +128,13 @@ private fun UndoSnackbar(
     host: SnackbarHostState,
     actions: TrackerDetailActions,
 ) {
-    val message = stringResource(R.string.trackers_detail_added)
+    val message =
+        stringResource(
+            when (undo?.kind) {
+                UndoKind.RESET -> R.string.trackers_detail_reset_done
+                UndoKind.ADDED, null -> R.string.trackers_detail_added
+            },
+        )
     val undoLabel = stringResource(R.string.trackers_detail_undo)
     val currentActions by rememberUpdatedState(actions)
     LaunchedEffect(undo) {
@@ -123,6 +145,20 @@ private fun UndoSnackbar(
         }
     }
 }
+
+private fun TrackerDetailUiState.pendingUndo(): Undo? =
+    when (this) {
+        is TrackerDetailUiState.Counter -> pendingUndo
+        is TrackerDetailUiState.DaysSince -> pendingUndo
+        TrackerDetailUiState.Loading, TrackerDetailUiState.NotFound -> null
+    }
+
+private fun TrackerDetailUiState.title(): String =
+    when (this) {
+        is TrackerDetailUiState.Counter -> name
+        is TrackerDetailUiState.DaysSince -> name
+        TrackerDetailUiState.Loading, TrackerDetailUiState.NotFound -> ""
+    }
 
 @Composable
 private fun NotFound(
