@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.ReceiveTurbine
 import app.cash.turbine.test
 import io.github.ddiling.mydayboard.core.domain.tracker.Tracker
+import io.github.ddiling.mydayboard.core.domain.tracker.TrackerEvent
 import io.github.ddiling.mydayboard.core.domain.tracker.TrackerType
 import io.github.ddiling.mydayboard.core.testing.FakeTrackerRepository
 import io.github.ddiling.mydayboard.core.testing.MainDispatcherRule
@@ -21,6 +22,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -42,6 +44,11 @@ class TrackerDetailEntryEditingTest {
     private suspend fun givenCounter() =
         repository.createTracker("Water", TrackerType.EVENT_COUNTER, warsaw(2026, 2, 1))
 
+    private suspend fun givenEvent(
+        tracker: Tracker,
+        at: Instant,
+    ): TrackerEvent = checkNotNull(repository.addEvent(tracker.id, at)) { "event was not added" }
+
     private fun TestScope.counter(turbine: ReceiveTurbine<TrackerDetailUiState>): TrackerDetailUiState.Counter {
         runCurrent()
         return turbine.expectMostRecentItem() as TrackerDetailUiState.Counter
@@ -53,8 +60,8 @@ class TrackerDetailEntryEditingTest {
     fun `editing an entry to a later time re-sorts the history`() =
         runTest {
             val tracker = givenCounter()
-            val early = repository.addEvent(tracker.id, earlyEvent)!!
-            val late = repository.addEvent(tracker.id, lateEvent)!!
+            val early = givenEvent(tracker, earlyEvent)
+            val late = givenEvent(tracker, lateEvent)
             val viewModel = viewModelFor(tracker)
 
             viewModel.uiState.test {
@@ -91,7 +98,7 @@ class TrackerDetailEntryEditingTest {
     fun `deleting an entry offers an undo that restores it`() =
         runTest {
             val tracker = givenCounter()
-            val event = repository.addEvent(tracker.id, earlyEvent)!!
+            val event = givenEvent(tracker, earlyEvent)
             val viewModel = viewModelFor(tracker)
 
             viewModel.uiState.test {
@@ -114,8 +121,8 @@ class TrackerDetailEntryEditingTest {
         runTest {
             val tracker = repository.createTracker("No sugar", TrackerType.DAYS_SINCE, warsaw(2026, 2, 1))
             repository.addEvent(tracker.id, warsaw(2026, 1, 15))
-            val first = repository.addEvent(tracker.id, warsaw(2026, 2, 20))!!
-            val second = repository.addEvent(tracker.id, warsaw(2026, 3, 1))!!
+            val first = givenEvent(tracker, warsaw(2026, 2, 20))
+            val second = givenEvent(tracker, warsaw(2026, 3, 1))
             val viewModel = viewModelFor(tracker)
 
             viewModel.uiState.test {
