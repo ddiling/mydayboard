@@ -8,6 +8,10 @@ updates:
       day: monday
     open-pull-requests-limit: 10
     groups:
+      # Must come before "androidx": Dependabot puts each update in the FIRST group
+      # whose pattern matches, and "androidx.hilt*" also matches "androidx.*".
+      hilt:
+        patterns: ["com.google.dagger*", "androidx.hilt*"]
       kotlin:
         patterns: ["org.jetbrains.kotlin*", "com.google.devtools.ksp*"]
       agp:
@@ -15,7 +19,7 @@ updates:
       androidx:
         patterns: ["androidx.*"]
       testing:
-        patterns: ["junit*", "org.robolectric*", "io.github.takahirom.roborazzi*"]
+        patterns: ["junit*", "org.robolectric*", "io.github.takahirom.roborazzi*", "app.cash.turbine*"]
       code-quality:
         patterns: ["dev.detekt*", "com.diffplug.spotless*"]
 
