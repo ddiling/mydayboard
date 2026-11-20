@@ -6,10 +6,12 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
+import kotlin.coroutines.EmptyCoroutineContext
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MainDispatcherRuleTest {
@@ -36,6 +38,13 @@ class MainDispatcherRuleTest {
 
         assertFalse(ranBeforeAdvancing)
         assertTrue(ran)
+    }
+
+    @Test
+    fun `Main is no longer the test dispatcher once the test has finished`() {
+        runWithRule(MainDispatcherRule()) { }
+
+        assertThrows(IllegalStateException::class.java) { Dispatchers.Main.isDispatchNeeded(EmptyCoroutineContext) }
     }
 
     private fun runWithRule(

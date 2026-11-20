@@ -59,4 +59,9 @@ class DurationPartsTest {
     fun `a day count beyond Int saturates`() {
         assertEquals(Int.MAX_VALUE, (Int.MAX_VALUE.toLong() + 1).toIntSaturated())
     }
+
+    @Test
+    fun `a negative day count saturates to zero`() {
+        assertEquals(0, (-1L).toIntSaturated())
+    }
 }
