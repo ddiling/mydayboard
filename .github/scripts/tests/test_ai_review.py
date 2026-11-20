@@ -146,6 +146,75 @@ class TextTest(unittest.TestCase):
         self.assertIn("`f0.png`", note)
 
 
+
+EVIDENCE_DIFF = """\
+diff --git a/app/Foo.kt b/app/Foo.kt
+index 111..222 100644
+--- a/app/Foo.kt
++++ b/app/Foo.kt
+@@ -1,3 +1,4 @@ class Foo
+ context line
++    val   total = items.sum()
+-removed line
+"""
+
+
+def review_with(*findings: str, tail: str = "") -> str:
+    return "## Summary\nOk.\n\n## Findings\n" + "\n".join(findings) + "\n" + tail
+
+
+def finding(quote: str | None) -> str:
+    evidence = f"\n   Evidence: `{quote}`" if quote is not None else ""
+    return f"1. \U0001F7E0 High `Foo.kt:2` something is wrong.{evidence}"
+
+
+class CheckEvidenceTest(unittest.TestCase):
+    def test_a_finding_whose_evidence_is_in_the_diff_gets_no_warning(self):
+        result = ai_review.check_evidence(review_with(finding("val total = items.sum()")), EVIDENCE_DIFF)
+        self.assertNotIn(ai_review.EVIDENCE_WARNING, result)
+
+    def test_a_finding_whose_evidence_is_not_in_the_diff_gets_the_warning(self):
+        result = ai_review.check_evidence(review_with(finding("val deletedAt = null")), EVIDENCE_DIFF)
+        self.assertIn(ai_review.EVIDENCE_WARNING, result)
+
+    def test_a_finding_without_an_evidence_line_gets_the_warning(self):
+        result = ai_review.check_evidence(review_with(finding(None)), EVIDENCE_DIFF)
+        self.assertIn(ai_review.EVIDENCE_WARNING, result)
+
+    def test_whitespace_differences_still_match(self):
+        result = ai_review.check_evidence(review_with(finding("  val total   =  items.sum()  ")), EVIDENCE_DIFF)
+        self.assertNotIn(ai_review.EVIDENCE_WARNING, result)
+
+    def test_a_quote_matching_only_a_file_header_does_not_count(self):
+        result = ai_review.check_evidence(review_with(finding("b/app/Foo.kt")), EVIDENCE_DIFF)
+        self.assertIn(ai_review.EVIDENCE_WARNING, result)
+
+    def test_a_quote_matching_only_a_hunk_header_does_not_count(self):
+        result = ai_review.check_evidence(review_with(finding("class Foo")), EVIDENCE_DIFF)
+        self.assertIn(ai_review.EVIDENCE_WARNING, result)
+
+    def test_each_finding_is_judged_on_its_own_and_the_footer_counts_them(self):
+        review = review_with(finding("removed line"), finding("nonsense"), finding(None))
+        checked = ai_review.check_evidence(review, EVIDENCE_DIFF)
+        self.assertEqual(2, checked.count(ai_review.EVIDENCE_WARNING))
+        self.assertEqual(" _Evidence: 1 of 3 findings quote the diff._", ai_review.evidence_note(checked))
+
+    def test_no_significant_issues_is_unchanged_and_has_no_count(self):
+        review = review_with("No significant issues found.")
+        self.assertEqual(review, ai_review.check_evidence(review, EVIDENCE_DIFF))
+        self.assertEqual("", ai_review.evidence_note(review))
+
+    def test_the_replies_section_is_unchanged(self):
+        replies = "## Replies\n- \U0001F7E0 withdrawn, the earlier finding was wrong."
+        result = ai_review.check_evidence(review_with(finding("nonsense"), tail=replies), EVIDENCE_DIFF)
+        self.assertTrue(result.endswith(replies))
+        self.assertEqual(1, result.count(ai_review.EVIDENCE_WARNING))
+
+    def test_the_prompt_asks_for_an_evidence_line(self):
+        self.assertIn("Evidence: `<one line copied exactly from the diff", ai_review.REVIEW_RULES)
+        self.assertIn("do not report it", ai_review.REVIEW_RULES)
+
+
 class OnlyTheReviewTest(unittest.TestCase):
     def test_keeps_the_last_summary_and_drops_reasoning(self):
         text = "Let me think.\n## Summary\nold draft\n## Findings\n- x\n## Summary\nreal review\n"

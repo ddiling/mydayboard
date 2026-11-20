@@ -81,7 +81,11 @@ Two or three sentences: what the change does and your overall assessment.
 ## Findings
 A list ordered by severity. Start every item with one of: 🔴 Critical, 🟠 High, 🟡 Medium, 🟢 Low.
 Then give `path:line` (the new-file line, from the hunk headers), what is wrong, why it matters,
-and a concrete fix. Report only real problems: bugs, security, broken project guidelines,
+and a concrete fix. Put a second line right after the item's first line:
+Evidence: `<one line copied exactly from the diff, without the leading +, - or space>`
+The quote must be a line that shows the problem. A script checks every quote against the diff and
+flags the finding as unverified when it is missing, so if you cannot quote a line that proves a
+finding, do not report it. Report only real problems: bugs, security, broken project guidelines,
 missing tests for new logic. Do not restate the diff, do not praise, do not ask the author to
 "check" something. Maximum 10 findings. If there is nothing worth reporting, write
 "No significant issues found."
@@ -219,6 +223,90 @@ def truncate(text: str, limit: int) -> tuple[str, bool]:
 def defang_mentions(text: str) -> str:
     """Stop model output from pinging real GitHub users: insert a zero-width space after '@'."""
     return re.sub(r"(?<![\w`/])@(?=[A-Za-z0-9])", "@\u200b", text)
+
+
+SEVERITY_START = re.compile(r"^\s*(?:[-*]|\d+\.)?\s*(?:\*\*)?[\U0001F534\U0001F7E0\U0001F7E1\U0001F7E2]")
+EVIDENCE_LINE = re.compile(r"^\s*(?:[-*]\s+)?\**Evidence:?\**:?\s*`(.*)`\s*$")
+EVIDENCE_WARNING = "\u26a0\ufe0f _Evidence not found in the diff: treat this finding as unverified._"
+
+
+def _squash(text: str) -> str:
+    """Strip and collapse runs of whitespace, so indentation and double spaces do not matter."""
+    return " ".join(text.split())
+
+
+def diff_content_lines(diff: str) -> list[str]:
+    """The lines inside hunks (added, removed or unchanged), without their first character.
+
+    File headers (`+++ b/path`) and hunk headers (`@@ ...`) are skipped: a quote that only matches
+    those proves nothing about the code."""
+    lines, in_hunk = [], False
+    for line in diff.splitlines():
+        if line.startswith("diff --git"):
+            in_hunk = False
+        elif line.startswith("@@"):
+            in_hunk = True
+        elif in_hunk and line[:1] in ("+", "-", " "):
+            lines.append(_squash(line[1:]))
+    return lines
+
+
+def _split_findings(review: str) -> tuple[str, list[list[str]], str]:
+    """Cut a review into the text before the findings, the finding blocks, and the text after them.
+
+    The findings section ends at the next "## " heading (for example "## Replies"), which stays untouched."""
+    lines = review.split("\n")
+    start = next((i for i, line in enumerate(lines) if line.strip() == "## Findings"), None)
+    if start is None:
+        return review, [], ""
+    end = next((i for i in range(start + 1, len(lines)) if lines[i].startswith("## ")), len(lines))
+    blocks: list[list[str]] = []
+    for line in lines[start + 1 : end]:
+        if SEVERITY_START.match(line):
+            blocks.append([line])
+        elif blocks:
+            blocks[-1].append(line)
+    head = "\n".join(lines[: start + 1])
+    return head, blocks, "\n".join(lines[end:])
+
+
+def _quote_in_diff(block: list[str], content: list[str]) -> bool:
+    for line in block:
+        if match := EVIDENCE_LINE.match(line):
+            quote = _squash(match.group(1))
+            return bool(quote) and any(quote in candidate for candidate in content)
+    return False
+
+
+def check_evidence(review: str, diff: str) -> str:
+    """Add a warning to every finding whose quoted evidence is not a line of the diff.
+
+    Findings are flagged, not dropped: the owner wants to see what the model claimed, and a flag
+    shows which claims to distrust."""
+    head, blocks, tail = _split_findings(review)
+    if not blocks:
+        return review
+    content = diff_content_lines(diff)
+    out = [head]
+    for block in blocks:
+        if _quote_in_diff(block, content):
+            out.extend(block)
+            continue
+        trailing = 0
+        while block and not block[-1].strip():
+            block, trailing = block[:-1], trailing + 1
+        out.extend(block + [EVIDENCE_WARNING] + [""] * trailing)
+    result = "\n".join(out)
+    return f"{result}\n{tail}" if tail else result
+
+
+def evidence_note(checked_review: str) -> str:
+    """Footer text: how many findings quote the diff. Empty when there are no findings."""
+    _, blocks, _ = _split_findings(checked_review)
+    if not blocks:
+        return ""
+    verified = sum(1 for block in blocks if EVIDENCE_WARNING not in block)
+    return f" _Evidence: {verified} of {len(blocks)} findings quote the diff._"
 
 
 def skipped_note(skipped: list[str], shown: int = 8) -> str:
@@ -501,8 +589,10 @@ def main() -> int:
         print(error)
         return 1
 
+    review = check_evidence(review, diff)
     footer = f"_Automated review of `{meta['headRefOid'][:7]}` by `{entry.label}`. Advisory only: it can be wrong._"
     footer += skipped_note(skipped_files)
+    footer += evidence_note(review)
     if read:
         footer += f" _Read {read} earlier comment{'s' if read != 1 else ''} on this pull request._"
     if truncated:
