@@ -1,0 +1,37 @@
+package io.github.ddiling.mydayboard.feature.trackers.detail
+
+import io.github.ddiling.mydayboard.core.domain.tracker.DayCount
+import io.github.ddiling.mydayboard.core.domain.tracker.Trend
+import java.time.Duration
+import java.time.LocalDate
+import java.time.LocalTime
+
+/** What the tracker detail screen shows. [Loading] lasts until the first emission, so "not found" never flashes. */
+internal sealed interface TrackerDetailUiState {
+    data object Loading : TrackerDetailUiState
+
+    /** The tracker does not exist (any more), e.g. it was deleted from the editor. */
+    data object NotFound : TrackerDetailUiState
+
+    /** An event counter, as display-ready values so a preview needs no repository or clock. */
+    data class Counter(
+        val name: String,
+        val todayCount: Int,
+        val sinceLast: Duration?, // null: no event yet
+        val lastDays: List<DayCount>, // oldest first, the last one is today
+        val trend: Trend,
+        val history: List<HistoryDay>, // newest day first
+        val pendingUndo: Undo?,
+    ) : TrackerDetailUiState
+
+    /** Placeholder until the days-since detail arrives. */
+    data class DaysSince(
+        val name: String,
+    ) : TrackerDetailUiState
+}
+
+/** The events of one local calendar day; [times] are local times, newest first. */
+internal data class HistoryDay(
+    val date: LocalDate,
+    val times: List<LocalTime>,
+)
