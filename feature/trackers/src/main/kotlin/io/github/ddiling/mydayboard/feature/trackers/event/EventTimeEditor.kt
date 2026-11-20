@@ -27,6 +27,10 @@ import java.time.temporal.ChronoUnit
  * The pickers have minute precision but a tracker's start has seconds. A time before the start but in the
  * same minute is therefore stored as the start itself, so the user can pick "the start minute".
  *
+ * An edit saved without changing the date or time keeps the entry's original instant. The pickers cannot show
+ * the seconds, and in the repeated autumn hour a local time names two instants, so rebuilding the instant from
+ * the picked values would silently move the entry.
+ *
  * [onDeleted] gets the id of a deleted entry, so the caller can offer Undo.
  */
 internal class EventTimeEditor(
@@ -54,7 +58,7 @@ internal class EventTimeEditor(
     fun openEdit(eventId: String) {
         scope.launch {
             val tracker = loadTracker() ?: return@launch
-            val event = repository.observeEvents(trackerId).first().firstOrNull { it.id == eventId } ?: return@launch
+            val event = repository.findEvent(trackerId, eventId) ?: return@launch
             val local = event.occurredAt.atZone(clock.zone).truncatedTo(ChronoUnit.MINUTES)
             show(tracker, EntryMode.Edit(eventId), local.toLocalDate(), local.toLocalTime())
         }
@@ -69,7 +73,15 @@ internal class EventTimeEditor(
         scope.launch {
             val tracker = loadTracker() ?: return@launch
             val current = _state.value ?: return@launch
-            val at = pickedInstant(tracker, clock.zone, current.date, current.time)
+            val original =
+                (current.mode as? EntryMode.Edit)
+                    ?.let {
+                        repository.findEvent(
+                            trackerId,
+                            it.eventId,
+                        )
+                    }?.occurredAt
+            val at = instantToSave(original, tracker, clock.zone, current.date, current.time)
             if (tracker.errorFor(at, clock.instant()) != null || !_state.compareAndSet(current, null)) return@launch
             when (val mode = current.mode) {
                 EntryMode.Add -> repository.addEvent(trackerId, at)

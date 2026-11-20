@@ -41,6 +41,11 @@ class EventTimeEditorTest {
     private suspend fun givenDaysSince(startedAt: Instant = warsaw(2026, 3, 1)) =
         repository.createTracker("No sugar", TrackerType.DAYS_SINCE, startedAt)
 
+    private suspend fun givenEvent(
+        tracker: Tracker,
+        at: Instant,
+    ): TrackerEvent = checkNotNull(repository.addEvent(tracker.id, at)) { "event was not added" }
+
     private suspend fun eventTimes(tracker: Tracker): List<Instant> =
         repository.observeEvents(tracker.id).first().map { it.occurredAt }
 
@@ -72,7 +77,7 @@ class EventTimeEditorTest {
     fun `opening edit shows the local date and time of that event`() =
         runTest {
             val tracker = givenCounter()
-            val event = repository.addEvent(tracker.id, warsaw(2026, 3, 30, 8, 15))!!
+            val event = givenEvent(tracker, warsaw(2026, 3, 30, 8, 15))
             val editor = editorFor(tracker)
 
             editor.openEdit(event.id)
@@ -203,7 +208,7 @@ class EventTimeEditorTest {
     fun `saving an edit moves the event to the picked time`() =
         runTest {
             val tracker = givenCounter()
-            val event = repository.addEvent(tracker.id, warsaw(2026, 3, 30, 8, 15))!!
+            val event = givenEvent(tracker, warsaw(2026, 3, 30, 8, 15))
             val editor = editorFor(tracker)
             editor.openEdit(event.id)
             runCurrent()
@@ -216,10 +221,43 @@ class EventTimeEditorTest {
         }
 
     @Test
+    fun `saving an edit without changing the time keeps the original seconds`() =
+        runTest {
+            val tracker = givenCounter()
+            val original = warsaw(2026, 3, 30, 8, 15).plusSeconds(42)
+            val event = givenEvent(tracker, original)
+            val editor = editorFor(tracker)
+            editor.openEdit(event.id)
+            runCurrent()
+
+            editor.save()
+            runCurrent()
+
+            assertEquals(listOf(original), eventTimes(tracker))
+        }
+
+    @Test
+    fun `saving an unchanged edit of the second 02-30 in the repeated hour keeps its instant`() =
+        runTest {
+            clock.now = warsaw(2026, 11, 1)
+            val tracker = givenCounter()
+            val secondTwoThirty = Instant.parse("2026-10-25T01:30:00Z")
+            val event = givenEvent(tracker, secondTwoThirty)
+            val editor = editorFor(tracker)
+            editor.openEdit(event.id)
+            runCurrent()
+
+            editor.save()
+            runCurrent()
+
+            assertEquals(listOf(secondTwoThirty), eventTimes(tracker))
+        }
+
+    @Test
     fun `deleting an edited entry removes it, closes the dialog and reports its id`() =
         runTest {
             val tracker = givenCounter()
-            val event = repository.addEvent(tracker.id, warsaw(2026, 3, 30, 8, 15))!!
+            val event = givenEvent(tracker, warsaw(2026, 3, 30, 8, 15))
             val editor = editorFor(tracker)
             editor.openEdit(event.id)
             runCurrent()
