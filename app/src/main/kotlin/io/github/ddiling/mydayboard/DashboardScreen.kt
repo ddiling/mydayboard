@@ -30,8 +30,8 @@ internal const val OPEN_COUNTER_TAG = "open_counter"
 
 /**
  * The dashboard: the cards (already in display order) in a list, or a hint when there are none.
- * The first top-bar action opens the tracker list. The second one is temporary: it opens the counter
- * placeholder and gets removed together with it; until then it keeps the counter smoke flow working.
+ * The first top-bar action opens the tracker list; the second is a temporary route to the counter placeholder
+ * and goes away with it.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

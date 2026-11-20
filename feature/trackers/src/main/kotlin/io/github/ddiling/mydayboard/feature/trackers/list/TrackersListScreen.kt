@@ -77,7 +77,7 @@ internal fun TrackersListScreen(
             }
 
             is TrackersListUiState.Content -> {
-                LazyColumn(contentModifier, contentPadding = PaddingValues(bottom = FAB_CLEARANCE)) {
+                LazyColumn(contentModifier, contentPadding = PaddingValues(bottom = 88.dp)) {
                     items(uiState.items, key = { it.id }) { item ->
                         TrackerRow(item, Modifier.clickable { onTrackerClick(item.id) })
                     }
@@ -161,6 +161,3 @@ private fun TrackersListContentPreview() {
 private fun TrackersListLargeFontPreview() {
     PreviewSurface { TrackersListScreen(TrackersListUiState.Content(previewItems), {}, {}) }
 }
-
-// Extended FAB height (56.dp) plus its 16.dp margins: keeps the last row from sitting under it.
-private val FAB_CLEARANCE = 88.dp
