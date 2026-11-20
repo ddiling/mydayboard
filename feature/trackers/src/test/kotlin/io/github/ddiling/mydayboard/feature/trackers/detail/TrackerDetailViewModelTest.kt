@@ -28,7 +28,6 @@ import org.robolectric.RobolectricTestRunner
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
-import java.time.LocalTime
 
 /**
  * Robolectric supplies the real `Bundle` that `toRoute` needs to read the route arguments. Time moves by setting
@@ -91,7 +90,7 @@ class TrackerDetailViewModelTest {
         }
 
     @Test
-    fun `counter content shows today, time since last, the last week and the history`() =
+    fun `counter content shows today, time since last, the last week`() =
         runTest {
             val water = givenCounter()
             repository.addEvent(water.id, warsaw(2026, 3, 1, 20))
@@ -109,13 +108,6 @@ class TrackerDetailViewModelTest {
                 assertEquals(Duration.ofMinutes(30), counter.sinceLast)
                 assertEquals(7, counter.lastDays.size)
                 assertEquals(listOf(DayCount(today.minusDays(1), 1), DayCount(today, 2)), counter.lastDays.takeLast(2))
-                assertEquals(
-                    listOf(
-                        HistoryDay(today, listOf(LocalTime.of(9, 30), LocalTime.of(8, 0))),
-                        HistoryDay(today.minusDays(1), listOf(LocalTime.of(20, 0))),
-                    ),
-                    counter.history,
-                )
             }
         }
 

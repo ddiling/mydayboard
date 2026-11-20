@@ -91,18 +91,8 @@ internal class TrackerDetailViewModel
                 sinceLast = summary.sinceLast,
                 lastDays = dailyCounts(times, today, days = LAST_DAYS, zone = zone),
                 trend = counterTrend(times, historyStart, today, zone),
-                history = events.toHistory(),
                 pendingUndo = pendingUndo,
             )
-        }
-
-        private fun List<TrackerEvent>.toHistory(): List<HistoryDay> {
-            val zone = clock.zone
-            // Sorting by instant first keeps a repeated local hour (clocks going back) in the right order.
-            return sortedByDescending { it.occurredAt }
-                .map { it.occurredAt.atZone(zone) }
-                .groupBy { it.toLocalDate() }
-                .map { (date, moments) -> HistoryDay(date, moments.map { it.toLocalTime() }) }
         }
 
         private companion object {
