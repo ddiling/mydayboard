@@ -8,7 +8,7 @@ The app tracks things you do. A tracker is either an **event counter** (how many
 |---|---|
 | Android Gradle Plugin | 9.5.1 (built-in Kotlin) |
 | Kotlin | 2.4.21 |
-| Gradle | 9.7.0 |
+| Gradle | 9.9.1 |
 | SDK levels | compile 37 · target 37 · min 26 |
 | Compose BOM | 2026.09.00 |
 | JDK | 25 to run Gradle (see gradle/gradle-daemon-jvm.properties), bytecode target 17 |
@@ -191,7 +191,7 @@ runs the screenshot tests as no-ops and under-reports UI coverage.
 
 ```bash
 ./scripts/install-git-hooks.sh
-./gradlew wrapper --gradle-version 9.7.0   # refresh the wrapper jar
+./gradlew wrapper --gradle-version 9.9.1   # refresh the wrapper jar
 ./gradlew spotlessApply                    # normalise formatting once
 ./gradlew recordRoborazziDebug             # create initial screenshot baselines (or use the workflow)
 ./gradlew check                            # everything, locally
