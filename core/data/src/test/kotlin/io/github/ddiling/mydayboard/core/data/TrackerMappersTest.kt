@@ -3,8 +3,10 @@ package io.github.ddiling.mydayboard.core.data
 import io.github.ddiling.mydayboard.core.database.model.TrackerEntity
 import io.github.ddiling.mydayboard.core.database.model.TrackerEntityType
 import io.github.ddiling.mydayboard.core.database.model.TrackerEventEntity
+import io.github.ddiling.mydayboard.core.database.model.TrackerReasonEntity
 import io.github.ddiling.mydayboard.core.domain.tracker.Tracker
 import io.github.ddiling.mydayboard.core.domain.tracker.TrackerEvent
+import io.github.ddiling.mydayboard.core.domain.tracker.TrackerReason
 import io.github.ddiling.mydayboard.core.domain.tracker.TrackerType
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -52,5 +54,12 @@ class TrackerMappersTest {
 
         assertEquals(tracker, tracker.toEntity().toDomain())
         assertEquals(true, tracker.toEntity().askForReason)
+    }
+
+    @Test
+    fun `reason entity converts epoch millis to instants`() {
+        val entity = TrackerReasonEntity("r1", "t1", "Water", createdAt = 2_000, updatedAt = 3_000, deletedAt = null)
+
+        assertEquals(TrackerReason("r1", "t1", "Water", createdAt, updatedAt), entity.toDomain())
     }
 }

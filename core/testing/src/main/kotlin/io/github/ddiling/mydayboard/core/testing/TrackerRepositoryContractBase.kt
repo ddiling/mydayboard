@@ -26,7 +26,8 @@ abstract class TrackerRepositoryContractBase {
     /** The clock's reading until a test advances it; also the default tracker start. */
     protected val now: Instant = Instant.parse("2025-03-01T10:00:00Z")
     protected val clock = MutableClock(now, ZoneOffset.UTC)
-    protected val repo: TrackerRepository by lazy { createRepository(clock, SequentialIdGenerator()) }
+    protected val ids = SequentialIdGenerator()
+    protected val repo: TrackerRepository by lazy { createRepository(clock, ids) }
 
     /** How far a test moves [clock] so that `updatedAt` can differ from `createdAt`. */
     protected val clockAdvance: Duration = Duration.ofMinutes(3)
