@@ -2,5 +2,8 @@
 <resources>
     <string name="app_name">MyDayboard</string>
     <string name="dashboard_empty">Na razie nic tu nie ma</string>
-    <string name="dashboard_open_trackers">Trackery</string>
+    <string name="dashboard_open_settings">Otwórz ustawienia</string>
+    <string name="settings_title">Ustawienia</string>
+    <string name="settings_coming_soon">Ustawienia pojawią się wkrótce</string>
+    <string name="settings_back">Wstecz</string>
 </resources>

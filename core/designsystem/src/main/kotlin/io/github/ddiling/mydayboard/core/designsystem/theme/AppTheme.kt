@@ -1,44 +1,29 @@
 package io.github.ddiling.mydayboard.core.designsystem.theme
 
-import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 
-private val LightColors = lightColorScheme(primary = Color(0xFF3D5AFE), secondary = Color(0xFF00BFA5))
-private val DarkColors = darkColorScheme(primary = Color(0xFF8C9EFF), secondary = Color(0xFF64FFDA))
+private val Black = Color(0xFF000000)
+
+private val AppColors =
+    darkColorScheme(
+        primary = Color(0xFF8C9EFF),
+        secondary = Color(0xFF64FFDA),
+        background = Black,
+        surface = Black,
+        onBackground = Color(0xFFECECF1),
+        onSurface = Color(0xFFECECF1),
+        onSurfaceVariant = Color(0xFF9A9AA6),
+    )
 
 /**
- * The app's Material 3 theme. Light and dark follow the system setting.
- * Dynamic colour (Material You, Android 12+) is opt-in, because it replaces the app's own colours.
+ * The app's Material 3 theme: dark only, on pure black. The design exists in one variant, so there is one
+ * look to build and test, and black pixels cost no power on OLED screens. It ignores the system light/dark
+ * setting and Material You colours on purpose, because both would replace the app's own palette.
  */
 @Composable
-fun AppTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = false,
-    content: @Composable () -> Unit,
-) {
-    val colorScheme =
-        when {
-            dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-                val context = LocalContext.current
-                if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-            }
-
-            darkTheme -> {
-                DarkColors
-            }
-
-            else -> {
-                LightColors
-            }
-        }
-
-    MaterialTheme(colorScheme = colorScheme, content = content)
+fun AppTheme(content: @Composable () -> Unit) {
+    MaterialTheme(colorScheme = AppColors, content = content)
 }

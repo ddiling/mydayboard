@@ -21,6 +21,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
+import java.time.Clock
 
 /**
  * The counter (reachable from the start destination) creates its ViewModel with `hiltViewModel()`, which
@@ -50,7 +51,7 @@ class MyDayboardNavHostTest {
                 activity.setContent {
                     navController = TestNavHostController(LocalContext.current)
                     navController.navigatorProvider.addNavigator(ComposeNavigator())
-                    MyDayboardNavHost(navController = navController, cards = emptySet())
+                    MyDayboardNavHost(navController = navController, cards = emptySet(), clock = Clock.systemUTC())
                 }
             }
             composeRule.waitForIdle()

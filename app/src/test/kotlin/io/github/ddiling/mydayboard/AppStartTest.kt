@@ -25,6 +25,6 @@ class AppStartTest {
     fun `the app starts through its Hilt application and shows the dashboard`() {
         assertTrue(composeRule.activity.application is MyDayboardApplication)
 
-        composeRule.onNodeWithTag(OPEN_TRACKERS_TAG).assertIsDisplayed()
+        composeRule.onNodeWithTag(OPEN_SETTINGS_TAG).assertIsDisplayed()
     }
 }
