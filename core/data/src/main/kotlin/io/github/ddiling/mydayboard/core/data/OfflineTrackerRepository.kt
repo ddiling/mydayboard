@@ -50,9 +50,10 @@ internal class OfflineTrackerRepository
             name: String,
             type: TrackerType,
             startedAt: Instant,
+            askForReason: Boolean,
         ): Tracker {
             val now = clock.instant()
-            val tracker = Tracker(ids.newId(), name, type, startedAt, createdAt = now, updatedAt = now)
+            val tracker = Tracker(ids.newId(), name, type, startedAt, createdAt = now, updatedAt = now, askForReason)
             trackerDao.insert(tracker.toEntity())
             return tracker
         }

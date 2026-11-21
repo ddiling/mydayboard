@@ -6,6 +6,8 @@ import io.github.ddiling.mydayboard.core.domain.tracker.TrackerType
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /** Contract for creating, ordering and renaming trackers. */
@@ -27,6 +29,21 @@ abstract class TrackerContractTest : TrackerRepositoryContractBase() {
             assertEquals("Water", tracker.name)
             assertEquals(TrackerType.DAYS_SINCE, tracker.type)
             assertEquals(timeBeforeTrackerStart, tracker.startedAt)
+        }
+
+    @Test
+    fun `a new tracker does not ask for a reason`() =
+        runTest {
+            assertFalse(givenTracker().askForReason)
+        }
+
+    @Test
+    fun `created tracker keeps the ask-for-reason flag it was given`() =
+        runTest {
+            val tracker = repo.createTracker("Water", TrackerType.EVENT_COUNTER, now, askForReason = true)
+
+            assertEquals(tracker, repo.observeTracker(tracker.id).first())
+            assertTrue(tracker.askForReason)
         }
 
     @Test

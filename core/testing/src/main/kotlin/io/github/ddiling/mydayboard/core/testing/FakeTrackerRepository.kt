@@ -56,9 +56,10 @@ class FakeTrackerRepository(
         name: String,
         type: TrackerType,
         startedAt: Instant,
+        askForReason: Boolean,
     ): Tracker {
         val now = clock.instant()
-        val tracker = Tracker(ids.newId(), name, type, startedAt, createdAt = now, updatedAt = now)
+        val tracker = Tracker(ids.newId(), name, type, startedAt, createdAt = now, updatedAt = now, askForReason)
         state.update { it.copy(trackers = it.trackers + tracker) }
         return tracker
     }

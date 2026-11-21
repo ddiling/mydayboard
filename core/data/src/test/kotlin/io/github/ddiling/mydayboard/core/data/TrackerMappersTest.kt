@@ -44,4 +44,13 @@ class TrackerMappersTest {
 
         assertEquals(TrackerEventEntity("e1", "t1", 1_000, 2_000, 3_000, null), entity)
     }
+
+    @Test
+    fun `tracker entity keeps askForReason in both directions`() {
+        val tracker =
+            Tracker("t1", "Name", TrackerType.EVENT_COUNTER, startedAt, createdAt, updatedAt, askForReason = true)
+
+        assertEquals(tracker, tracker.toEntity().toDomain())
+        assertEquals(true, tracker.toEntity().askForReason)
+    }
 }

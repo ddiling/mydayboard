@@ -17,6 +17,7 @@ internal fun TrackerEntity.toDomain() =
         startedAt = Instant.ofEpochMilli(startedAt),
         createdAt = Instant.ofEpochMilli(createdAt),
         updatedAt = Instant.ofEpochMilli(updatedAt),
+        askForReason = askForReason,
     )
 
 /** A new row is never deleted, so `deletedAt` stays null. */
@@ -28,6 +29,7 @@ internal fun Tracker.toEntity() =
         startedAt = startedAt.toEpochMilli(),
         createdAt = createdAt.toEpochMilli(),
         updatedAt = updatedAt.toEpochMilli(),
+        askForReason = askForReason,
     )
 
 internal fun TrackerEventEntity.toDomain() =

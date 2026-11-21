@@ -39,6 +39,7 @@ interface TrackerRepository {
         name: String,
         type: TrackerType,
         startedAt: Instant,
+        askForReason: Boolean = false,
     ): Tracker
 
     /** Renames the tracker and bumps its `updatedAt`. */
