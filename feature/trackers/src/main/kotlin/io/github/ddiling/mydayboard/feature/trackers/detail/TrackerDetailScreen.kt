@@ -34,16 +34,20 @@ import io.github.ddiling.mydayboard.feature.trackers.R
 import io.github.ddiling.mydayboard.feature.trackers.event.EventTimeDialog
 import io.github.ddiling.mydayboard.feature.trackers.event.EventTimeDialogActions
 import io.github.ddiling.mydayboard.feature.trackers.event.EventTimeEditorState
+import io.github.ddiling.mydayboard.feature.trackers.reason.ReasonPromptActions
+import io.github.ddiling.mydayboard.feature.trackers.reason.ReasonPromptDialog
 
 /** Hilt provides the ViewModel; the callbacks keep navigation out of the feature's screens. */
 @Composable
 internal fun TrackerDetailRoute(
     onEditClick: () -> Unit,
     onBack: () -> Unit,
+    onAddFirstReason: (trackerId: String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: TrackerDetailViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val prompt by viewModel.prompt.collectAsStateWithLifecycle()
     val actions =
         TrackerDetailActions(
             onPlusOne = viewModel::onPlusOne,
@@ -64,6 +68,17 @@ internal fun TrackerDetailRoute(
                 ),
         )
     TrackerDetailScreen(uiState, actions, modifier)
+    val promptActions =
+        ReasonPromptActions(
+            onWait = viewModel.prompter::dismiss,
+            onAnother = viewModel.prompter::another,
+            onLogAnyway = viewModel::onPromptLogAnyway,
+            onAddFirstReason = { trackerId ->
+                viewModel.onPromptAddFirstReason()
+                onAddFirstReason(trackerId)
+            },
+        )
+    ReasonPromptDialog(prompt, promptActions)
 }
 
 /** The +1 or Reset button stays reachable while the lists scroll; the undo offer appears as a snackbar. */

@@ -52,6 +52,7 @@ fun NavGraphBuilder.trackersGraph(navController: NavController) {
         TrackerDetailRoute(
             onEditClick = { navController.navigate(TrackerEditorDestination(id)) },
             onBack = { navController.popBackStack() },
+            onAddFirstReason = { navController.navigate(TrackerReasonsDestination(it)) },
         )
     }
     composable<TrackerReasonsDestination> {

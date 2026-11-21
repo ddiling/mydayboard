@@ -11,6 +11,7 @@ import io.github.ddiling.mydayboard.core.testing.SequentialIdGenerator
 import io.github.ddiling.mydayboard.core.testing.TestZones
 import io.github.ddiling.mydayboard.core.testing.warsaw
 import io.github.ddiling.mydayboard.feature.trackers.detail.UndoKind
+import io.github.ddiling.mydayboard.feature.trackers.reason.reasonPrompter
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -40,7 +41,12 @@ class TrackersDashboardCardViewModelTest {
 
     // Lazy: viewModelScope must be created after the rule has installed the test Main dispatcher.
     private val viewModel by lazy {
-        TrackersDashboardCardViewModel(ObserveTrackerSummariesUseCase(repository, clock), repository, clock)
+        TrackersDashboardCardViewModel(
+            ObserveTrackerSummariesUseCase(repository, clock),
+            repository,
+            clock,
+            reasonPrompter(repository, clock),
+        )
     }
 
     @Test

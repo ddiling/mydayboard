@@ -12,6 +12,7 @@ import io.github.ddiling.mydayboard.core.testing.MutableClock
 import io.github.ddiling.mydayboard.core.testing.SequentialIdGenerator
 import io.github.ddiling.mydayboard.core.testing.TestZones
 import io.github.ddiling.mydayboard.core.testing.warsaw
+import io.github.ddiling.mydayboard.feature.trackers.reason.reasonPrompter
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -47,7 +48,12 @@ class TrackerDetailViewModelTest {
     private val startedLongAgo = warsaw(2026, 2, 1)
 
     private fun viewModelFor(trackerId: String) =
-        TrackerDetailViewModel(SavedStateHandle(mapOf("trackerId" to trackerId)), repository, clock)
+        TrackerDetailViewModel(
+            SavedStateHandle(mapOf("trackerId" to trackerId)),
+            repository,
+            clock,
+            reasonPrompter(repository, clock),
+        )
 
     private suspend fun givenCounter(startedAt: Instant = startedLongAgo) =
         repository.createTracker("Water", TrackerType.EVENT_COUNTER, startedAt)
