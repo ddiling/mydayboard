@@ -1,5 +1,4 @@
-# E2E smoke test: from the empty dashboard, the trackers card creates a tracker, then adds an event with +1 and undoes it.
-# Maestro matches text as a regex, so "+1" is not used; the button is found by its content description.
+# E2E smoke test: from the empty dashboard, an empty grid place creates a tracker, then a tap on its tile adds an event and Undo removes it.
 # Run: maestro test app/maestro/   (emulator running, debug APK installed)
 appId: io.github.ddiling.mydayboard.debug
 name: Trackers - quick add and undo from the dashboard
@@ -8,18 +7,18 @@ tags:
 ---
 - launchApp:
     clearState: true
-- assertVisible: "No trackers yet.*" # the card's empty state
+- assertVisible:
+    id: "empty_slot_0" # with no trackers every grid place offers "Add a tracker"
 - tapOn:
-    id: "trackers_card_add" # the card's button, not the list's
+    id: "empty_slot_0"
 - tapOn: "Name"
 - inputText: "Water"
 - tapOn: "Save"
 - assertVisible: "Last 7 days" # the counter detail screen opened
 - back # the editor was replaced by the detail screen, so Back lands on the dashboard
-- assertNotVisible: "No trackers yet.*"
-- assertVisible: "Today: 0.*" # the row is one text, "Today: 0 · No events yet", and Maestro matches the whole text
-- tapOn: "Add one to Water"
+- assertVisible: "0 today" # a counter with no events shows only its count
+- tapOn: "Water" # a tap on the tile adds one event
 - assertVisible: "Added"
-- assertVisible: "Today: 1.*"
+- assertVisible: "1 today.*" # now "1 today · <time ago>", and Maestro matches the whole text
 - tapOn: "Undo"
-- assertVisible: "Today: 0.*"
+- assertVisible: "0 today"
