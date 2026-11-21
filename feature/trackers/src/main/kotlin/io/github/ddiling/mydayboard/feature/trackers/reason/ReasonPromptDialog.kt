@@ -1,9 +1,10 @@
 package io.github.ddiling.mydayboard.feature.trackers.reason
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -21,10 +22,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import io.github.ddiling.mydayboard.core.designsystem.theme.DialogOutlineColor
+import io.github.ddiling.mydayboard.core.designsystem.theme.DialogSurfaceColor
 import io.github.ddiling.mydayboard.feature.trackers.R
 
 private val DialogCorner = 28.dp
-private val ButtonMinHeight = 48.dp
 
 /**
  * Shows [prompt] centered over the screen, or nothing when it is null. A tap outside and Back count as the
@@ -37,9 +39,25 @@ internal fun ReasonPromptDialog(
 ) {
     if (prompt == null) return
     Dialog(onDismissRequest = actions.onWait) {
-        Surface(shape = RoundedCornerShape(DialogCorner), color = MaterialTheme.colorScheme.surfaceContainerHigh) {
-            ReasonPromptContent(prompt, actions)
-        }
+        ReasonPromptSurface(prompt, actions)
+    }
+}
+
+/**
+ * The dialog's card: the dark surface with a thin outline, as in the design. It is apart from the window so
+ * previews show the same card the user sees.
+ */
+@Composable
+internal fun ReasonPromptSurface(
+    prompt: ReasonPrompt,
+    actions: ReasonPromptActions,
+) {
+    Surface(
+        shape = RoundedCornerShape(DialogCorner),
+        color = DialogSurfaceColor,
+        border = BorderStroke(1.dp, DialogOutlineColor),
+    ) {
+        ReasonPromptContent(prompt, actions)
     }
 }
 
@@ -98,14 +116,13 @@ internal fun ReasonPromptContent(
                 .padding(
                     top = 16.dp,
                 ).fillMaxWidth()
-                .heightIn(min = ButtonMinHeight)
                 .testTag("trackers_reason_dialog_big"),
         ) { Text(stringResource(bigLabel), textAlign = TextAlign.Center) }
         val logLabel =
             if (isCounter) R.string.trackers_reason_dialog_log_anyway else R.string.trackers_reason_dialog_reset_anyway
         TextButton(
             actions.onLogAnyway,
-            Modifier.fillMaxWidth().heightIn(min = ButtonMinHeight).testTag("trackers_reason_dialog_log"),
+            Modifier.fillMaxWidth().testTag("trackers_reason_dialog_log"),
         ) { Text(stringResource(logLabel), color = muted) }
     }
 }
@@ -118,7 +135,11 @@ private fun ReasonText(
     val quote = stringResource(R.string.trackers_reason_dialog_quote, prompt.reason.text)
     Text(quote, Modifier.padding(top = 6.dp).testTag("trackers_reason_dialog_reason"), fontSize = 22.sp)
     if (prompt.canSwap) {
-        TextButton(onAnother, Modifier.heightIn(min = ButtonMinHeight).testTag("trackers_reason_dialog_another")) {
+        TextButton(
+            onAnother,
+            Modifier.testTag("trackers_reason_dialog_another"),
+            contentPadding = PaddingValues(horizontal = 0.dp),
+        ) {
             Text(stringResource(R.string.trackers_reason_dialog_another))
         }
     }

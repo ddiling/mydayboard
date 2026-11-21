@@ -14,7 +14,7 @@ private val previewCounter =
     ReasonPrompt.WithReason("t1", "Water", ReasonPromptKind.COUNTER, previewReason, canSwap = true)
 
 @Composable
-private fun PromptPreview(prompt: ReasonPrompt) = PreviewSurface { ReasonPromptContent(prompt, ReasonPromptActions()) }
+private fun PromptPreview(prompt: ReasonPrompt) = PreviewSurface { ReasonPromptSurface(prompt, ReasonPromptActions()) }
 
 @PreviewLightDark
 @Composable

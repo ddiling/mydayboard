@@ -1,18 +1,18 @@
 package io.github.ddiling.mydayboard.feature.trackers.reason
 
-import androidx.compose.ui.test.assertHeightIsAtLeast
+import androidx.activity.ComponentDialog
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.unit.dp
 import io.github.ddiling.mydayboard.core.domain.tracker.TrackerReason
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.shadows.ShadowDialog
 import java.time.Instant
 
 @RunWith(RobolectricTestRunner::class)
@@ -34,6 +34,11 @@ class ReasonPromptContentTest {
         prompt: ReasonPrompt,
         actions: ReasonPromptActions = ReasonPromptActions(),
     ) = composeRule.setContent { ReasonPromptContent(prompt, actions) }
+
+    private fun showDialog(
+        prompt: ReasonPrompt,
+        actions: ReasonPromptActions,
+    ) = composeRule.setContent { ReasonPromptDialog(prompt, actions) }
 
     @Test
     fun `the counter dialog shows the reason in quotes with wait and log anyway`() {
@@ -60,11 +65,30 @@ class ReasonPromptContentTest {
     }
 
     @Test
-    fun `the buttons are at least 48 dp high`() {
-        show(counterWithTwo)
+    fun `back in the dialog is the wait choice and logs nothing`() {
+        val calls = mutableListOf<String>()
+        showDialog(
+            counterWithTwo,
+            ReasonPromptActions(onWait = { calls += "wait" }, onLogAnyway = { calls += "log" }),
+        )
 
-        composeRule.onNodeWithTag("trackers_reason_dialog_big").assertHeightIsAtLeast(48.dp)
-        composeRule.onNodeWithTag("trackers_reason_dialog_log").assertHeightIsAtLeast(48.dp)
+        val dialog = ShadowDialog.getLatestDialog() as ComponentDialog
+        composeRule.runOnUiThread { dialog.onBackPressedDispatcher.onBackPressed() }
+
+        assertEquals(listOf("wait"), calls)
+    }
+
+    @Test
+    fun `with no reasons log anyway still calls its callback`() {
+        val calls = mutableListOf<String>()
+        show(
+            ReasonPrompt.NoReasons("t1", "Water", ReasonPromptKind.COUNTER),
+            ReasonPromptActions(onLogAnyway = { calls += "log" }),
+        )
+
+        composeRule.onNodeWithTag("trackers_reason_dialog_log").performClick()
+
+        assertEquals(listOf("log"), calls)
     }
 
     @Test
