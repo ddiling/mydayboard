@@ -1,6 +1,5 @@
 package io.github.ddiling.mydayboard.feature.trackers.dashboard
 
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
@@ -8,6 +7,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.PathBuilder
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
+import io.github.ddiling.mydayboard.core.designsystem.theme.IconStrokeColor
 
 /*
  * Drawn here as vectors because the Material icon set is not a dependency, and these three thin line icons are
@@ -25,7 +25,7 @@ private fun strokeIcon(
     ImageVector
         .Builder(name, VIEWPORT.dp, VIEWPORT.dp, VIEWPORT, VIEWPORT)
         .path(
-            stroke = SolidColor(Color.Black),
+            stroke = SolidColor(IconStrokeColor),
             strokeLineWidth = strokeWidth,
             strokeLineCap = StrokeCap.Round,
             strokeLineJoin = StrokeJoin.Round,

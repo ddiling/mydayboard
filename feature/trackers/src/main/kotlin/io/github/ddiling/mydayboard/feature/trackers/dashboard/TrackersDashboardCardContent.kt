@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -59,7 +60,7 @@ internal fun TrackersDashboardCardContent(
             onOpenList = { open(TrackersListDestination) },
             onAdd = { open(TrackerEditorDestination()) },
         )
-        val places = content.rows + List(MAX_PLACES - content.rows.size) { null }
+        val places = content.rows + List((MAX_PLACES - content.rows.size).coerceAtLeast(0)) { null }
         places.chunked(COLUMNS).forEachIndexed { rowIndex, rowPlaces ->
             // The row height follows its taller tile, so a large font cannot cut the vertical line short.
             Row(Modifier.height(IntrinsicSize.Min)) {
@@ -96,8 +97,11 @@ private fun TitleRow(
             Modifier
                 .weight(1f)
                 .heightIn(min = 48.dp)
-                .clickable(onClick = onOpenList)
-                .testTag("open_trackers"),
+                .clickable(
+                    onClickLabel = stringResource(R.string.trackers_dashboard_open_list),
+                    role = Role.Button,
+                    onClick = onOpenList,
+                ).testTag("open_trackers"),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(PulseIcon, contentDescription = null, Modifier.size(16.dp), muted)

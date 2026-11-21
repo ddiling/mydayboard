@@ -2,6 +2,10 @@ package io.github.ddiling.mydayboard.feature.trackers.dashboard
 
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.hapticfeedback.HapticFeedback
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.longClick
@@ -226,27 +230,92 @@ class TrackersDashboardCardContentTest {
         assertEquals(1, undos)
     }
 
-    @Test
-    fun `opening the detail dismisses the pending undo first`() {
-        val orderedEvents = mutableListOf<String>()
+    private fun givenCardRecordingOrder(): List<String> {
+        val events = mutableListOf<String>()
         val orderedHost =
             object : DashboardHost {
                 override val snackbarHostState = SnackbarHostState()
 
                 override fun navigate(destination: Destination) {
-                    orderedEvents += "navigated"
+                    events += "navigated"
                 }
             }
         composeRule.setContent {
             TrackersDashboardCardContent(
                 TrackersDashboardCardUiState.Content(listOf(water), 1, Undo("event-1", UndoKind.ADDED)),
-                actions.copy(onUndoDismissed = { orderedEvents += "dismissed" }),
+                actions.copy(onUndoDismissed = { events += "dismissed" }),
                 orderedHost,
             )
+        }
+        return events
+    }
+
+    private val dismissedThenNavigated = listOf("dismissed", "navigated")
+
+    @Test
+    fun `opening the detail dismisses the pending undo first`() {
+        val events = givenCardRecordingOrder()
+
+        composeRule.onNodeWithTag("trackers_card_tile_water-id").performTouchInput { longClick() }
+
+        assertEquals(dismissedThenNavigated, events)
+    }
+
+    @Test
+    fun `opening the list dismisses the pending undo first`() {
+        val events = givenCardRecordingOrder()
+
+        composeRule.onNodeWithTag("open_trackers").performClick()
+
+        assertEquals(dismissedThenNavigated, events)
+    }
+
+    @Test
+    fun `tapping plus dismisses the pending undo first`() {
+        val events = givenCardRecordingOrder()
+
+        composeRule.onNodeWithTag("add_tracker").performClick()
+
+        assertEquals(dismissedThenNavigated, events)
+    }
+
+    @Test
+    fun `tapping an empty tile dismisses the pending undo first`() {
+        val events = givenCardRecordingOrder()
+
+        composeRule.onNodeWithTag("empty_slot_1").performClick()
+
+        assertEquals(dismissedThenNavigated, events)
+    }
+
+    @Test
+    fun `long-pressing a tile buzzes exactly once`() {
+        val buzzes = mutableListOf<HapticFeedbackType>()
+        val recordingHaptics =
+            object : HapticFeedback {
+                override fun performHapticFeedback(hapticFeedbackType: HapticFeedbackType) {
+                    buzzes += hapticFeedbackType
+                }
+            }
+        composeRule.setContent {
+            CompositionLocalProvider(LocalHapticFeedback provides recordingHaptics) {
+                TrackersDashboardCardContent(
+                    TrackersDashboardCardUiState.Content(listOf(water), 1, null),
+                    actions,
+                    host,
+                )
+            }
         }
 
         composeRule.onNodeWithTag("trackers_card_tile_water-id").performTouchInput { longClick() }
 
-        assertEquals(listOf("dismissed", "navigated"), orderedEvents)
+        assertEquals(listOf(HapticFeedbackType.LongPress), buzzes)
+    }
+
+    @Test
+    fun `a state with more than four rows shows them without crashing`() {
+        givenCard(List(MAX_PLACES + 1) { daysSince(days = it) }.mapIndexed { i, r -> r.copy(id = "id-$i") })
+
+        composeRule.onNodeWithTag("trackers_card").assertExists()
     }
 }

@@ -18,8 +18,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.PathEffect
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -69,8 +67,9 @@ private fun Modifier.tilePadding(isLeft: Boolean): Modifier =
     )
 
 /**
- * A tap is the quick action (+1 or Reset) and a long press opens the detail, with a buzz so the user feels
- * that the press was a different gesture. The tap's click label names the action for screen readers.
+ * A tap is the quick action (+1 or Reset) and a long press opens the detail. `combinedClickable` already buzzes on a long press, so the user feels
+ * a different gesture; a second buzz here would double it. The click labels name both gestures for screen
+ * readers, so TalkBack users can reach the detail too.
  */
 @Composable
 internal fun TrackerTile(
@@ -80,7 +79,6 @@ internal fun TrackerTile(
     modifier: Modifier,
     onOpenDetail: () -> Unit,
 ) {
-    val haptics = LocalHapticFeedback.current
     val clickLabel =
         when (row) {
             is TrackersDashboardRow.Counter -> stringResource(R.string.trackers_card_plus_one_description, row.name)
@@ -96,8 +94,8 @@ internal fun TrackerTile(
                         is TrackersDashboardRow.DaysSince -> actions.onReset(row.id)
                     }
                 },
+                onLongClickLabel = stringResource(R.string.trackers_dashboard_open_details),
                 onLongClick = {
-                    haptics.performHapticFeedback(HapticFeedbackType.LongPress)
                     onOpenDetail()
                 },
             ).tilePadding(isLeft),

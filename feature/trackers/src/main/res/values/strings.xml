@@ -62,4 +62,6 @@
     <string name="trackers_dashboard_today">%s today</string>
     <string name="trackers_dashboard_today_ago">%1$s today · %2$s</string>
     <string name="trackers_dashboard_add_content_description">Add a tracker</string>
+    <string name="trackers_dashboard_open_details">Open details</string>
+    <string name="trackers_dashboard_open_list">Open trackers list</string>
 </resources>
