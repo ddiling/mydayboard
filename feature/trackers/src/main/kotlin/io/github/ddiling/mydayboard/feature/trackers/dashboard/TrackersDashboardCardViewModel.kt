@@ -18,11 +18,12 @@ import java.time.Clock
 import javax.inject.Inject
 
 /**
- * Feeds the dashboard card: one row per tracker, with a quick action (+1 or Reset) that can be undone. The
+ * Feeds the dashboard card: a row for each of the first [MAX_PLACES] trackers in the list's order (kept, so tiles
+ * stay put), with a quick action (+1 or Reset) that can be undone. The
  * summaries come from the shared use case, which recomputes every minute so the day rolls over at midnight.
  * An action stamps the event with a fresh `clock.instant()`, never a tick's older instant, so the new event is
- * counted at once. Only the latest action is undoable, also across trackers, because a card shows all of them
- * but one snackbar. Sharing stops 5 s after the card goes away, which keeps the data across a rotation but
+ * counted at once. Only the latest action is undoable, also across trackers, because the card has several
+ * trackers but one snackbar. Sharing stops 5 s after the card goes away, which keeps the data across a rotation but
  * stops the minute ticker once the dashboard is really gone.
  */
 @HiltViewModel
@@ -37,7 +38,11 @@ internal class TrackersDashboardCardViewModel
 
         val uiState: StateFlow<TrackersDashboardCardUiState> =
             combine(observeSummaries(), quickUndo.pending) { summaries, pendingUndo ->
-                TrackersDashboardCardUiState.Content(summaries.map { it.toRow() }, pendingUndo)
+                TrackersDashboardCardUiState.Content(
+                    rows = summaries.take(MAX_PLACES).map { it.toRow() },
+                    totalCount = summaries.size,
+                    pendingUndo = pendingUndo,
+                )
             }.stateIn(
                 viewModelScope,
                 SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS),

@@ -7,12 +7,19 @@ import java.time.Duration
 internal sealed interface TrackersDashboardCardUiState {
     data object Loading : TrackersDashboardCardUiState
 
-    /** [rows] is empty when there are no trackers yet; [pendingUndo] is the action the snackbar offers to undo. */
+    /**
+     * [rows] are the trackers that get a place on the card (at most [MAX_PLACES]; empty when there are none yet),
+     * [totalCount] is how many trackers exist, and [pendingUndo] is the action the snackbar offers to undo.
+     */
     data class Content(
         val rows: List<TrackersDashboardRow>,
+        val totalCount: Int,
         val pendingUndo: Undo?,
     ) : TrackersDashboardCardUiState
 }
+
+/** How many places the card's grid has. */
+internal const val MAX_PLACES = 4
 
 /** One row, as display-ready values rather than domain objects, so a preview needs no repository or clock. */
 internal sealed interface TrackersDashboardRow {

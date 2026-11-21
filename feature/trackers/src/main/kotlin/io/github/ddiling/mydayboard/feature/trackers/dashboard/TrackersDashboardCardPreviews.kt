@@ -30,18 +30,18 @@ private fun PreviewCard(uiState: TrackersDashboardCardUiState) {
 @PreviewLightDark
 @Composable
 private fun TrackersDashboardCardEmptyPreview() {
-    PreviewCard(TrackersDashboardCardUiState.Content(emptyList(), pendingUndo = null))
+    PreviewCard(TrackersDashboardCardUiState.Content(emptyList(), totalCount = 0, pendingUndo = null))
 }
 
 @PreviewLightDark
 @Composable
 private fun TrackersDashboardCardRowsPreview() {
-    PreviewCard(TrackersDashboardCardUiState.Content(previewRows, pendingUndo = null))
+    PreviewCard(TrackersDashboardCardUiState.Content(previewRows, totalCount = previewRows.size, pendingUndo = null))
 }
 
 @Preview(name = "Large font light", fontScale = 2f)
 @Preview(name = "Large font dark", fontScale = 2f, uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun TrackersDashboardCardLargeFontPreview() {
-    PreviewCard(TrackersDashboardCardUiState.Content(previewRows, pendingUndo = null))
+    PreviewCard(TrackersDashboardCardUiState.Content(previewRows, totalCount = previewRows.size, pendingUndo = null))
 }
