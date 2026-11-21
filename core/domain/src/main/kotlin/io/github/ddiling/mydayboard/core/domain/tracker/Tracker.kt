@@ -29,12 +29,32 @@ enum class TrackerType {
  *   to compute a [Trend]: without it, a tracker created yesterday would look like it had two quiet weeks.
  * @property createdAt When the row was created, kept for sync.
  * @property updatedAt When the row last changed, so sync can keep the newest version.
+ * @property askForReason When on, logging an event first shows one of the tracker's reasons, to give the user a
+ *   moment to think before they continue.
  */
 data class Tracker(
     val id: String,
     val name: String,
     val type: TrackerType,
     val startedAt: Instant,
+    val createdAt: Instant,
+    val updatedAt: Instant,
+    val askForReason: Boolean = false,
+)
+
+/**
+ * A short sentence the user wrote for a tracker, shown when [Tracker.askForReason] is on.
+ *
+ * @property id Stable UUID, for sync.
+ * @property trackerId The [Tracker.id] this reason belongs to.
+ * @property text What the user wrote, already validated by [validateReasonText].
+ * @property createdAt When the row was created; reasons are listed oldest first by it.
+ * @property updatedAt When the row last changed.
+ */
+data class TrackerReason(
+    val id: String,
+    val trackerId: String,
+    val text: String,
     val createdAt: Instant,
     val updatedAt: Instant,
 )
