@@ -33,6 +33,8 @@ internal data class TrackerEditorUiState(
     val type: TrackerType = TrackerType.EVENT_COUNTER,
     val startDate: LocalDate,
     val today: LocalDate,
+    val askForReason: Boolean = false,
+    val reasonCount: Int = 0,
     val isSaving: Boolean = false,
     val showDeleteConfirmation: Boolean = false,
     val result: EditorResult? = null,

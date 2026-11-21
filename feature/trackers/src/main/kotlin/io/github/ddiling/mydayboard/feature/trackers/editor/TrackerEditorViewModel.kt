@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.ddiling.mydayboard.core.domain.tracker.TrackerNameValidation
+import io.github.ddiling.mydayboard.core.domain.tracker.TrackerReasonRepository
 import io.github.ddiling.mydayboard.core.domain.tracker.TrackerRepository
 import io.github.ddiling.mydayboard.core.domain.tracker.TrackerType
 import io.github.ddiling.mydayboard.core.domain.tracker.validateTrackerName
@@ -32,6 +33,7 @@ internal class TrackerEditorViewModel
     constructor(
         savedStateHandle: SavedStateHandle,
         private val repository: TrackerRepository,
+        private val reasons: TrackerReasonRepository,
         private val clock: Clock,
     ) : ViewModel() {
         private val trackerId: String? = savedStateHandle.toRoute<TrackerEditorDestination>().trackerId
@@ -48,7 +50,16 @@ internal class TrackerEditorViewModel
         val uiState: StateFlow<TrackerEditorUiState> = _uiState.asStateFlow()
 
         init {
-            if (trackerId != null) loadTracker(trackerId)
+            if (trackerId != null) {
+                loadTracker(trackerId)
+                observeReasonCount(trackerId)
+            }
+        }
+
+        private fun observeReasonCount(id: String) {
+            viewModelScope.launch {
+                reasons.observeReasons(id).collect { list -> _uiState.update { it.copy(reasonCount = list.size) } }
+            }
         }
 
         private fun loadTracker(id: String) {
@@ -58,7 +69,7 @@ internal class TrackerEditorViewModel
                     if (tracker == null) {
                         it.copy(load = EditorLoad.NotFound)
                     } else {
-                        it.copy(load = EditorLoad.Ready, name = tracker.name)
+                        it.copy(load = EditorLoad.Ready, name = tracker.name, askForReason = tracker.askForReason)
                     }
                 }
             }
@@ -67,6 +78,9 @@ internal class TrackerEditorViewModel
         fun onNameChange(name: String) = _uiState.update { it.copy(name = name, nameEdited = true) }
 
         fun onTypeChange(type: TrackerType) = _uiState.update { it.copy(type = type) }
+
+        /** Only stored on Save, so Cancel leaves the tracker as it was. */
+        fun onAskForReasonChange(enabled: Boolean) = _uiState.update { it.copy(askForReason = enabled) }
 
         /** A date after today is ignored: a tracker cannot have started in the future. */
         fun onStartDateChange(date: LocalDate) =
@@ -80,9 +94,10 @@ internal class TrackerEditorViewModel
             viewModelScope.launch {
                 val savedId =
                     if (trackerId == null) {
-                        repository.createTracker(valid.name, state.type, state.startedAt()).id
+                        repository.createTracker(valid.name, state.type, state.startedAt(), state.askForReason).id
                     } else {
                         repository.renameTracker(trackerId, valid.name)
+                        reasons.setAskForReason(trackerId, state.askForReason)
                         trackerId
                     }
                 _uiState.update { it.copy(result = EditorResult.Saved(savedId)) }

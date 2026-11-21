@@ -1,5 +1,6 @@
 package io.github.ddiling.mydayboard.feature.trackers.editor
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -7,18 +8,22 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -27,7 +32,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -41,6 +48,7 @@ import io.github.ddiling.mydayboard.feature.trackers.R
 internal fun TrackerEditorRoute(
     onResult: (EditorResult, isEditing: Boolean) -> Unit,
     onBack: () -> Unit,
+    onOpenReasons: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: TrackerEditorViewModel = hiltViewModel(),
 ) {
@@ -51,6 +59,8 @@ internal fun TrackerEditorRoute(
             viewModel::onNameChange,
             viewModel::onTypeChange,
             viewModel::onStartDateChange,
+            viewModel::onAskForReasonChange,
+            onOpenReasons,
             viewModel::onSave,
             viewModel::onDeleteClick,
             viewModel::onDeleteConfirm,
@@ -118,6 +128,7 @@ private fun Form(
                 StartDateField(uiState.startDate, uiState.today, actions.onStartDateChange)
             }
         }
+        ReasonsSection(uiState, actions)
         Button(onClick = actions.onSave, enabled = uiState.canSave, modifier = Modifier.fillMaxWidth()) {
             Text(stringResource(R.string.trackers_editor_save))
         }
@@ -128,6 +139,53 @@ private fun Form(
         }
     }
 }
+
+/**
+ * The switch row is one toggleable element, so a screen reader announces its label and state together; the row
+ * with the count only exists once the tracker is saved, because reasons belong to a stored tracker.
+ */
+@Composable
+private fun ReasonsSection(
+    uiState: TrackerEditorUiState,
+    actions: TrackerEditorActions,
+) {
+    Column {
+        Text(stringResource(R.string.trackers_editor_reasons_section), style = MaterialTheme.typography.titleSmall)
+        val hint =
+            if (uiState.type == TrackerType.DAYS_SINCE) {
+                R.string.trackers_editor_ask_reason_hint_days_since
+            } else {
+                R.string.trackers_editor_ask_reason_hint_counter
+            }
+        ListItem(
+            headlineContent = { Text(stringResource(R.string.trackers_editor_ask_reason)) },
+            supportingContent = { Text(stringResource(hint)) },
+            trailingContent = { Switch(checked = uiState.askForReason, onCheckedChange = null) },
+            modifier =
+                Modifier.toggleable(
+                    value = uiState.askForReason,
+                    role = Role.Switch,
+                    onValueChange = actions.onAskForReasonChange,
+                ),
+        )
+        if (uiState.isEditing) {
+            ListItem(
+                headlineContent = { Text(stringResource(R.string.trackers_editor_reasons_row)) },
+                supportingContent = { Text(reasonCountText(uiState.reasonCount)) },
+                trailingContent = { Text("\u203A") },
+                modifier = Modifier.clickable(onClick = actions.onOpenReasons),
+            )
+        }
+    }
+}
+
+@Composable
+private fun reasonCountText(count: Int): String =
+    if (count == 0) {
+        stringResource(R.string.trackers_editor_reasons_none)
+    } else {
+        pluralStringResource(R.plurals.trackers_editor_reasons_count, count, count)
+    }
 
 @Composable
 private fun TrackerNameValidation.message(): String =
