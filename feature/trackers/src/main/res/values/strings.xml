@@ -74,4 +74,6 @@
     <string name="trackers_reasons_helper">Short and in your own words</string>
     <string name="trackers_reasons_too_long">Too long (max %d)</string>
     <string name="trackers_reasons_counter">%1$d/%2$d</string>
+    <string name="trackers_reasons_back">Back</string>
+    <string name="trackers_reasons_not_found_back">Back to trackers</string>
 </resources>

@@ -112,7 +112,7 @@ internal fun TrackerReasonsScreen(
                     IconButton(onClick = actions.onBack) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.trackers_editor_back),
+                            contentDescription = stringResource(R.string.trackers_reasons_back),
                         )
                     }
                 },
@@ -273,6 +273,6 @@ private fun NotFound(
         Alignment.CenterHorizontally,
     ) {
         Text(stringResource(R.string.trackers_editor_not_found))
-        Button(onClick = onBack) { Text(stringResource(R.string.trackers_editor_back)) }
+        Button(onClick = onBack) { Text(stringResource(R.string.trackers_reasons_not_found_back)) }
     }
 }

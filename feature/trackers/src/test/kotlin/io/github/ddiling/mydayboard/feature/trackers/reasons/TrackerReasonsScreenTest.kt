@@ -11,9 +11,14 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipeRight
+import androidx.compose.ui.test.swipeUp
 import androidx.compose.ui.unit.Density
+import io.github.ddiling.mydayboard.core.domain.tracker.MAX_REASON_LENGTH
 import io.github.ddiling.mydayboard.core.domain.tracker.TrackerReason
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -84,7 +89,7 @@ class TrackerReasonsScreenTest {
     }
 
     @Test
-    fun `every row can be reached with a large font`() {
+    fun `the last row ends above the add button with a large font`() {
         val many = (1..12).map { reason("r$it", "Reason number $it") }
         composeRule.setContent {
             CompositionLocalProvider(LocalDensity provides Density(density = 1f, fontScale = 2f)) {
@@ -93,7 +98,39 @@ class TrackerReasonsScreenTest {
         }
 
         composeRule.onNodeWithTag("trackers_reasons_list").performScrollToNode(hasText("Reason number 12"))
+        // Scrolling to a node only makes it visible; the swipe takes the list to its very end.
+        composeRule.onNodeWithTag("trackers_reasons_list").performTouchInput { swipeUp() }
 
-        composeRule.onNodeWithText("Reason number 12").assertIsDisplayed()
+        val lastRowBottom =
+            composeRule
+                .onNodeWithText("Reason number 12")
+                .fetchSemanticsNode()
+                .boundsInRoot.bottom
+        val addButtonTop =
+            composeRule
+                .onNodeWithText("Add reason")
+                .fetchSemanticsNode()
+                .boundsInRoot.top
+        val message = "last row ends at $lastRowBottom, below the add button top $addButtonTop"
+        assertTrue(message, lastRowBottom <= addButtonTop)
+    }
+
+    @Test
+    fun `text over the limit shows the too-long error`() {
+        val editor = ReasonEditor(reasonId = null, text = "a".repeat(MAX_REASON_LENGTH + 1))
+        composeRule.setContent { TrackerReasonsScreen(content.copy(editor = editor), TrackerReasonsActions()) }
+
+        composeRule.onNodeWithText("Too long (max $MAX_REASON_LENGTH)").assertIsDisplayed()
+    }
+
+    @Test
+    fun `swiping a row to the right calls onDelete with its id`() {
+        val deleted = mutableListOf<String>()
+        composeRule.setContent { TrackerReasonsScreen(content, TrackerReasonsActions(onDelete = { deleted += it })) }
+
+        composeRule.onNodeWithText("I sleep better").performTouchInput { swipeRight() }
+        composeRule.waitForIdle()
+
+        assertEquals(listOf("r1"), deleted)
     }
 }
