@@ -2,8 +2,8 @@ package io.github.ddiling.mydayboard
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
-import androidx.compose.ui.test.onAllNodesWithText
-import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onNodeWithTag
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
@@ -33,15 +33,15 @@ class MainActivityTest {
     @get:Rule(order = 1)
     val composeRule = createAndroidComposeRule<MainActivity>()
 
-    private val emptyHint = "No trackers yet. Add one to start tracking."
+    private val cardTag = "trackers_card"
 
     @Test
     fun `the dashboard shows the trackers card contributed through Hilt`() {
-        // The card loads its trackers from Room on a background thread, so wait for the empty state.
+        // The card loads its trackers from Room on a background thread, so wait until it has rendered.
         composeRule.waitUntil(timeoutMillis = 5_000) {
-            composeRule.onAllNodesWithText(emptyHint).fetchSemanticsNodes().isNotEmpty()
+            composeRule.onAllNodesWithTag(cardTag).fetchSemanticsNodes().isNotEmpty()
         }
 
-        composeRule.onNodeWithText(emptyHint).assertIsDisplayed()
+        composeRule.onNodeWithTag(cardTag).assertIsDisplayed()
     }
 }

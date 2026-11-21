@@ -59,4 +59,11 @@
     <string name="trackers_event_delete">Usuń wpis</string>
     <string name="trackers_card_plus_one_description">Dodaj jeden do %1$s</string>
     <string name="trackers_card_reset_description">Zresetuj %1$s</string>
+    <string name="trackers_dashboard_title">Trackery</string>
+    <string name="trackers_dashboard_add_slot">Dodaj tracker</string>
+    <string name="trackers_dashboard_today">%s dziś</string>
+    <string name="trackers_dashboard_today_ago">%1$s dziś · %2$s</string>
+    <string name="trackers_dashboard_add_content_description">Dodaj tracker</string>
+    <string name="trackers_dashboard_open_details">Otwórz szczegóły</string>
+    <string name="trackers_dashboard_open_list">Otwórz listę trackerów</string>
 </resources>
