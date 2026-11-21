@@ -64,4 +64,16 @@
     <string name="trackers_dashboard_add_content_description">Add a tracker</string>
     <string name="trackers_dashboard_open_details">Open details</string>
     <string name="trackers_dashboard_open_list">Open trackers list</string>
+    <string name="trackers_reasons_title">Reasons</string>
+    <string name="trackers_reasons_add">Add reason</string>
+    <string name="trackers_reasons_edit_title">Edit reason</string>
+    <string name="trackers_reasons_empty">No reasons yet. Add one that helps you.</string>
+    <string name="trackers_reasons_deleted">Reason deleted</string>
+    <string name="trackers_reasons_delete">Delete</string>
+    <string name="trackers_reasons_field">Reason</string>
+    <string name="trackers_reasons_helper">Short and in your own words</string>
+    <string name="trackers_reasons_too_long">Too long (max %d)</string>
+    <string name="trackers_reasons_counter">%1$d/%2$d</string>
+    <string name="trackers_reasons_back">Back</string>
+    <string name="trackers_reasons_not_found_back">Back to trackers</string>
 </resources>
