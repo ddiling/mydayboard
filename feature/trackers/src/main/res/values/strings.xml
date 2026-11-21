@@ -87,4 +87,12 @@
         <item quantity="one">%d reason</item>
         <item quantity="other">%d reasons</item>
     </plurals>
+    <string name="trackers_reason_dialog_quote">“%s”</string>
+    <string name="trackers_reason_dialog_another">Another reason</string>
+    <string name="trackers_reason_dialog_wait">I\'ll wait</string>
+    <string name="trackers_reason_dialog_hold_on">I\'ll hold on</string>
+    <string name="trackers_reason_dialog_log_anyway">Log anyway</string>
+    <string name="trackers_reason_dialog_reset_anyway">Reset anyway</string>
+    <string name="trackers_reason_dialog_add_first">Add your first reason</string>
+    <string name="trackers_reason_dialog_no_reasons">You have no reasons yet. Write down why you want to change this: it will help you next time.</string>
 </resources>
