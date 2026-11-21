@@ -1,7 +1,9 @@
 package io.github.ddiling.mydayboard
 
+import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,6 +16,7 @@ import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.ddiling.mydayboard.core.dashboard.DashboardCard
 import io.github.ddiling.mydayboard.core.designsystem.theme.AppTheme
+import java.time.Clock
 import javax.inject.Inject
 
 /**
@@ -28,9 +31,16 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var dashboardCards: Set<@JvmSuppressWildcards DashboardCard>
 
+    @Inject
+    lateinit var clock: Clock
+
     @OptIn(ExperimentalComposeUiApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
-        enableEdgeToEdge()
+        // The app is dark only, so the bars are dark too, whatever the system setting is.
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
+            navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
+        )
         super.onCreate(savedInstanceState)
         setContent {
             AppTheme {
@@ -38,7 +48,7 @@ class MainActivity : ComponentActivity() {
                     // Exposes Compose testTags as resource ids for Maestro/UiAutomator.
                     modifier = Modifier.fillMaxSize().semantics { testTagsAsResourceId = true },
                 ) {
-                    MyDayboardNavHost(navController = rememberNavController(), cards = dashboardCards)
+                    MyDayboardNavHost(navController = rememberNavController(), cards = dashboardCards, clock = clock)
                 }
             }
         }

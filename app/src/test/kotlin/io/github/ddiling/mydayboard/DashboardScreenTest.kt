@@ -13,7 +13,6 @@ import androidx.compose.ui.test.performClick
 import io.github.ddiling.mydayboard.core.dashboard.DashboardCard
 import io.github.ddiling.mydayboard.core.dashboard.DashboardHost
 import io.github.ddiling.mydayboard.core.navigation.Destination
-import io.github.ddiling.mydayboard.feature.trackers.navigation.TrackersListDestination
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.junit.Assert.assertEquals
@@ -29,11 +28,14 @@ class DashboardScreenTest {
     val composeRule = createComposeRule()
 
     private val host = FakeDashboardHost()
+    private val headerTime = HeaderTime(time = "07:05", date = "03.01", weekday = "Sat")
     private lateinit var scope: CoroutineScope
 
     @Test
     fun `cards appear in the given order`() {
-        composeRule.setContent { DashboardScreen(cards = listOf(card("first"), card("second")), host = host) }
+        composeRule.setContent {
+            DashboardScreen(headerTime = headerTime, cards = listOf(card("first"), card("second")), host = host)
+        }
 
         val firstTop =
             composeRule
@@ -52,14 +54,14 @@ class DashboardScreenTest {
 
     @Test
     fun `the empty state shows when there are no cards`() {
-        composeRule.setContent { DashboardScreen(cards = emptyList(), host = host) }
+        composeRule.setContent { DashboardScreen(headerTime = headerTime, cards = emptyList(), host = host) }
 
         composeRule.onNodeWithText("Nothing here yet").assertIsDisplayed()
     }
 
     @Test
     fun `the empty state is hidden when there are cards`() {
-        composeRule.setContent { DashboardScreen(cards = listOf(card("first")), host = host) }
+        composeRule.setContent { DashboardScreen(headerTime = headerTime, cards = listOf(card("first")), host = host) }
 
         composeRule.onNodeWithText("Nothing here yet").assertDoesNotExist()
     }
@@ -68,7 +70,7 @@ class DashboardScreenTest {
     fun `a snackbar shown through the host is displayed`() {
         composeRule.setContent {
             scope = rememberCoroutineScope()
-            DashboardScreen(cards = emptyList(), host = host)
+            DashboardScreen(headerTime = headerTime, cards = emptyList(), host = host)
         }
 
         composeRule.runOnUiThread { scope.launch { host.snackbarHostState.showSnackbar("Saved") } }
@@ -77,12 +79,12 @@ class DashboardScreenTest {
     }
 
     @Test
-    fun `the trackers action navigates to the tracker list`() {
-        composeRule.setContent { DashboardScreen(cards = emptyList(), host = host) }
+    fun `tapping the settings icon navigates to the settings destination`() {
+        composeRule.setContent { DashboardScreen(headerTime = headerTime, cards = emptyList(), host = host) }
 
-        composeRule.onNodeWithTag(OPEN_TRACKERS_TAG).performClick()
+        composeRule.onNodeWithTag(OPEN_SETTINGS_TAG).performClick()
 
-        assertEquals(listOf<Destination>(TrackersListDestination), host.navigated)
+        assertEquals(listOf<Destination>(SettingsDestination), host.navigated)
     }
 
     private fun card(tag: String) =

@@ -9,16 +9,18 @@ import androidx.navigation.compose.composable
 import io.github.ddiling.mydayboard.core.dashboard.DashboardCard
 import io.github.ddiling.mydayboard.core.dashboard.sortedDashboardCards
 import io.github.ddiling.mydayboard.feature.trackers.navigation.trackersGraph
+import java.time.Clock
 
 /**
  * The navigation graph of the app. Each feature contributes its destinations as a
  * `NavGraphBuilder` extension; this is the only place that lists them. The dashboard is the start.
- * The controller is a parameter so tests can pass a `TestNavHostController`.
+ * The clock feeds the dashboard header. The controller is a parameter so tests can pass a `TestNavHostController`.
  */
 @Composable
 fun MyDayboardNavHost(
     navController: NavHostController,
     cards: Set<DashboardCard>,
+    clock: Clock,
     modifier: Modifier = Modifier,
 ) {
     val host = remember(navController) { NavDashboardHost(navController) }
@@ -29,7 +31,10 @@ fun MyDayboardNavHost(
         modifier = modifier,
     ) {
         composable<DashboardDestination> {
-            DashboardScreen(cards = sortedCards, host = host)
+            DashboardScreen(headerTime = rememberHeaderTime(clock), cards = sortedCards, host = host)
+        }
+        composable<SettingsDestination> {
+            SettingsScreen(onBack = { navController.popBackStack() })
         }
         trackersGraph(navController)
     }
