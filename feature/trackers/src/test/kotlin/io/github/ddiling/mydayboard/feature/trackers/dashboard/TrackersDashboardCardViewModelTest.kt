@@ -205,27 +205,34 @@ class TrackersDashboardCardViewModelTest {
         }
 
     @Test
-    fun `counter today resets at midnight while ago still counts from the last event`() =
+    fun `counter today count goes back to 0 at midnight`() =
         runTest {
-            val beforeMidnight = warsaw(2026, 3, 2, 23, 59)
-            clock.now = beforeMidnight
-            val water = repository.createTracker("Water", TrackerType.EVENT_COUNTER, beforeMidnight)
-            repository.addEvent(water.id, beforeMidnight)
-
-            viewModel.uiState.test {
-                runCurrent()
-                skipItems(2)
-                clock.now = warsaw(2026, 3, 3, 0, 0)
-                advanceTimeBy(Duration.ofSeconds(61).toMillis())
-                runCurrent()
-
-                val row = (awaitItem() as TrackersDashboardCardUiState.Content).rows.single()
-                assertEquals(
-                    TrackersDashboardRow.Counter(water.id, "Water", todayCount = 0, sinceLast = Duration.ofMinutes(1)),
-                    row,
-                )
-            }
+            assertEquals(0, counterRowAfterMidnight().todayCount)
         }
+
+    @Test
+    fun `counter time since the last event keeps counting across midnight`() =
+        runTest {
+            assertEquals(Duration.ofMinutes(1), counterRowAfterMidnight().sinceLast)
+        }
+
+    /** Logs one event at 23:59, moves the clock to 00:00 the next day and returns the row after the minute tick. */
+    private suspend fun TestScope.counterRowAfterMidnight(): TrackersDashboardRow.Counter {
+        val beforeMidnight = warsaw(2026, 3, 2, 23, 59)
+        clock.now = beforeMidnight
+        val water = repository.createTracker("Water", TrackerType.EVENT_COUNTER, beforeMidnight)
+        repository.addEvent(water.id, beforeMidnight)
+        lateinit var row: TrackersDashboardRow.Counter
+        viewModel.uiState.test {
+            runCurrent()
+            skipItems(2)
+            clock.now = warsaw(2026, 3, 3, 0, 0)
+            advanceTimeBy(Duration.ofSeconds(61).toMillis())
+            runCurrent()
+            row = (awaitItem() as TrackersDashboardCardUiState.Content).rows.single() as TrackersDashboardRow.Counter
+        }
+        return row
+    }
 
     @Test
     fun `days since counts a 23-hour daylight-saving day as one day`() =
