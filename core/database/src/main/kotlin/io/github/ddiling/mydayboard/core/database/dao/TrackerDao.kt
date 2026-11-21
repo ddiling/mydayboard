@@ -45,4 +45,12 @@ interface TrackerDao {
         id: String,
         now: Long,
     ): Int
+
+    /** Sets the flag in one statement; 0 rows changed when the tracker is missing or deleted. */
+    @Query("UPDATE trackers SET ask_for_reason = :enabled, updated_at = :now WHERE id = :id AND deleted_at IS NULL")
+    suspend fun setAskForReason(
+        id: String,
+        enabled: Boolean,
+        now: Long,
+    ): Int
 }

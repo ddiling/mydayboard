@@ -10,6 +10,7 @@ import dagger.hilt.components.SingletonComponent
 import io.github.ddiling.mydayboard.core.database.MyDayboardDatabase
 import io.github.ddiling.mydayboard.core.database.dao.TrackerDao
 import io.github.ddiling.mydayboard.core.database.dao.TrackerEventDao
+import io.github.ddiling.mydayboard.core.database.dao.TrackerReasonDao
 import javax.inject.Singleton
 
 /** One database per process: Room's invalidation tracking only works within one instance. */
@@ -28,4 +29,7 @@ object DatabaseModule {
 
     @Provides
     fun provideTrackerEventDao(database: MyDayboardDatabase): TrackerEventDao = database.trackerEventDao()
+
+    @Provides
+    fun provideTrackerReasonDao(database: MyDayboardDatabase): TrackerReasonDao = database.trackerReasonDao()
 }
