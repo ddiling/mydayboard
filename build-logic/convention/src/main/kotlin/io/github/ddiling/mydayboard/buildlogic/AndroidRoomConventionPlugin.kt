@@ -1,6 +1,7 @@
 package io.github.ddiling.mydayboard.buildlogic
 
 import androidx.room.gradle.RoomExtension
+import com.android.build.api.dsl.LibraryExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
@@ -13,6 +14,9 @@ import org.gradle.kotlin.dsl.dependencies
  * proper task input/output, so schema export works with the build cache and the exported
  * JSON lands in `schemas/`. Those files are committed: they are the history that future
  * migration tests (`room-testing`'s `MigrationTestHelper`) compare against.
+ *
+ * Why `schemas/` is a test asset directory: `MigrationTestHelper` reads the schemas from the
+ * assets (Robolectric sees them only with `includeAndroidResources`); test-only, so they never ship.
  *
  * Why no `room-ktx`: since Room 2.7 its coroutine and Flow support lives in `room-runtime`,
  * and the 2.8 `room-ktx` artifact is empty.
@@ -29,6 +33,11 @@ class AndroidRoomConventionPlugin : Plugin<Project> {
 
             extensions.configure<RoomExtension> {
                 schemaDirectory("$projectDir/schemas")
+            }
+
+            extensions.configure<LibraryExtension> {
+                sourceSets.getByName("test").assets.directories += "$projectDir/schemas"
+                testOptions.unitTests.isIncludeAndroidResources = true
             }
 
             dependencies {

@@ -134,4 +134,44 @@ class TrackerDaoTest {
 
             assertEquals(firstDelete to firstDelete, database.updatedAndDeletedAt("trackers", "a"))
         }
+
+    @Test
+    fun `setAskForReason stores the flag and bumps updatedAt`() =
+        runTest {
+            val now = T0 + 1
+            dao.insert(tracker("a"))
+
+            val changed = dao.setAskForReason("a", enabled = true, now = now)
+
+            assertEquals(1, changed)
+            assertEquals(tracker("a").copy(askForReason = true, updatedAt = now), dao.getActiveById("a"))
+        }
+
+    @Test
+    fun `setAskForReason turns the flag off again`() =
+        runTest {
+            dao.insert(tracker("a").copy(askForReason = true))
+
+            dao.setAskForReason("a", enabled = false, now = T0 + 1)
+
+            assertEquals(false, dao.getActiveById("a")?.askForReason)
+        }
+
+    @Test
+    fun `setAskForReason changes nothing for a soft-deleted tracker`() =
+        runTest {
+            val deletedAt = T0 + 1
+            dao.insert(tracker("a", deletedAt = deletedAt))
+
+            val changed = dao.setAskForReason("a", enabled = true, now = T0 + 2)
+
+            assertEquals(0, changed)
+            assertEquals(T0 to deletedAt, database.updatedAndDeletedAt("trackers", "a"))
+        }
+
+    @Test
+    fun `setAskForReason changes nothing for an unknown id`() =
+        runTest {
+            assertEquals(0, dao.setAskForReason("missing", enabled = true, now = T0 + 1))
+        }
 }

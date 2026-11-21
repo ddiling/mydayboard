@@ -4,6 +4,7 @@ import androidx.room.Room
 import io.github.ddiling.mydayboard.core.database.model.TrackerEntity
 import io.github.ddiling.mydayboard.core.database.model.TrackerEntityType
 import io.github.ddiling.mydayboard.core.database.model.TrackerEventEntity
+import io.github.ddiling.mydayboard.core.database.model.TrackerReasonEntity
 import org.robolectric.RuntimeEnvironment
 
 /** A fresh in-memory database, so tests share no state and need no clean-up of files. */
@@ -38,6 +39,21 @@ internal fun event(
     occurredAt = occurredAt,
     createdAt = occurredAt,
     updatedAt = occurredAt,
+    deletedAt = deletedAt,
+)
+
+internal fun reason(
+    id: String,
+    trackerId: String,
+    text: String = "Reason $id",
+    createdAt: Long = T0,
+    deletedAt: Long? = null,
+) = TrackerReasonEntity(
+    id = id,
+    trackerId = trackerId,
+    text = text,
+    createdAt = createdAt,
+    updatedAt = createdAt,
     deletedAt = deletedAt,
 )
 

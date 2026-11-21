@@ -21,6 +21,9 @@ data class TrackerEntity(
     @ColumnInfo(name = "created_at") val createdAt: Long,
     @ColumnInfo(name = "updated_at") val updatedAt: Long,
     @ColumnInfo(name = "deleted_at") val deletedAt: Long? = null,
+    /** Whether logging asks for a reason first. The NOT NULL column came with a migration, so it needs a SQL
+     * default: existing rows get `0` (off) and keep logging with one tap. */
+    @ColumnInfo(name = "ask_for_reason", defaultValue = "0") val askForReason: Boolean = false,
 )
 
 /** Stored as the constant's name (`TEXT`), so never rename a constant without a migration. */
