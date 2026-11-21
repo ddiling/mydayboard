@@ -7,10 +7,9 @@ import io.github.ddiling.mydayboard.core.database.model.TrackerReasonEntity
 import kotlinx.coroutines.flow.Flow
 
 /**
- * Tracker reasons that are not soft-deleted and whose tracker is not soft-deleted either.
- *
- * Every write is one statement that checks its own conditions, so a concurrent delete of the reason or its
- * tracker cannot be undone by a stale read-modify-write.
+ * Reasons that are not soft-deleted, of trackers that are not soft-deleted. Every write is one statement that checks
+ * its own conditions, so a concurrent delete cannot be undone by a stale read-modify-write; a write changes nothing
+ * (returns 0, or -1 for an insert) when the reason or its tracker is missing or deleted.
  */
 @Dao
 interface TrackerReasonDao {
@@ -29,10 +28,7 @@ interface TrackerReasonDao {
     @Insert
     suspend fun insert(entity: TrackerReasonEntity)
 
-    /**
-     * Inserts only while the tracker exists and is not deleted, checked in the same statement so a concurrent
-     * tracker delete cannot slip in between. Returns the new row id, or -1 when nothing was inserted.
-     */
+    /** Inserts only while the tracker is live; returns the new row id. */
     @Query(
         """
         INSERT INTO tracker_reasons (id, tracker_id, text, created_at, updated_at)
@@ -47,7 +43,6 @@ interface TrackerReasonDao {
         now: Long,
     ): Long
 
-    /** Changes nothing (returns 0) when the reason or its tracker is missing or deleted. */
     @Query(
         """
         UPDATE tracker_reasons SET text = :text, updated_at = :now
@@ -61,7 +56,6 @@ interface TrackerReasonDao {
         now: Long,
     ): Int
 
-    /** Changes nothing (returns 0) when the reason or its tracker is missing or deleted. */
     @Query(
         """
         UPDATE tracker_reasons SET updated_at = :now, deleted_at = :now
@@ -74,10 +68,7 @@ interface TrackerReasonDao {
         now: Long,
     ): Int
 
-    /**
-     * Brings a soft-deleted reason back. Changes nothing (returns 0) when the reason is missing or not
-     * deleted, or its tracker is missing or deleted, so a deleted tracker keeps hiding its reasons.
-     */
+    /** Brings a soft-deleted reason back; a deleted tracker keeps hiding its reasons. */
     @Query(
         """
         UPDATE tracker_reasons SET updated_at = :now, deleted_at = NULL

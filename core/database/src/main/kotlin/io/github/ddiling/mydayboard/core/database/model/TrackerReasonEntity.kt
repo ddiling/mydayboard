@@ -9,10 +9,9 @@ import androidx.room.PrimaryKey
 /**
  * A row of `tracker_reasons`: one reason the user wrote down for a tracker. All times are epoch milliseconds.
  *
- * A separate table, not a column on `trackers`, because a tracker has any number of reasons and each one is
- * edited, deleted and restored on its own. Like events, the foreign key has no cascade because nothing is ever
- * hard-deleted: a soft-deleted tracker keeps its reasons, and the DAO hides them through a join instead.
- * The `tracker_id` index serves the per-tracker query and the foreign-key check.
+ * A separate table because a tracker has any number of reasons, each edited, deleted and restored on its own.
+ * Like events, no cascade: nothing is hard-deleted, so a soft-deleted tracker keeps its reasons and the DAO hides
+ * them through a join. The `tracker_id` index serves the per-tracker query and the foreign-key check.
  */
 @Entity(
     tableName = "tracker_reasons",

@@ -20,7 +20,7 @@ class MigrationTest {
 
     @Test
     fun `trackers keep all column values after migrating from 1 to 2`() {
-        givenVersion1 { insertTracker(it, id = "water", deletedAt = DELETED_AT) }
+        givenVersion1 { insertWaterTracker(deletedAt = DELETED_AT) }
 
         val row =
             migrateTo2().queryRow(
@@ -36,8 +36,8 @@ class MigrationTest {
     @Test
     fun `events keep all column values after migrating from 1 to 2`() {
         givenVersion1 {
-            insertTracker(it, id = "water", deletedAt = null)
-            it.execSQL(
+            insertWaterTracker(deletedAt = null)
+            execSQL(
                 "INSERT INTO tracker_events (id, tracker_id, occurred_at, created_at, updated_at, deleted_at) " +
                     "VALUES ('sip', 'water', $OCCURRED_AT, $CREATED_AT, $UPDATED_AT, $DELETED_AT)",
             )
@@ -53,7 +53,7 @@ class MigrationTest {
 
     @Test
     fun `existing trackers do not ask for a reason after migrating from 1 to 2`() {
-        givenVersion1 { insertTracker(it, id = "water", deletedAt = null) }
+        givenVersion1 { insertWaterTracker(deletedAt = null) }
 
         val row = migrateTo2().queryRow("SELECT ask_for_reason FROM trackers")
 
@@ -62,32 +62,29 @@ class MigrationTest {
 
     @Test
     fun `the reasons table exists and is empty after migrating from 1 to 2`() {
-        givenVersion1 { insertTracker(it, id = "water", deletedAt = null) }
+        givenVersion1 { insertWaterTracker(deletedAt = null) }
 
         val row = migrateTo2().queryRow("SELECT COUNT(*) FROM tracker_reasons")
 
         assertEquals(listOf("0"), row)
     }
 
-    private fun givenVersion1(fill: (SupportSQLiteDatabase) -> Unit) = helper.createDatabase(TEST_DB, 1).use(fill)
+    private fun givenVersion1(fill: SupportSQLiteDatabase.() -> Unit) =
+        helper.createDatabase(TEST_DB, 1).use { it.fill() }
 
     private fun migrateTo2(): SupportSQLiteDatabase = helper.runMigrationsAndValidate(TEST_DB, 2, true)
 
-    private fun insertTracker(
-        database: SupportSQLiteDatabase,
-        id: String,
-        deletedAt: Long?,
-    ) = database.execSQL(
-        "INSERT INTO trackers (id, name, type, started_at, created_at, updated_at, deleted_at) " +
-            "VALUES ('$id', 'Water', 'DAYS_SINCE', $STARTED_AT, $CREATED_AT, $UPDATED_AT, $deletedAt)",
-    )
+    private fun SupportSQLiteDatabase.insertWaterTracker(deletedAt: Long?) =
+        execSQL(
+            "INSERT INTO trackers (id, name, type, started_at, created_at, updated_at, deleted_at) " +
+                "VALUES ('water', 'Water', 'DAYS_SINCE', $STARTED_AT, $CREATED_AT, $UPDATED_AT, $deletedAt)",
+        )
 
     /** The single row of [sql] as strings, so values of every column type compare the same way. */
     private fun SupportSQLiteDatabase.queryRow(sql: String): List<String?> =
         use { database ->
             database.query(sql).use { cursor ->
-                check(cursor.count == 1) { "expected one row, got ${cursor.count}" }
-                cursor.moveToFirst()
+                check(cursor.count == 1 && cursor.moveToFirst()) { "expected one row, got ${cursor.count}" }
                 (0 until cursor.columnCount).map { cursor.getString(it) }
             }
         }

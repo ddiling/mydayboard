@@ -12,13 +12,11 @@ import org.gradle.kotlin.dsl.dependencies
  *
  * Why the Room Gradle plugin: it passes the schema directory to the Room compiler as a
  * proper task input/output, so schema export works with the build cache and the exported
- * JSON lands in `schemas/`. Those files are committed: they are the history that migration
- * tests (`room-testing`'s `MigrationTestHelper`) compare against.
+ * JSON lands in `schemas/`. Those files are committed: they are the history that future
+ * migration tests (`room-testing`'s `MigrationTestHelper`) compare against.
  *
- * Why `schemas/` is a test asset directory: `MigrationTestHelper` reads each version's schema
- * from the test assets to build the old database and to validate the migrated one. Only the
- * test source set gets it, so the schemas never ship in the app. Robolectric sees test assets
- * only with `includeAndroidResources`.
+ * Why `schemas/` is a test asset directory: `MigrationTestHelper` reads the schemas from the
+ * assets (Robolectric sees them only with `includeAndroidResources`); test-only, so they never ship.
  *
  * Why no `room-ktx`: since Room 2.7 its coroutine and Flow support lives in `room-runtime`,
  * and the 2.8 `room-ktx` artifact is empty.
@@ -38,10 +36,7 @@ class AndroidRoomConventionPlugin : Plugin<Project> {
             }
 
             extensions.configure<LibraryExtension> {
-                sourceSets
-                    .getByName("test")
-                    .assets.directories
-                    .add("$projectDir/schemas")
+                sourceSets.getByName("test").assets.directories += "$projectDir/schemas"
                 testOptions.unitTests.isIncludeAndroidResources = true
             }
 

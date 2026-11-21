@@ -15,10 +15,8 @@ import io.github.ddiling.mydayboard.core.database.model.TrackerReasonEntity
  *
  * `exportSchema` writes every version's schema to `core/database/schemas/`; those files are
  * committed, because a migration can only be tested against the exact old schema.
- * Changing an entity means bumping [version] and adding a migration.
- *
- * Version 2 adds `tracker_reasons` and `trackers.ask_for_reason`. An [AutoMigration] is enough: both are pure
- * additions, and the new NOT NULL column has a default, so Room can generate the SQL from the two schemas.
+ * Changing an entity means bumping [version] and adding a migration. Version 2 adds `tracker_reasons` and
+ * `trackers.ask_for_reason`: an [AutoMigration] is enough, as both are additions and the new column has a default.
  */
 @Database(
     entities = [TrackerEntity::class, TrackerEventEntity::class, TrackerReasonEntity::class],

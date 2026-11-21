@@ -7,6 +7,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -17,13 +18,16 @@ class TrackerReasonDaoTest {
     private val trackerDao = database.trackerDao()
     private val dao = database.trackerReasonDao()
 
+    /** Every test starts with one live tracker, `t`; tests about a deleted tracker soft-delete it. */
+    @Before
+    fun givenTracker() = runTest { trackerDao.insert(tracker("t")) }
+
     @After
     fun closeDatabase() = database.close()
 
     @Test
     fun `observeActiveForTracker hides soft-deleted reasons`() =
         runTest {
-            trackerDao.insert(tracker("t"))
             dao.insert(reason("active", "t"))
             dao.insert(reason("deleted", "t", deletedAt = T0 + 1))
 
@@ -35,7 +39,6 @@ class TrackerReasonDaoTest {
     @Test
     fun `observeActiveForTracker lists only that tracker's reasons, oldest first`() =
         runTest {
-            trackerDao.insert(tracker("t"))
             trackerDao.insert(tracker("other"))
             dao.insert(reason("newer", "t", createdAt = T0 + 1))
             dao.insert(reason("older", "t", createdAt = T0))
@@ -49,7 +52,6 @@ class TrackerReasonDaoTest {
     @Test
     fun `observeActiveForTracker breaks a createdAt tie by id`() =
         runTest {
-            trackerDao.insert(tracker("t"))
             dao.insert(reason("b", "t"))
             dao.insert(reason("a", "t"))
 
@@ -61,7 +63,6 @@ class TrackerReasonDaoTest {
     @Test
     fun `observeActiveForTracker is empty for a soft-deleted tracker`() =
         runTest {
-            trackerDao.insert(tracker("t"))
             dao.insert(reason("r", "t"))
             trackerDao.softDelete("t", T0 + 1)
 
@@ -73,8 +74,6 @@ class TrackerReasonDaoTest {
     @Test
     fun `observeActiveForTracker emits again after an insert`() =
         runTest {
-            trackerDao.insert(tracker("t"))
-
             dao.observeActiveForTracker("t").test {
                 assertEquals(emptyList<TrackerReasonEntity>(), awaitItem())
 
@@ -88,21 +87,18 @@ class TrackerReasonDaoTest {
     fun `insertForActiveTracker stores the text with both timestamps set to now`() =
         runTest {
             val now = T0 + 1
-            trackerDao.insert(tracker("t"))
 
             val rowId = dao.insertForActiveTracker("r", "t", "Stay hydrated", now)
 
             assertTrue(rowId > 0)
-            assertEquals(
-                listOf(reason("r", "t", text = "Stay hydrated", createdAt = now)),
-                dao.observeActiveForTracker("t").first(),
-            )
+            val stored = dao.observeActiveForTracker("t").first()
+            assertEquals(listOf(reason("r", "t", text = "Stay hydrated", createdAt = now)), stored)
         }
 
     @Test
     fun `insertForActiveTracker inserts nothing for a soft-deleted tracker`() =
         runTest {
-            trackerDao.insert(tracker("t", deletedAt = T0 + 1))
+            trackerDao.softDelete("t", T0 + 1)
 
             assertEquals(-1L, dao.insertForActiveTracker("r", "t", "Stay hydrated", T0 + 2))
         }
@@ -117,22 +113,18 @@ class TrackerReasonDaoTest {
     fun `updateTextIfActive changes the text and updatedAt`() =
         runTest {
             val now = T0 + 1
-            trackerDao.insert(tracker("t"))
             dao.insert(reason("r", "t"))
 
             val changed = dao.updateTextIfActive("r", "Sleep better", now)
 
             assertEquals(1, changed)
-            assertEquals(
-                listOf(reason("r", "t", text = "Sleep better").copy(updatedAt = now)),
-                dao.observeActiveForTracker("t").first(),
-            )
+            val stored = dao.observeActiveForTracker("t").first()
+            assertEquals(listOf(reason("r", "t", text = "Sleep better").copy(updatedAt = now)), stored)
         }
 
     @Test
     fun `updateTextIfActive changes nothing for a deleted reason`() =
         runTest {
-            trackerDao.insert(tracker("t"))
             dao.insert(reason("r", "t", deletedAt = T0 + 1))
 
             assertEquals(0, dao.updateTextIfActive("r", "Sleep better", T0 + 2))
@@ -141,7 +133,6 @@ class TrackerReasonDaoTest {
     @Test
     fun `updateTextIfActive changes nothing for a reason of a deleted tracker`() =
         runTest {
-            trackerDao.insert(tracker("t"))
             dao.insert(reason("r", "t"))
             trackerDao.softDelete("t", T0 + 1)
 
@@ -152,7 +143,6 @@ class TrackerReasonDaoTest {
     fun `softDeleteIfActive sets deletedAt and updatedAt`() =
         runTest {
             val now = T0 + 1
-            trackerDao.insert(tracker("t"))
             dao.insert(reason("r", "t"))
 
             val changed = dao.softDeleteIfActive("r", now)
@@ -164,7 +154,6 @@ class TrackerReasonDaoTest {
     @Test
     fun `softDeleteIfActive changes nothing for an already deleted reason`() =
         runTest {
-            trackerDao.insert(tracker("t"))
             dao.insert(reason("r", "t", deletedAt = T0 + 1))
 
             assertEquals(0, dao.softDeleteIfActive("r", T0 + 2))
@@ -174,7 +163,6 @@ class TrackerReasonDaoTest {
     fun `restoreIfDeleted clears deletedAt and bumps updatedAt`() =
         runTest {
             val now = T0 + 2
-            trackerDao.insert(tracker("t"))
             dao.insert(reason("r", "t", deletedAt = T0 + 1))
 
             val changed = dao.restoreIfDeleted("r", now)
@@ -186,7 +174,6 @@ class TrackerReasonDaoTest {
     @Test
     fun `restoreIfDeleted changes nothing for a reason that is not deleted`() =
         runTest {
-            trackerDao.insert(tracker("t"))
             dao.insert(reason("r", "t"))
 
             assertEquals(0, dao.restoreIfDeleted("r", T0 + 1))
@@ -195,7 +182,6 @@ class TrackerReasonDaoTest {
     @Test
     fun `restoreIfDeleted changes nothing for a reason of a deleted tracker`() =
         runTest {
-            trackerDao.insert(tracker("t"))
             dao.insert(reason("r", "t", deletedAt = T0 + 1))
             trackerDao.softDelete("t", T0 + 2)
 
