@@ -6,7 +6,6 @@ import io.github.ddiling.mydayboard.core.domain.tracker.TrackerEvent
 import io.github.ddiling.mydayboard.core.domain.tracker.TrackerRepository
 import io.github.ddiling.mydayboard.core.domain.tracker.TrackerType
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.flow.map
@@ -17,22 +16,16 @@ import java.time.Instant
 /**
  * In-memory [TrackerRepository] for ViewModel tests. It passes the same contract tests as the Room
  * implementation, so a test using it sees the behaviour production will have. Deleted trackers are
- * dropped with their events, because the domain cannot tell them from missing ones. Deleted events are
+ * dropped with their events and reasons, because the domain cannot tell them from missing ones. Deleted events are
  * kept aside only so that [restoreEvent] can bring them back.
+ * The state lives in a [FakeTrackerStore], which a [FakeTrackerReasonRepository] can share.
  */
 class FakeTrackerRepository(
     private val clock: Clock,
     private val ids: IdGenerator,
+    store: FakeTrackerStore = FakeTrackerStore(),
 ) : TrackerRepository {
-    private data class State(
-        val trackers: List<Tracker> = emptyList(),
-        val events: List<TrackerEvent> = emptyList(),
-        val deletedEvents: List<TrackerEvent> = emptyList(),
-    ) {
-        fun hasTracker(id: String) = trackers.any { it.id == id }
-    }
-
-    private val state = MutableStateFlow(State())
+    private val state = store.state
 
     // The same orders as the Room queries, ties included, so both implementations list identically.
     private val trackerOrder = compareBy<Tracker> { it.createdAt }.thenBy { it.id }
@@ -80,6 +73,8 @@ class FakeTrackerRepository(
                 trackers = s.trackers.filter { it.id != id },
                 events = s.events.filter { it.trackerId != id },
                 deletedEvents = s.deletedEvents.filter { it.trackerId != id },
+                reasons = s.reasons.filter { it.trackerId != id },
+                deletedReasons = s.deletedReasons.filter { it.trackerId != id },
             )
         }
     }

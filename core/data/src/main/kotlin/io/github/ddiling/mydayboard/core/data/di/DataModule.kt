@@ -4,7 +4,9 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import io.github.ddiling.mydayboard.core.data.OfflineTrackerReasonRepository
 import io.github.ddiling.mydayboard.core.data.OfflineTrackerRepository
+import io.github.ddiling.mydayboard.core.domain.tracker.TrackerReasonRepository
 import io.github.ddiling.mydayboard.core.domain.tracker.TrackerRepository
 
 @Module
@@ -12,4 +14,7 @@ import io.github.ddiling.mydayboard.core.domain.tracker.TrackerRepository
 internal interface DataModule {
     @Binds
     fun bindTrackerRepository(impl: OfflineTrackerRepository): TrackerRepository
+
+    @Binds
+    fun bindTrackerReasonRepository(impl: OfflineTrackerReasonRepository): TrackerReasonRepository
 }

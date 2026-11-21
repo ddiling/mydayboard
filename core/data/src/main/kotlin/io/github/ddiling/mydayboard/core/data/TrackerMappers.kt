@@ -3,8 +3,10 @@ package io.github.ddiling.mydayboard.core.data
 import io.github.ddiling.mydayboard.core.database.model.TrackerEntity
 import io.github.ddiling.mydayboard.core.database.model.TrackerEntityType
 import io.github.ddiling.mydayboard.core.database.model.TrackerEventEntity
+import io.github.ddiling.mydayboard.core.database.model.TrackerReasonEntity
 import io.github.ddiling.mydayboard.core.domain.tracker.Tracker
 import io.github.ddiling.mydayboard.core.domain.tracker.TrackerEvent
+import io.github.ddiling.mydayboard.core.domain.tracker.TrackerReason
 import io.github.ddiling.mydayboard.core.domain.tracker.TrackerType
 import java.time.Instant
 
@@ -48,6 +50,15 @@ internal fun TrackerEvent.toEntity() =
         occurredAt = occurredAt.toEpochMilli(),
         createdAt = createdAt.toEpochMilli(),
         updatedAt = updatedAt.toEpochMilli(),
+    )
+
+internal fun TrackerReasonEntity.toDomain() =
+    TrackerReason(
+        id = id,
+        trackerId = trackerId,
+        text = text,
+        createdAt = Instant.ofEpochMilli(createdAt),
+        updatedAt = Instant.ofEpochMilli(updatedAt),
     )
 
 /**
