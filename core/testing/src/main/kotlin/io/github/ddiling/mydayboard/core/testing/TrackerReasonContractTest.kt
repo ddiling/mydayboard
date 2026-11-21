@@ -1,6 +1,5 @@
 package io.github.ddiling.mydayboard.core.testing
 
-import app.cash.turbine.test
 import io.github.ddiling.mydayboard.core.domain.tracker.TrackerReason
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -98,21 +97,5 @@ abstract class TrackerReasonContractTest : TrackerReasonContractBase() {
             repo.deleteTracker(tracker.id)
 
             assertTrue(reasons.observeReasons(tracker.id).first().isEmpty())
-        }
-
-    @Test
-    fun `observed reasons do not emit again after a write that leaves the list equal`() =
-        runTest {
-            val tracker = givenTracker()
-            val reason = givenReason(tracker)
-
-            reasons.observeReasons(tracker.id).test {
-                assertEquals(listOf(reason), awaitItem())
-                reasons.setAskForReason(tracker.id, true)
-                // Room re-runs the query on its own thread, so the next real change proves nothing came in between.
-                val next = givenReason(tracker, "Coffee after lunch")
-                assertEquals(listOf(reason, next), awaitItem())
-                expectNoEvents()
-            }
         }
 }

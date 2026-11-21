@@ -15,6 +15,10 @@ import javax.inject.Inject
  * [TrackerReasonRepository] on Room. Deletes are soft (`deletedAt`), and unknown or deleted ids are no-ops.
  * Every write is one conditional statement in the DAO, so a concurrent tracker delete cannot be undone by a
  * stale read-modify-write; the reason query already hides the reasons of a deleted tracker.
+ *
+ * The reason query joins `trackers`, so Room re-runs it after any tracker write (a rename, the ask-for-reason
+ * flag). [distinctUntilChanged] drops those equal lists so screens do not redraw for nothing. No test pins it:
+ * Room merges close invalidations into one re-run, so a duplicate emission cannot be provoked reliably.
  */
 internal class OfflineTrackerReasonRepository
     @Inject
