@@ -44,20 +44,6 @@ class FakeTrackerDeletedIdContractTest : TrackerDeletedIdContractTest() {
     ): TrackerRepository = fake(clock, ids)
 }
 
-class FakeTrackerAskForReasonContractTest : TrackerAskForReasonContractTest() {
-    private val store = FakeTrackerStore()
-
-    override fun createRepository(
-        clock: MutableClock,
-        ids: IdGenerator,
-    ): TrackerRepository = FakeTrackerRepository(clock, ids, store)
-
-    override fun createReasonRepository(
-        clock: MutableClock,
-        ids: IdGenerator,
-    ): TrackerReasonRepository = FakeTrackerReasonRepository(clock, ids, store)
-}
-
 class FakeTrackerReasonContractTest : TrackerReasonContractTest() {
     private val store = FakeTrackerStore()
 

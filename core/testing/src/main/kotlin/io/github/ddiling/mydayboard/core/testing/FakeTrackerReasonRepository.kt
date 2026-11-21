@@ -1,7 +1,6 @@
 package io.github.ddiling.mydayboard.core.testing
 
 import io.github.ddiling.mydayboard.core.domain.id.IdGenerator
-import io.github.ddiling.mydayboard.core.domain.tracker.Tracker
 import io.github.ddiling.mydayboard.core.domain.tracker.TrackerReason
 import io.github.ddiling.mydayboard.core.domain.tracker.TrackerReasonRepository
 import kotlinx.coroutines.flow.Flow
@@ -23,7 +22,6 @@ class FakeTrackerReasonRepository(
 ) : TrackerReasonRepository {
     private val state = store.state
 
-    // The same order as the Room query, ties included.
     private val reasonOrder = compareBy<TrackerReason> { it.createdAt }.thenBy { it.id }
 
     override fun observeReasons(trackerId: String): Flow<List<TrackerReason>> =
@@ -37,8 +35,18 @@ class FakeTrackerReasonRepository(
     ) {
         val now = clock.instant()
         state.update { s ->
-            val flagged = { tracker: Tracker -> tracker.copy(askForReason = enabled, updatedAt = now) }
-            s.copy(trackers = s.trackers.map { if (it.id == id) flagged(it) else it })
+            s.copy(
+                trackers =
+                    s.trackers.map {
+                        if (it.id ==
+                            id
+                        ) {
+                            it.copy(askForReason = enabled, updatedAt = now)
+                        } else {
+                            it
+                        }
+                    },
+            )
         }
     }
 
@@ -47,7 +55,6 @@ class FakeTrackerReasonRepository(
         text: String,
     ): TrackerReason? {
         val now = clock.instant()
-        // Built outside `update`, whose lambda may run again when another writer races it.
         val reason = TrackerReason(ids.newId(), trackerId, text, createdAt = now, updatedAt = now)
         val before =
             state.getAndUpdate { s ->
@@ -62,8 +69,7 @@ class FakeTrackerReasonRepository(
     ) {
         val now = clock.instant()
         state.update { s ->
-            val edited = { reason: TrackerReason -> reason.copy(text = text, updatedAt = now) }
-            s.copy(reasons = s.reasons.map { if (it.id == reasonId) edited(it) else it })
+            s.copy(reasons = s.reasons.map { if (it.id == reasonId) it.copy(text = text, updatedAt = now) else it })
         }
     }
 

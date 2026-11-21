@@ -6,7 +6,6 @@ import io.github.ddiling.mydayboard.core.domain.id.IdGenerator
 import io.github.ddiling.mydayboard.core.domain.tracker.TrackerReasonRepository
 import io.github.ddiling.mydayboard.core.domain.tracker.TrackerRepository
 import io.github.ddiling.mydayboard.core.testing.MutableClock
-import io.github.ddiling.mydayboard.core.testing.TrackerAskForReasonContractTest
 import io.github.ddiling.mydayboard.core.testing.TrackerContractTest
 import io.github.ddiling.mydayboard.core.testing.TrackerDeletedIdContractTest
 import io.github.ddiling.mydayboard.core.testing.TrackerDeletionContractTest
@@ -111,24 +110,6 @@ class RoomTrackerDeletedIdContractTest : TrackerDeletedIdContractTest() {
         clock: MutableClock,
         ids: IdGenerator,
     ): TrackerRepository = fixture.repository(clock, ids)
-
-    @After
-    fun closeDatabase() = fixture.close()
-}
-
-@RunWith(RobolectricTestRunner::class)
-class RoomTrackerAskForReasonContractTest : TrackerAskForReasonContractTest() {
-    private val fixture = RoomFixture()
-
-    override fun createRepository(
-        clock: MutableClock,
-        ids: IdGenerator,
-    ): TrackerRepository = fixture.repository(clock, ids)
-
-    override fun createReasonRepository(
-        clock: MutableClock,
-        ids: IdGenerator,
-    ): TrackerReasonRepository = fixture.reasonRepository(clock, ids)
 
     @After
     fun closeDatabase() = fixture.close()

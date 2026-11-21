@@ -16,9 +16,8 @@ internal data class FakeTrackerState(
 }
 
 /**
- * The data behind [FakeTrackerRepository] and [FakeTrackerReasonRepository]. The two share one store, so a
- * deleted tracker hides its reasons and a flag set through the reasons repository shows up when the tracker is
- * observed, as with the one Room database behind both real repositories.
+ * The data behind [FakeTrackerRepository] and [FakeTrackerReasonRepository]. They share one store, like the one
+ * Room database behind the real ones: a deleted tracker hides its reasons, and the flag shows when observed.
  */
 class FakeTrackerStore {
     internal val state = MutableStateFlow(FakeTrackerState())
