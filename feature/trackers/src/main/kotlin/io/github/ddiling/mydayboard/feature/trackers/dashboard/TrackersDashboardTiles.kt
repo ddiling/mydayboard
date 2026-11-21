@@ -67,9 +67,9 @@ private fun Modifier.tilePadding(isLeft: Boolean): Modifier =
     )
 
 /**
- * A tap is the quick action (+1 or Reset) and a long press opens the detail. `combinedClickable` already buzzes on a long press, so the user feels
- * a different gesture; a second buzz here would double it. The click labels name both gestures for screen
- * readers, so TalkBack users can reach the detail too.
+ * A tap is the quick action (+1 or Reset) and a long press opens the detail. `combinedClickable` already buzzes
+ * on a long press, so the user feels a different gesture; a second buzz here would double it. The click labels
+ * name both gestures for screen readers, so TalkBack users can reach the detail too.
  */
 @Composable
 internal fun TrackerTile(
