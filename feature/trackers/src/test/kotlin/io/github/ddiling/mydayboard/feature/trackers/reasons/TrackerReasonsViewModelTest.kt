@@ -95,7 +95,7 @@ class TrackerReasonsViewModelTest {
         }
 
     @Test
-    fun `saving valid text adds the reason and closes the dialog`() =
+    fun `saving valid text adds the trimmed reason`() =
         runTest {
             val trackerId = givenTracker()
             val viewModel = viewModelFor(trackerId)
@@ -109,6 +109,23 @@ class TrackerReasonsViewModelTest {
 
                 val texts = reasons.observeReasons(trackerId).first().map { it.text }
                 assertEquals(listOf("I sleep better"), texts)
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+    @Test
+    fun `saving valid text closes the dialog`() =
+        runTest {
+            val trackerId = givenTracker()
+            val viewModel = viewModelFor(trackerId)
+            viewModel.uiState.test {
+                runCurrent()
+                viewModel.onAddClick()
+                viewModel.onTextChange("I sleep better")
+
+                viewModel.onSave()
+                runCurrent()
+
                 assertNull(viewModel.content().editor)
                 cancelAndIgnoreRemainingEvents()
             }
