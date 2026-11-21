@@ -57,4 +57,9 @@
     <string name="trackers_event_delete">Delete entry</string>
     <string name="trackers_card_plus_one_description">Add one to %1$s</string>
     <string name="trackers_card_reset_description">Reset %1$s</string>
+    <string name="trackers_dashboard_title">Trackers</string>
+    <string name="trackers_dashboard_add_slot">Add a tracker</string>
+    <string name="trackers_dashboard_today">%s today</string>
+    <string name="trackers_dashboard_today_ago">%1$s today · %2$s</string>
+    <string name="trackers_dashboard_add_content_description">Add a tracker</string>
 </resources>
