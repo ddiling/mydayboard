@@ -53,7 +53,8 @@ class TrackersDashboardCardContentTest {
         pendingUndo: Undo? = null,
     ) {
         composeRule.setContent {
-            TrackersDashboardCardContent(TrackersDashboardCardUiState.Content(rows, pendingUndo), actions, host)
+            val state = TrackersDashboardCardUiState.Content(rows, rows.size, pendingUndo)
+            TrackersDashboardCardContent(state, actions, host)
             SnackbarHost(host.snackbarHostState)
         }
     }
@@ -131,7 +132,7 @@ class TrackersDashboardCardContentTest {
             }
         composeRule.setContent {
             TrackersDashboardCardContent(
-                TrackersDashboardCardUiState.Content(listOf(water), Undo("event-1", UndoKind.ADDED)),
+                TrackersDashboardCardUiState.Content(listOf(water), 1, Undo("event-1", UndoKind.ADDED)),
                 actions.copy(onUndoDismissed = { orderedEvents += "dismissed" }),
                 orderedHost,
             )
