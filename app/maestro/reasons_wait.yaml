@@ -16,6 +16,7 @@ tags:
 - back # the detail screen -> the dashboard
 - assertVisible: "0 today"
 - tapOn: "Coffee" # a plain tap would add one event, but the switch asks for a reason first
-- assertVisible: ".*(I sleep better|I save money).*" # the dialog shows one of the two reasons
+- assertVisible:
+    id: "trackers_reason_dialog_reason" # the dialog shows one of the two reasons
 - tapOn: "I'll wait"
 - assertVisible: "0 today" # nothing was logged

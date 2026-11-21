@@ -6,11 +6,13 @@ appId: io.github.ddiling.mydayboard.debug
 - tapOn: "Edit"
 - tapOn: "No reasons yet" # the supporting text of the "Reasons" row; the section header has the same title
 - tapOn: "Add reason"
-- tapOn: "Reason"
+- tapOn:
+    id: "trackers_reasons_field"
 - inputText: "I sleep better"
 - tapOn: "Save"
 - tapOn: "Add reason"
-- tapOn: "Reason"
+- tapOn:
+    id: "trackers_reasons_field"
 - inputText: "I save money"
 - tapOn: "Save"
 - assertVisible: "I sleep better"

@@ -22,6 +22,8 @@ tags:
 - back # the editor was replaced by the detail screen, so Back lands on the dashboard
 - assertVisible: "0 today" # a counter with no events shows only its count
 - tapOn: "Water" # a tap on the tile adds one event
+- assertNotVisible: # the switch is off, so there is no reason dialog
+    id: "trackers_reason_dialog"
 - assertVisible: "Added"
 - assertVisible: "1 today.*" # now "1 today · <time ago>", and Maestro matches the whole text
 - tapOn: "Undo"

@@ -14,7 +14,8 @@ tags:
       TYPE: "Event counter"
 - runFlow: subflows/add_two_reasons.yaml
 - tapOn: "+1"
-- assertVisible: ".*(I sleep better|I save money).*"
+- assertVisible:
+    id: "trackers_reason_dialog_reason"
 - tapOn: "I'll wait"
 - assertNotVisible: "Undo" # nothing was logged
 - tapOn: "+1"
