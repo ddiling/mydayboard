@@ -1,6 +1,8 @@
 package io.github.ddiling.mydayboard.feature.trackers.detail
 
 import androidx.lifecycle.SavedStateHandle
+import app.cash.turbine.test
+import io.github.ddiling.mydayboard.core.domain.tracker.Tracker
 import io.github.ddiling.mydayboard.core.domain.tracker.TrackerType
 import io.github.ddiling.mydayboard.core.testing.FakeTrackerReasonRepository
 import io.github.ddiling.mydayboard.core.testing.FakeTrackerRepository
@@ -19,6 +21,7 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Rule
 import org.junit.Test
@@ -49,6 +52,12 @@ class TrackerDetailReasonPromptTest {
             ReasonPrompter(trackers, reasons, Random(1)),
         )
 
+    private suspend fun givenAskingDaysSince(): Tracker {
+        val tracker = trackers.createTracker("No sweets", TrackerType.DAYS_SINCE, now, askForReason = true)
+        reasons.addReason(tracker.id, "I sleep better")
+        return tracker
+    }
+
     private suspend fun eventTimes(trackerId: String): List<Instant> =
         trackers.observeEvents(trackerId).first().map { it.occurredAt }
 
@@ -68,20 +77,69 @@ class TrackerDetailReasonPromptTest {
         }
 
     @Test
-    fun `reset with the switch on uses the days since wording and logs on log anyway`() =
+    fun `reset with the switch on uses the days since wording`() =
         runTest {
-            val sugar = trackers.createTracker("No sweets", TrackerType.DAYS_SINCE, now, askForReason = true)
-            reasons.addReason(sugar.id, "I sleep better")
+            val sugar = givenAskingDaysSince()
+            val viewModel = viewModelFor(sugar.id)
+
+            viewModel.onReset()
+            runCurrent()
+
+            assertEquals(ReasonPromptKind.DAYS_SINCE, viewModel.prompt.value?.kind)
+        }
+
+    @Test
+    fun `log anyway after a reset logs the reset event`() =
+        runTest {
+            val sugar = givenAskingDaysSince()
             val viewModel = viewModelFor(sugar.id)
             viewModel.onReset()
             runCurrent()
-            val kind = viewModel.prompt.value?.kind
 
             viewModel.onPromptLogAnyway()
             runCurrent()
 
-            assertEquals(ReasonPromptKind.DAYS_SINCE, kind)
             assertEquals(listOf(now), eventTimes(sugar.id))
+        }
+
+    @Test
+    fun `undo after log anyway removes the logged event`() =
+        runTest {
+            val water = trackers.createTracker("Water", TrackerType.EVENT_COUNTER, now, askForReason = true)
+            val viewModel = viewModelFor(water.id)
+            viewModel.onPlusOne()
+            runCurrent()
+            viewModel.onPromptLogAnyway()
+            runCurrent()
+
+            viewModel.onUndo()
+            runCurrent()
+
+            assertEquals(emptyList<Instant>(), eventTimes(water.id))
+        }
+
+    @Test
+    fun `adding the first reason closes the dialog and dismisses the pending undo`() =
+        runTest {
+            val water = trackers.createTracker("Water", TrackerType.EVENT_COUNTER, now, askForReason = true)
+            val viewModel = viewModelFor(water.id)
+            viewModel.uiState.test {
+                runCurrent()
+                skipItems(1)
+                viewModel.onPlusOne()
+                runCurrent()
+                viewModel.onPromptLogAnyway()
+                runCurrent()
+                assertNotNull((expectMostRecentItem() as TrackerDetailUiState.Counter).pendingUndo)
+                viewModel.onPlusOne()
+                runCurrent()
+
+                viewModel.onPromptAddFirstReason()
+                runCurrent()
+
+                assertNull(viewModel.prompt.value)
+                assertNull((expectMostRecentItem() as TrackerDetailUiState.Counter).pendingUndo)
+            }
         }
 
     @Test

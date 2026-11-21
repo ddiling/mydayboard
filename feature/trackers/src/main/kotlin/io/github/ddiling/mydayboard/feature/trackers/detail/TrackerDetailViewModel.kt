@@ -92,6 +92,12 @@ internal class TrackerDetailViewModel
             prompter.confirm()?.let { log(it.kind) }
         }
 
+        /** Leaving for the reasons screen: the dialog closes and a pending Undo goes, like the edit button. */
+        fun onPromptAddFirstReason() {
+            prompter.dismiss()
+            quickUndo.dismiss()
+        }
+
         private fun addEvent(kind: ReasonPromptKind) {
             viewModelScope.launch {
                 if (!prompter.request(trackerId, kind)) log(kind)

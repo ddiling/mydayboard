@@ -74,7 +74,7 @@ internal fun TrackerDetailRoute(
             onAnother = viewModel.prompter::another,
             onLogAnyway = viewModel::onPromptLogAnyway,
             onAddFirstReason = { trackerId ->
-                viewModel.prompter.dismiss()
+                viewModel.onPromptAddFirstReason()
                 onAddFirstReason(trackerId)
             },
         )

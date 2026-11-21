@@ -67,6 +67,12 @@ internal class TrackersDashboardCardViewModel
 
         fun onPromptAnother() = prompter.another()
 
+        /** Leaving for the reasons screen: the dialog closes and a pending Undo goes, like any other navigation. */
+        fun onPromptAddFirstReason() {
+            prompter.dismiss()
+            quickUndo.dismiss()
+        }
+
         fun onPromptLogAnyway() {
             prompter.confirm()?.let { log(it.trackerId, it.kind) }
         }

@@ -1,5 +1,6 @@
 package io.github.ddiling.mydayboard.feature.trackers.dashboard
 
+import app.cash.turbine.test
 import io.github.ddiling.mydayboard.core.domain.tracker.ObserveTrackerSummariesUseCase
 import io.github.ddiling.mydayboard.core.domain.tracker.Tracker
 import io.github.ddiling.mydayboard.core.domain.tracker.TrackerType
@@ -12,6 +13,7 @@ import io.github.ddiling.mydayboard.core.testing.SequentialIdGenerator
 import io.github.ddiling.mydayboard.core.testing.TestZones
 import io.github.ddiling.mydayboard.core.testing.warsaw
 import io.github.ddiling.mydayboard.feature.trackers.reason.ReasonPrompt
+import io.github.ddiling.mydayboard.feature.trackers.reason.ReasonPromptKind
 import io.github.ddiling.mydayboard.feature.trackers.reason.ReasonPrompter
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -20,6 +22,7 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Rule
 import org.junit.Test
@@ -132,11 +135,20 @@ class TrackersDashboardReasonPromptTest {
         }
 
     @Test
-    fun `the switch on with no reasons opens the no reasons dialog and log anyway logs`() =
+    fun `the switch on with no reasons opens the no reasons dialog`() =
+        runTest {
+            val water = givenAskingTracker(reason = null)
+
+            tapPlusOne(water.id)
+
+            assertEquals(true, viewModel.prompt.value is ReasonPrompt.NoReasons)
+        }
+
+    @Test
+    fun `log anyway from the no reasons dialog logs the event`() =
         runTest {
             val water = givenAskingTracker(reason = null)
             tapPlusOne(water.id)
-            assertEquals(true, viewModel.prompt.value is ReasonPrompt.NoReasons)
 
             viewModel.onPromptLogAnyway()
             runCurrent()
@@ -145,18 +157,48 @@ class TrackersDashboardReasonPromptTest {
         }
 
     @Test
-    fun `reset of a days since tracker asks first and log anyway adds the reset event`() =
+    fun `reset of a days since tracker asks first`() =
+        runTest {
+            val sugar = givenAskingTracker(TrackerType.DAYS_SINCE)
+
+            viewModel.onReset(sugar.id)
+            runCurrent()
+
+            assertEquals(ReasonPromptKind.DAYS_SINCE, viewModel.prompt.value?.kind)
+            assertEquals(emptyList<Instant>(), eventTimes(sugar.id))
+        }
+
+    @Test
+    fun `log anyway after a reset adds the reset event`() =
         runTest {
             val sugar = givenAskingTracker(TrackerType.DAYS_SINCE)
             viewModel.onReset(sugar.id)
             runCurrent()
-            val asked = viewModel.prompt.value is ReasonPrompt.WithReason
 
             viewModel.onPromptLogAnyway()
             runCurrent()
 
-            assertEquals(true, asked)
             assertEquals(listOf(tapTime), eventTimes(sugar.id))
+        }
+
+    @Test
+    fun `adding the first reason closes the dialog and dismisses the pending undo`() =
+        runTest {
+            val coffee = trackers.createTracker("Coffee", TrackerType.EVENT_COUNTER, tapTime)
+            val water = givenAskingTracker(reason = null)
+            viewModel.uiState.test {
+                runCurrent()
+                skipItems(2)
+                tapPlusOne(coffee.id)
+                assertNotNull((expectMostRecentItem() as TrackersDashboardCardUiState.Content).pendingUndo)
+                tapPlusOne(water.id)
+
+                viewModel.onPromptAddFirstReason()
+                runCurrent()
+
+                assertNull(viewModel.prompt.value)
+                assertNull((expectMostRecentItem() as TrackersDashboardCardUiState.Content).pendingUndo)
+            }
         }
 
     @Test

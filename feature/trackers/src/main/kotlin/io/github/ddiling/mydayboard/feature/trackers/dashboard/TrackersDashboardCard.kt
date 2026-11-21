@@ -45,7 +45,7 @@ internal class TrackersDashboardCard
                     onAnother = viewModel::onPromptAnother,
                     onLogAnyway = viewModel::onPromptLogAnyway,
                     onAddFirstReason = { trackerId ->
-                        viewModel.onPromptWait()
+                        viewModel.onPromptAddFirstReason()
                         host.navigate(TrackerReasonsDestination(trackerId))
                     },
                 )
