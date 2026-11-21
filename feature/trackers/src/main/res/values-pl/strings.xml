@@ -66,4 +66,14 @@
     <string name="trackers_dashboard_add_content_description">Dodaj tracker</string>
     <string name="trackers_dashboard_open_details">Otwórz szczegóły</string>
     <string name="trackers_dashboard_open_list">Otwórz listę trackerów</string>
+    <string name="trackers_reasons_title">Powody</string>
+    <string name="trackers_reasons_add">Dodaj powód</string>
+    <string name="trackers_reasons_edit_title">Edytuj powód</string>
+    <string name="trackers_reasons_empty">Brak powodów. Dodaj taki, który Ci pomaga.</string>
+    <string name="trackers_reasons_deleted">Powód usunięty</string>
+    <string name="trackers_reasons_delete">Usuń</string>
+    <string name="trackers_reasons_field">Powód</string>
+    <string name="trackers_reasons_helper">Krótko i własnymi słowami</string>
+    <string name="trackers_reasons_too_long">Za długi (maks. %d)</string>
+    <string name="trackers_reasons_counter">%1$d/%2$d</string>
 </resources>
