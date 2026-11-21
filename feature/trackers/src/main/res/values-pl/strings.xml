@@ -91,4 +91,12 @@
         <item quantity="many">%d powodów</item>
         <item quantity="other">%d powodu</item>
     </plurals>
+    <string name="trackers_reason_dialog_quote">„%s”</string>
+    <string name="trackers_reason_dialog_another">Inny powód</string>
+    <string name="trackers_reason_dialog_wait">Poczekam</string>
+    <string name="trackers_reason_dialog_hold_on">Wytrwam</string>
+    <string name="trackers_reason_dialog_log_anyway">Zapisz mimo to</string>
+    <string name="trackers_reason_dialog_reset_anyway">Zresetuj mimo to</string>
+    <string name="trackers_reason_dialog_add_first">Dodaj pierwszy powód</string>
+    <string name="trackers_reason_dialog_no_reasons">Nie masz jeszcze żadnych powodów. Zapisz, dlaczego chcesz to zmienić: pomoże Ci to następnym razem.</string>
 </resources>
