@@ -1,7 +1,15 @@
 package io.github.ddiling.mydayboard.feature.trackers.editor
 
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -107,5 +115,19 @@ class TrackerEditorReasonsSectionTest {
         composeRule.onNodeWithText("2 reasons").performClick()
 
         assertEquals(1, opened)
+    }
+
+    @Test
+    fun `the reasons row is announced as a button that opens the reasons`() {
+        show(state(isEditing = true, reasonCount = 2))
+
+        composeRule
+            .onNode(hasText("2 reasons").and(hasClickAction()), useUnmergedTree = false)
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
+            .assert(
+                SemanticsMatcher("click label is Open reasons") {
+                    it.config.getOrNull(SemanticsActions.OnClick)?.label == "Open reasons"
+                },
+            )
     }
 }

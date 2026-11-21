@@ -81,6 +81,7 @@
     <string name="trackers_editor_ask_reason_hint_counter">Before +1 you see a reason.</string>
     <string name="trackers_editor_ask_reason_hint_days_since">Before Reset you see a reason.</string>
     <string name="trackers_editor_reasons_row">Reasons</string>
+    <string name="trackers_editor_reasons_open">Open reasons</string>
     <string name="trackers_editor_reasons_none">No reasons yet</string>
     <plurals name="trackers_editor_reasons_count">
         <item quantity="one">%d reason</item>

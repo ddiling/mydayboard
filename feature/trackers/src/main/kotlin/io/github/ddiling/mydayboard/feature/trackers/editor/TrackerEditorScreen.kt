@@ -12,9 +12,12 @@ import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -172,8 +175,13 @@ private fun ReasonsSection(
             ListItem(
                 headlineContent = { Text(stringResource(R.string.trackers_editor_reasons_row)) },
                 supportingContent = { Text(reasonCountText(uiState.reasonCount)) },
-                trailingContent = { Text("\u203A") },
-                modifier = Modifier.clickable(onClick = actions.onOpenReasons),
+                trailingContent = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null) },
+                modifier =
+                    Modifier.clickable(
+                        onClickLabel = stringResource(R.string.trackers_editor_reasons_open),
+                        role = Role.Button,
+                        onClick = actions.onOpenReasons,
+                    ),
             )
         }
     }
