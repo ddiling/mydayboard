@@ -1,0 +1,23 @@
+# E2E: the detail screen's +1 asks for a reason too: "I'll wait" logs nothing, "Log anyway" adds the event.
+# Run: maestro test app/maestro/   (emulator running, debug APK installed)
+appId: io.github.ddiling.mydayboard.debug
+name: Reasons - the detail screen asks before +1
+tags:
+  - smoke
+---
+- launchApp:
+    clearState: true
+- runFlow:
+    file: subflows/create_tracker_asking_for_reason.yaml
+    env:
+      NAME: "Water"
+      TYPE: "Event counter"
+- runFlow: subflows/add_two_reasons.yaml
+- tapOn: "+1"
+- assertVisible: ".*(I sleep better|I save money).*"
+- tapOn: "I'll wait"
+- assertNotVisible: "Undo" # nothing was logged
+- tapOn: "+1"
+- tapOn: "Log anyway"
+- assertVisible: "Added" # the snackbar of a logged event
+- assertVisible: "Undo"

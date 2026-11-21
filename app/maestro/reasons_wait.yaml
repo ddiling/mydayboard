@@ -1,0 +1,21 @@
+# E2E: with "Ask me for a reason" on, a tap on the tile shows a reason, and "I'll wait" logs nothing.
+# Run: maestro test app/maestro/   (emulator running, debug APK installed)
+appId: io.github.ddiling.mydayboard.debug
+name: Reasons - wait instead of logging
+tags:
+  - smoke
+---
+- launchApp:
+    clearState: true
+- runFlow:
+    file: subflows/create_tracker_asking_for_reason.yaml
+    env:
+      NAME: "Coffee"
+      TYPE: "Event counter"
+- runFlow: subflows/add_two_reasons.yaml
+- back # the detail screen -> the dashboard
+- assertVisible: "0 today"
+- tapOn: "Coffee" # a plain tap would add one event, but the switch asks for a reason first
+- assertVisible: ".*(I sleep better|I save money).*" # the dialog shows one of the two reasons
+- tapOn: "I'll wait"
+- assertVisible: "0 today" # nothing was logged
