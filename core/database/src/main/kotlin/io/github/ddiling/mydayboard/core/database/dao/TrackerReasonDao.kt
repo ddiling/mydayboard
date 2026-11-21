@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
 /**
  * Reasons that are not soft-deleted, of trackers that are not soft-deleted. Every write is one statement that checks
  * its own conditions, so a concurrent delete cannot be undone by a stale read-modify-write; a write changes nothing
- * (returns 0, or -1 for an insert) when the reason or its tracker is missing or deleted.
+ * (returns 0, or -1 for an insert) when the reason or its tracker is missing or deleted; a duplicate id still fails.
  */
 @Dao
 interface TrackerReasonDao {
@@ -28,7 +28,10 @@ interface TrackerReasonDao {
     @Insert
     suspend fun insert(entity: TrackerReasonEntity)
 
-    /** Inserts only while the tracker is live; returns the new row id. */
+    /**
+     * Inserts only while the tracker is live; returns the new row id, or -1 when it inserts nothing.
+     * Like [insert], it fails on a duplicate id.
+     */
     @Query(
         """
         INSERT INTO tracker_reasons (id, tracker_id, text, created_at, updated_at)

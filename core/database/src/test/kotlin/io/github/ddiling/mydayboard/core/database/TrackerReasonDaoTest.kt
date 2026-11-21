@@ -37,16 +37,26 @@ class TrackerReasonDaoTest {
         }
 
     @Test
-    fun `observeActiveForTracker lists only that tracker's reasons, oldest first`() =
+    fun `observeActiveForTracker lists only that tracker's reasons`() =
         runTest {
             trackerDao.insert(tracker("other"))
-            dao.insert(reason("newer", "t", createdAt = T0 + 1))
-            dao.insert(reason("older", "t", createdAt = T0))
+            dao.insert(reason("own", "t"))
             dao.insert(reason("foreign", "other"))
 
             val ids = dao.observeActiveForTracker("t").first().map { it.id }
 
-            assertEquals(listOf("older", "newer"), ids)
+            assertEquals(listOf("own"), ids)
+        }
+
+    @Test
+    fun `observeActiveForTracker lists the oldest reason first`() =
+        runTest {
+            dao.insert(reason("a-newer", "t", createdAt = T0 + 1))
+            dao.insert(reason("b-older", "t", createdAt = T0))
+
+            val ids = dao.observeActiveForTracker("t").first().map { it.id }
+
+            assertEquals(listOf("b-older", "a-newer"), ids)
         }
 
     @Test
@@ -155,6 +165,15 @@ class TrackerReasonDaoTest {
     fun `softDeleteIfActive changes nothing for an already deleted reason`() =
         runTest {
             dao.insert(reason("r", "t", deletedAt = T0 + 1))
+
+            assertEquals(0, dao.softDeleteIfActive("r", T0 + 2))
+        }
+
+    @Test
+    fun `softDeleteIfActive changes nothing for a reason of a deleted tracker`() =
+        runTest {
+            dao.insert(reason("r", "t"))
+            trackerDao.softDelete("t", T0 + 1)
 
             assertEquals(0, dao.softDeleteIfActive("r", T0 + 2))
         }
