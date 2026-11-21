@@ -76,4 +76,15 @@
     <string name="trackers_reasons_counter">%1$d/%2$d</string>
     <string name="trackers_reasons_back">Back</string>
     <string name="trackers_reasons_not_found_back">Back to trackers</string>
+    <string name="trackers_editor_reasons_section">Reasons</string>
+    <string name="trackers_editor_ask_reason">Ask me for a reason before logging</string>
+    <string name="trackers_editor_ask_reason_hint_counter">Before +1 you see a reason.</string>
+    <string name="trackers_editor_ask_reason_hint_days_since">Before Reset you see a reason.</string>
+    <string name="trackers_editor_reasons_row">Reasons</string>
+    <string name="trackers_editor_reasons_open">Open reasons</string>
+    <string name="trackers_editor_reasons_none">No reasons yet</string>
+    <plurals name="trackers_editor_reasons_count">
+        <item quantity="one">%d reason</item>
+        <item quantity="other">%d reasons</item>
+    </plurals>
 </resources>

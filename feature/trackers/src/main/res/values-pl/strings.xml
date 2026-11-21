@@ -78,4 +78,17 @@
     <string name="trackers_reasons_counter">%1$d/%2$d</string>
     <string name="trackers_reasons_back">Wstecz</string>
     <string name="trackers_reasons_not_found_back">Wróć do trackerów</string>
+    <string name="trackers_editor_reasons_section">Powody</string>
+    <string name="trackers_editor_ask_reason">Pytaj o powód przed dodaniem wpisu</string>
+    <string name="trackers_editor_ask_reason_hint_counter">Przed +1 zobaczysz powód.</string>
+    <string name="trackers_editor_ask_reason_hint_days_since">Przed resetem zobaczysz powód.</string>
+    <string name="trackers_editor_reasons_row">Powody</string>
+    <string name="trackers_editor_reasons_open">Otwórz powody</string>
+    <string name="trackers_editor_reasons_none">Brak powodów</string>
+    <plurals name="trackers_editor_reasons_count">
+        <item quantity="one">%d powód</item>
+        <item quantity="few">%d powody</item>
+        <item quantity="many">%d powodów</item>
+        <item quantity="other">%d powodu</item>
+    </plurals>
 </resources>

@@ -45,6 +45,13 @@ private fun TrackerEditorEditPreview() {
 
 @PreviewLightDark
 @Composable
+private fun TrackerEditorEditWithReasonsPreview() {
+    val state = blankState.copy(name = "Water", isEditing = true, askForReason = true, reasonCount = 2)
+    PreviewSurface { TrackerEditorScreen(state, TrackerEditorActions()) }
+}
+
+@PreviewLightDark
+@Composable
 private fun TrackerEditorNotFoundPreview() {
     val state = blankState.copy(isEditing = true, load = EditorLoad.NotFound)
     PreviewSurface { TrackerEditorScreen(state, TrackerEditorActions()) }
@@ -54,6 +61,6 @@ private fun TrackerEditorNotFoundPreview() {
 @Preview(name = "Large font dark", fontScale = 2f, uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun TrackerEditorLargeFontPreview() {
-    val state = blankState.copy(name = "Water", nameEdited = true, isEditing = true)
+    val state = blankState.copy(name = "Water", isEditing = true, askForReason = true, reasonCount = 2)
     PreviewSurface { TrackerEditorScreen(state, TrackerEditorActions()) }
 }

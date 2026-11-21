@@ -13,6 +13,10 @@ tags:
     id: "empty_slot_0"
 - tapOn: "Name"
 - inputText: "Water"
+- hideKeyboard # the keyboard covers the editor's lower half
+- scrollUntilVisible: # the reasons section sits above Save, so Save can be below the fold
+    element: "Save"
+    direction: DOWN
 - tapOn: "Save"
 - assertVisible: "Last 7 days" # the counter detail screen opened
 - back # the editor was replaced by the detail screen, so Back lands on the dashboard

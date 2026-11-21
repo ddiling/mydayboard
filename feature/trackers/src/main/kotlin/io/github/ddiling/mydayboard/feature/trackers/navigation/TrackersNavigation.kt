@@ -57,8 +57,10 @@ fun NavGraphBuilder.trackersGraph(navController: NavController) {
     composable<TrackerReasonsDestination> {
         TrackerReasonsRoute(onBack = { navController.popBackStack() })
     }
-    composable<TrackerEditorDestination> {
+    composable<TrackerEditorDestination> { entry ->
+        val editedId = entry.toRoute<TrackerEditorDestination>().trackerId
         TrackerEditorRoute(
+            onOpenReasons = { if (editedId != null) navController.navigate(TrackerReasonsDestination(editedId)) },
             onResult = { result, isEditing -> navController.leaveEditor(result, isEditing) },
             onBack = { navController.popBackStack() },
         )

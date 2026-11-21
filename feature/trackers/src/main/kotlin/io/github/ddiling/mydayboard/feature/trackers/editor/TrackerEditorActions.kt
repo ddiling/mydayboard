@@ -8,6 +8,8 @@ internal data class TrackerEditorActions(
     val onNameChange: (String) -> Unit = {},
     val onTypeChange: (TrackerType) -> Unit = {},
     val onStartDateChange: (LocalDate) -> Unit = {},
+    val onAskForReasonChange: (Boolean) -> Unit = {},
+    val onOpenReasons: () -> Unit = {},
     val onSave: () -> Unit = {},
     val onDeleteClick: () -> Unit = {},
     val onDeleteConfirm: () -> Unit = {},

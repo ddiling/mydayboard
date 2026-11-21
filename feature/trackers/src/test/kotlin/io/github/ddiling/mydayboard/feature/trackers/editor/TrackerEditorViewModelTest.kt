@@ -5,7 +5,9 @@ import io.github.ddiling.mydayboard.core.domain.tracker.MAX_TRACKER_NAME_LENGTH
 import io.github.ddiling.mydayboard.core.domain.tracker.Tracker
 import io.github.ddiling.mydayboard.core.domain.tracker.TrackerNameValidation
 import io.github.ddiling.mydayboard.core.domain.tracker.TrackerType
+import io.github.ddiling.mydayboard.core.testing.FakeTrackerReasonRepository
 import io.github.ddiling.mydayboard.core.testing.FakeTrackerRepository
+import io.github.ddiling.mydayboard.core.testing.FakeTrackerStore
 import io.github.ddiling.mydayboard.core.testing.MainDispatcherRule
 import io.github.ddiling.mydayboard.core.testing.MutableClock
 import io.github.ddiling.mydayboard.core.testing.SequentialIdGenerator
@@ -36,7 +38,9 @@ class TrackerEditorViewModelTest {
 
     private val now = warsaw(2026, 3, 2, 10, 30)
     private val clock = MutableClock(now, TestZones.WARSAW)
-    private val repository = FakeTrackerRepository(clock, SequentialIdGenerator())
+    private val ids = SequentialIdGenerator()
+    private val store = FakeTrackerStore()
+    private val repository = FakeTrackerRepository(clock, ids, store)
     private val today = LocalDate.of(2026, 3, 2)
 
     // Lazy: viewModelScope must be created after the rule has installed the test Main dispatcher.
@@ -46,6 +50,7 @@ class TrackerEditorViewModelTest {
         TrackerEditorViewModel(
             SavedStateHandle(mapOf("trackerId" to trackerId)),
             repository,
+            FakeTrackerReasonRepository(clock, ids, store),
             clock,
         )
 
