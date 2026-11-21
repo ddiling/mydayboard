@@ -9,6 +9,7 @@ import io.github.ddiling.mydayboard.feature.trackers.detail.TrackerDetailRoute
 import io.github.ddiling.mydayboard.feature.trackers.editor.EditorResult
 import io.github.ddiling.mydayboard.feature.trackers.editor.TrackerEditorRoute
 import io.github.ddiling.mydayboard.feature.trackers.list.TrackersListRoute
+import io.github.ddiling.mydayboard.feature.trackers.reasons.TrackerReasonsRoute
 import kotlinx.serialization.Serializable
 
 /** Route of the tracker list. It has no arguments, hence an object. */
@@ -25,6 +26,12 @@ data class TrackerDetailDestination(
 @Serializable
 data class TrackerEditorDestination(
     val trackerId: String? = null,
+) : Destination
+
+/** Route of the reasons of one tracker, the lines shown before a log to remind the user why they track it. */
+@Serializable
+data class TrackerReasonsDestination(
+    val trackerId: String,
 ) : Destination
 
 /**
@@ -46,6 +53,9 @@ fun NavGraphBuilder.trackersGraph(navController: NavController) {
             onEditClick = { navController.navigate(TrackerEditorDestination(id)) },
             onBack = { navController.popBackStack() },
         )
+    }
+    composable<TrackerReasonsDestination> {
+        TrackerReasonsRoute(onBack = { navController.popBackStack() })
     }
     composable<TrackerEditorDestination> {
         TrackerEditorRoute(
