@@ -16,8 +16,7 @@ tags:
 - back # the detail screen -> the dashboard
 - assertVisible: "0 today"
 - tapOn: "Coffee"
-- assertVisible:
-    id: "trackers_reason_dialog_reason"
+- assertVisible: ".*(I sleep better|I save money).*"
 - tapOn: "Log anyway"
 - assertVisible: "1 today.*" # now "1 today · <time ago>", and Maestro matches the whole text
 - tapOn: "Undo"

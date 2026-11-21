@@ -15,8 +15,7 @@ tags:
 - runFlow: subflows/add_two_reasons.yaml
 - tapOn:
     id: "trackers_detail_reset"
-- assertVisible:
-    id: "trackers_reason_dialog_reason"
+- assertVisible: ".*(I sleep better|I save money).*"
 - tapOn: "I'll hold on"
 # Only a real reset moves the previous streak into the earlier list, which hides the empty-state text.
 - assertVisible: "No earlier streaks yet"
