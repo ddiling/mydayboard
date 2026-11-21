@@ -13,6 +13,10 @@ tags:
 - tapOn: "Add tracker"
 - tapOn: "Name"
 - inputText: "Water"
+- hideKeyboard # the keyboard covers the editor's lower half
+- scrollUntilVisible: # the reasons section sits above Save, so Save can be below the fold
+    element: "Save"
+    direction: DOWN
 - tapOn: "Save"
 - assertVisible: "No events yet" # the counter detail screen opened with an empty history
 - tapOn: "Add past entry"

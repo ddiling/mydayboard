@@ -13,6 +13,10 @@ tags:
 - tapOn: "Name"
 - inputText: "No sugar"
 - tapOn: "Days since"
+- hideKeyboard # the keyboard covers the editor's lower half
+- scrollUntilVisible: # the reasons section sits above Save, so Save can be below the fold
+    element: "Save"
+    direction: DOWN
 - tapOn: "Save"
 - assertVisible:
     id: "trackers_detail_reset"
