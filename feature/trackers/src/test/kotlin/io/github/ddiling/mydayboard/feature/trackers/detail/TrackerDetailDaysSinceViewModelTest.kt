@@ -11,6 +11,7 @@ import io.github.ddiling.mydayboard.core.testing.MutableClock
 import io.github.ddiling.mydayboard.core.testing.SequentialIdGenerator
 import io.github.ddiling.mydayboard.core.testing.TestZones
 import io.github.ddiling.mydayboard.core.testing.warsaw
+import io.github.ddiling.mydayboard.feature.trackers.reason.reasonPrompter
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
@@ -38,7 +39,12 @@ class TrackerDetailDaysSinceViewModelTest {
     private val daysFromStartToNow = 29L
 
     private fun viewModelFor(tracker: Tracker) =
-        TrackerDetailViewModel(SavedStateHandle(mapOf("trackerId" to tracker.id)), repository, clock)
+        TrackerDetailViewModel(
+            SavedStateHandle(mapOf("trackerId" to tracker.id)),
+            repository,
+            clock,
+            reasonPrompter(repository, clock),
+        )
 
     private suspend fun givenSugarTracker() =
         repository.createTracker("No sugar", TrackerType.DAYS_SINCE, warsaw(2026, 2, 1))

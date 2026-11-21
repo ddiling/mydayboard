@@ -17,6 +17,10 @@ import io.github.ddiling.mydayboard.core.domain.tracker.summarizeDaysSince
 import io.github.ddiling.mydayboard.feature.trackers.event.EventTimeEditor
 import io.github.ddiling.mydayboard.feature.trackers.event.EventTimeEditorState
 import io.github.ddiling.mydayboard.feature.trackers.navigation.TrackerDetailDestination
+import io.github.ddiling.mydayboard.feature.trackers.reason.ReasonPrompt
+import io.github.ddiling.mydayboard.feature.trackers.reason.ReasonPromptKind
+import io.github.ddiling.mydayboard.feature.trackers.reason.ReasonPrompter
+import io.github.ddiling.mydayboard.feature.trackers.reason.toUndoKind
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -33,7 +37,8 @@ import javax.inject.Inject
  * triggers the recomputation: every run reads a fresh `clock.instant()`, because the tick's own instant can
  * be up to a minute old and would hide an event the user just added (the summaries ignore events after
  * "now"). Sharing stops 5 s after the screen goes away, which keeps the data across a rotation but stops the
- * minute ticker once the screen is really gone.
+ * minute ticker once the screen is really gone. When the tracker asks for a reason, +1 and Reset show the
+ * reason dialog first and log only on "Log anyway".
  */
 @HiltViewModel
 internal class TrackerDetailViewModel
@@ -42,6 +47,7 @@ internal class TrackerDetailViewModel
         savedStateHandle: SavedStateHandle,
         private val repository: TrackerRepository,
         private val clock: Clock,
+        val prompter: ReasonPrompter,
     ) : ViewModel() {
         private val trackerId: String = savedStateHandle.toRoute<TrackerDetailDestination>().trackerId
         private val quickUndo = QuickActionUndo(repository::deleteEvent, repository::restoreEvent)
@@ -73,16 +79,29 @@ internal class TrackerDetailViewModel
                 TrackerDetailUiState.Loading,
             )
 
-        fun onPlusOne() {
+        /** The reason dialog to show, or null. */
+        val prompt: StateFlow<ReasonPrompt?> = prompter.prompt
+
+        fun onPlusOne() = addEvent(ReasonPromptKind.COUNTER)
+
+        /** A reset is an event of a days-since tracker, so undoing it deletes that event like an undone +1. */
+        fun onReset() = addEvent(ReasonPromptKind.DAYS_SINCE)
+
+        /** Wait, a tap outside and Back go straight to [prompter]: they save nothing, so need no logic here. */
+        fun onPromptLogAnyway() {
+            prompter.confirm()?.let { log(it.kind) }
+        }
+
+        private fun addEvent(kind: ReasonPromptKind) {
             viewModelScope.launch {
-                repository.addEvent(trackerId, clock.instant())?.let { quickUndo.register(it.id, UndoKind.ADDED) }
+                if (!prompter.request(trackerId, kind)) log(kind)
             }
         }
 
-        /** A reset is an event of a days-since tracker, so undoing it deletes that event like an undone +1. */
-        fun onReset() {
+        /** Stamps the event now, when the user chose to log, not when they tapped. */
+        private fun log(kind: ReasonPromptKind) {
             viewModelScope.launch {
-                repository.addEvent(trackerId, clock.instant())?.let { quickUndo.register(it.id, UndoKind.RESET) }
+                repository.addEvent(trackerId, clock.instant())?.let { quickUndo.register(it.id, kind.toUndoKind()) }
             }
         }
 

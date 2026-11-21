@@ -12,6 +12,9 @@ import dagger.hilt.components.SingletonComponent
 import dagger.multibindings.IntoSet
 import io.github.ddiling.mydayboard.core.dashboard.DashboardCard
 import io.github.ddiling.mydayboard.core.dashboard.DashboardHost
+import io.github.ddiling.mydayboard.feature.trackers.navigation.TrackerReasonsDestination
+import io.github.ddiling.mydayboard.feature.trackers.reason.ReasonPromptActions
+import io.github.ddiling.mydayboard.feature.trackers.reason.ReasonPromptDialog
 import javax.inject.Inject
 
 /** The trackers card on the dashboard: every tracker with a quick action, right where the user starts. */
@@ -35,7 +38,19 @@ internal class TrackersDashboardCard
                     onUndo = viewModel::onUndo,
                     onUndoDismissed = viewModel::onUndoDismissed,
                 )
+            val prompt by viewModel.prompt.collectAsStateWithLifecycle()
+            val promptActions =
+                ReasonPromptActions(
+                    onWait = viewModel::onPromptWait,
+                    onAnother = viewModel::onPromptAnother,
+                    onLogAnyway = viewModel::onPromptLogAnyway,
+                    onAddFirstReason = { trackerId ->
+                        viewModel.onPromptWait()
+                        host.navigate(TrackerReasonsDestination(trackerId))
+                    },
+                )
             TrackersDashboardCardContent(uiState, actions, host, modifier)
+            ReasonPromptDialog(prompt, promptActions)
         }
 
         private companion object {
