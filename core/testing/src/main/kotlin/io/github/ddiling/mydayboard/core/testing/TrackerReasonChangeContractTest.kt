@@ -35,6 +35,33 @@ abstract class TrackerReasonChangeContractTest : TrackerReasonContractBase() {
         }
 
     @Test
+    fun `updating a deleted reason does not change the text it comes back with`() =
+        runTest {
+            val tracker = givenTracker()
+            val reason = givenDeletedReason(tracker)
+            clock.advanceBy(clockAdvance)
+
+            reasons.updateReason(reason.id, "Coffee")
+            reasons.restoreReason(reason.id)
+
+            assertEquals(
+                listOf(reason.copy(updatedAt = nowAfterAdvance)),
+                reasons.observeReasons(tracker.id).first(),
+            )
+        }
+
+    @Test
+    fun `deleting an unknown reason changes nothing`() =
+        runTest {
+            val tracker = givenTracker()
+            val reason = givenReason(tracker)
+
+            reasons.deleteReason("unknown")
+
+            assertEquals(listOf(reason), reasons.observeReasons(tracker.id).first())
+        }
+
+    @Test
     fun `a deleted reason is hidden`() =
         runTest {
             val tracker = givenTracker()

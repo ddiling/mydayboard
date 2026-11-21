@@ -11,6 +11,9 @@ import org.junit.Test
 
 /** Contract for the ask-for-reason flag and for adding and observing reasons. */
 abstract class TrackerReasonContractTest : TrackerReasonContractBase() {
+    /** More than 9, so that ids compared as text (`id-10` before `id-2`) differ from creation order. */
+    private val tiedCount = 10
+
     @Test
     fun `turning the flag on shows in the observed tracker and bumps updatedAt`() =
         runTest {
@@ -77,6 +80,17 @@ abstract class TrackerReasonContractTest : TrackerReasonContractBase() {
         }
 
     @Test
+    fun `reasons with the same createdAt are listed by id`() =
+        runTest {
+            val tracker = givenTracker()
+            repeat(tiedCount) { givenReason(tracker) }
+
+            val listedIds = reasons.observeReasons(tracker.id).first().map { it.id }
+
+            assertEquals(listedIds.sorted(), listedIds)
+        }
+
+    @Test
     fun `reasons of a deleted tracker are hidden`() =
         runTest {
             val tracker = givenTracker()
@@ -87,14 +101,17 @@ abstract class TrackerReasonContractTest : TrackerReasonContractBase() {
         }
 
     @Test
-    fun `observed reasons do not emit again after an unrelated event write`() =
+    fun `observed reasons do not emit again after a write that leaves the list equal`() =
         runTest {
             val tracker = givenTracker()
             val reason = givenReason(tracker)
 
             reasons.observeReasons(tracker.id).test {
                 assertEquals(listOf(reason), awaitItem())
-                givenEvent(tracker)
+                reasons.setAskForReason(tracker.id, true)
+                // Room re-runs the query on its own thread, so the next real change proves nothing came in between.
+                val next = givenReason(tracker, "Coffee after lunch")
+                assertEquals(listOf(reason, next), awaitItem())
                 expectNoEvents()
             }
         }
