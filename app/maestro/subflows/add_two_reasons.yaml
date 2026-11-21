@@ -15,5 +15,5 @@ appId: io.github.ddiling.mydayboard.debug
 - tapOn: "Save"
 - assertVisible: "I sleep better"
 - assertVisible: "I save money"
-- tapOn: "Back" # reasons screen -> editor
-- tapOn: "Back" # editor -> detail screen
+- back # reasons screen -> editor
+- back # editor -> detail screen
