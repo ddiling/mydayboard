@@ -32,6 +32,34 @@ class FakeTaskContractTest : TaskContractTest() {
     ): TaskCategoryRepository = FakeTaskCategoryRepository(clock, ids, store)
 }
 
+class FakeTaskCategoryLinkContractTest : TaskCategoryLinkContractTest() {
+    private val store = FakeTaskStore()
+
+    override fun createTaskRepository(
+        clock: MutableClock,
+        ids: IdGenerator,
+    ): TaskRepository = FakeTaskRepository(clock, ids, store)
+
+    override fun createCategoryRepository(
+        clock: MutableClock,
+        ids: IdGenerator,
+    ): TaskCategoryRepository = FakeTaskCategoryRepository(clock, ids, store)
+}
+
+class FakeTaskChangeContractTest : TaskChangeContractTest() {
+    private val store = FakeTaskStore()
+
+    override fun createTaskRepository(
+        clock: MutableClock,
+        ids: IdGenerator,
+    ): TaskRepository = FakeTaskRepository(clock, ids, store)
+
+    override fun createCategoryRepository(
+        clock: MutableClock,
+        ids: IdGenerator,
+    ): TaskCategoryRepository = FakeTaskCategoryRepository(clock, ids, store)
+}
+
 class FakeTaskCategoryNoOpContractTest : TaskCategoryNoOpContractTest() {
     private val store = FakeTaskStore()
 
