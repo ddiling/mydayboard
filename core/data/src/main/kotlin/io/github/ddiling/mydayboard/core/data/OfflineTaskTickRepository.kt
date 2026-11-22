@@ -24,7 +24,8 @@ private const val NOT_INSERTED = -1L
  * partly changed day, which the user sees and can fix.
  *
  * A timed slot never gets a second live tick, because the database would accept the duplicate: adding one
- * returns the existing tick. Ticks without a slot are a count, so they may repeat.
+ * returns the existing tick, and the check and the insert are one statement, so parallel calls agree. Slots
+ * are kept to whole minutes, as stored. Ticks without a slot are a count, so they may repeat.
  */
 internal class OfflineTaskTickRepository
     @Inject
@@ -46,8 +47,7 @@ internal class OfflineTaskTickRepository
         ): TaskTick? {
             // Room stores epoch millis, so the returned tick must not carry finer precision than what is read back.
             val now = clock.instant().truncatedTo(ChronoUnit.MILLIS).toEpochMilli()
-            val existing = slot?.let { s -> liveTicks(taskId, day).firstOrNull { it.slot == s } }
-            return existing ?: insert(taskId, day, slot, now)
+            return insert(taskId, day, slot?.toWholeMinute(), now)
         }
 
         override suspend fun deleteTick(tickId: String) {
@@ -65,7 +65,7 @@ internal class OfflineTaskTickRepository
         ): DayChange {
             // One reading, so that every row this call touches carries the same instant.
             val now = clock.instant().truncatedTo(ChronoUnit.MILLIS).toEpochMilli()
-            val plan = planDay(liveTicks(taskId, day), slots)
+            val plan = planDay(liveTicks(taskId, day), slots.map { it?.toWholeMinute() })
             val removed = plan.toRemove.filter { dao.softDeleteIfLive(it.id, now) > 0 }.map { it.id }
             val added = plan.toAdd.mapNotNull { insert(taskId, day, it, now)?.id }
             return DayChange(addedIds = added, removedIds = removed)
@@ -76,6 +76,8 @@ internal class OfflineTaskTickRepository
             change.addedIds.forEach { dao.softDeleteIfLive(it, now) }
             change.removedIds.forEach { dao.restoreIfDeleted(it, now) }
         }
+
+        private fun LocalTime.toWholeMinute(): LocalTime = truncatedTo(ChronoUnit.MINUTES)
 
         private suspend fun liveTicks(
             taskId: String,
@@ -90,7 +92,7 @@ internal class OfflineTaskTickRepository
         ): TaskTick? {
             val id = ids.newId()
             val inserted = dao.insertForLiveTask(id, taskId, day.toEpochDay(), slot?.toSlotMinute(), now)
-            if (inserted == NOT_INSERTED) return null
+            if (inserted == NOT_INSERTED) return slot?.let { s -> liveTicks(taskId, day).firstOrNull { it.slot == s } }
             val time = Instant.ofEpochMilli(now)
             return TaskTick(id, taskId, day, slot, time, time)
         }
