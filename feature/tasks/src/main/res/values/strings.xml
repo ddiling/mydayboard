@@ -45,4 +45,15 @@
     <string name="tasks_form_due_date">Due date</string>
     <string name="tasks_form_error_due_required">Choose a due date</string>
     <string name="tasks_form_error_day_of_month">Enter a day from 1 to 31</string>
+    <string name="tasks_form_goal_title">COUNT GOAL</string>
+    <string name="tasks_form_goal_switch">Count goal</string>
+    <string name="tasks_form_goal_help">Reach a number each day or period, for example 3 CVs.</string>
+    <string name="tasks_form_goal">Goal</string>
+    <string name="tasks_form_error_goal">Enter a number from %1$d to %2$d</string>
+    <string name="tasks_form_missed_title">IF I MISS IT</string>
+    <string name="tasks_form_missed_stays">It stays until I do it</string>
+    <string name="tasks_form_missed_stays_help">Shows as late. Good for a bill.</string>
+    <string name="tasks_form_missed_expires">It expires at the end of its day or period</string>
+    <string name="tasks_form_missed_expires_help">Counts as missed. Good for vacuuming.</string>
+    <string name="tasks_form_missed_note">A repeating task keeps repeating either way.</string>
 </resources>

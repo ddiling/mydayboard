@@ -13,15 +13,15 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
 
-private val previewToday = LocalDate.of(2026, 3, 2)
+internal val previewToday = LocalDate.of(2026, 3, 2)
 
 private val previewCategories =
     listOf(TaskCategory("home", "Home", Instant.EPOCH, Instant.EPOCH))
 
-private val emptyForm = TaskFormUiState(today = previewToday)
+internal val emptyForm = TaskFormUiState(today = previewToday)
 
 @Composable
-private fun PreviewForm(state: TaskFormUiState) {
+internal fun PreviewForm(state: TaskFormUiState) {
     PreviewSurface { TaskFormScreen(state, previewCategories, TaskFormActions()) }
 }
 

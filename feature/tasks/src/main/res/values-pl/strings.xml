@@ -47,4 +47,15 @@
     <string name="tasks_form_due_date">Termin</string>
     <string name="tasks_form_error_due_required">Wybierz termin</string>
     <string name="tasks_form_error_day_of_month">Podaj dzień od 1 do 31</string>
+    <string name="tasks_form_goal_title">CEL LICZBOWY</string>
+    <string name="tasks_form_goal_switch">Cel liczbowy</string>
+    <string name="tasks_form_goal_help">Osiągnij liczbę każdego dnia lub okresu, na przykład 3 CV.</string>
+    <string name="tasks_form_goal">Cel</string>
+    <string name="tasks_form_error_goal">Podaj liczbę od %1$d do %2$d</string>
+    <string name="tasks_form_missed_title">JEŚLI POMINĘ</string>
+    <string name="tasks_form_missed_stays">Zostaje, aż to zrobię</string>
+    <string name="tasks_form_missed_stays_help">Pokazuje się jako spóźnione. Dobre dla rachunku.</string>
+    <string name="tasks_form_missed_expires">Wygasa z końcem dnia lub okresu</string>
+    <string name="tasks_form_missed_expires_help">Liczy się jako pominięte. Dobre dla odkurzania.</string>
+    <string name="tasks_form_missed_note">Zadanie powtarzalne i tak będzie się powtarzać.</string>
 </resources>
