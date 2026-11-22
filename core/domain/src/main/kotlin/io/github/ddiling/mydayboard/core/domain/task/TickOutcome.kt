@@ -1,5 +1,6 @@
 package io.github.ddiling.mydayboard.core.domain.task
 
+import java.time.LocalDate
 import java.time.LocalTime
 
 /**
@@ -25,5 +26,12 @@ sealed interface TickOutcome {
         val tickId: String,
         val done: Int,
         val target: Int,
+    ) : TickOutcome
+
+    /** A past [day] was rewritten; [change] is what [TaskTickRepository.undoDayChange] needs. */
+    data class DayReplaced(
+        override val taskId: String,
+        val day: LocalDate,
+        val change: DayChange,
     ) : TickOutcome
 }

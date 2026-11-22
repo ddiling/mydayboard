@@ -9,13 +9,13 @@ import java.time.LocalTime
 import javax.inject.Inject
 
 /**
- * The ways the user changes ticks: swipe (done), untick, and Undo for each.
+ * The ways the user changes ticks: swipe (done), untick, fix a past day, and Undo for each.
  *
  * Every call reads the clock once and takes "today" from it, never from what the screen showed earlier, so a
  * swipe made just after midnight ticks the new day. One swipe is always one step. Archived and deleted tasks
  * are left alone: their ticks must not change behind the user's back.
  *
- * Swipe and untick read the ticks and then write, so a double tap could read the same state twice
+ * Swipe, untick and markDay read the ticks and then write, so a double tap could read the same state twice
  * and e.g. push a count goal past its target. They take one lock per instance, so each sees the result of
  * the one before it.
  */
@@ -67,11 +67,29 @@ class TaskActions
                 }
             }
 
+        /**
+         * Makes [day] match [slots]. Allowed from the task's start date up to yesterday; today and the future use
+         * the swipe and the big button, so a mistaken tap cannot pre-fill days that have not happened. Null when
+         * the day is not allowed.
+         */
+        suspend fun markDay(
+            taskId: String,
+            day: LocalDate,
+            slots: List<LocalTime?>,
+        ): TickOutcome.DayReplaced? =
+            lock.withLock {
+                val today = today()
+                val task = liveTask(taskId) ?: return null
+                val allowed = !day.isBefore(task.startDate) && day.isBefore(today)
+                if (allowed) TickOutcome.DayReplaced(taskId, day, ticks.replaceDay(taskId, day, slots)) else null
+            }
+
         /** Reverts [outcome] by deleting or restoring the ticks it touched. */
         suspend fun undo(outcome: TickOutcome) {
             when (outcome) {
                 is TickOutcome.Added -> ticks.deleteTick(outcome.tickId)
                 is TickOutcome.Removed -> ticks.restoreTick(outcome.tickId)
+                is TickOutcome.DayReplaced -> ticks.undoDayChange(outcome.change)
             }
         }
 
