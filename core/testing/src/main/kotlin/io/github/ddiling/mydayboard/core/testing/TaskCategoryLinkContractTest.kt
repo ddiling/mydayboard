@@ -18,7 +18,7 @@ abstract class TaskCategoryLinkContractTest : TaskRepositoryContractBase() {
     fun `a task of a deleted category shows no category`() =
         runTest {
             val category = givenCategory()
-            val task = givenTask(draft.copy(categoryId = category.id))
+            givenTask(draft.copy(categoryId = category.id))
 
             categories.deleteCategory(category.id)
 
@@ -30,6 +30,16 @@ abstract class TaskCategoryLinkContractTest : TaskRepositoryContractBase() {
                     .single()
                     .categoryId,
             )
+        }
+
+    @Test
+    fun `an observed task of a deleted category shows no category`() =
+        runTest {
+            val category = givenCategory()
+            val task = givenTask(draft.copy(categoryId = category.id))
+
+            categories.deleteCategory(category.id)
+
             assertEquals(null, tasks.observeTask(task.id).first()?.categoryId)
         }
 
