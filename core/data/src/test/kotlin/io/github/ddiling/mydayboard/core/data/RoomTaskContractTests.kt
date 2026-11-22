@@ -8,6 +8,7 @@ import io.github.ddiling.mydayboard.core.domain.task.TaskRepository
 import io.github.ddiling.mydayboard.core.testing.MutableClock
 import io.github.ddiling.mydayboard.core.testing.TaskCategoryContractTest
 import io.github.ddiling.mydayboard.core.testing.TaskCategoryLinkContractTest
+import io.github.ddiling.mydayboard.core.testing.TaskChangeContractTest
 import io.github.ddiling.mydayboard.core.testing.TaskContractTest
 import org.junit.After
 import org.junit.runner.RunWith
@@ -42,6 +43,24 @@ private class RoomTaskFixture {
 
 @RunWith(RobolectricTestRunner::class)
 class RoomTaskContractTest : TaskContractTest() {
+    private val fixture = RoomTaskFixture()
+
+    override fun createTaskRepository(
+        clock: MutableClock,
+        ids: IdGenerator,
+    ): TaskRepository = fixture.tasks(clock, ids)
+
+    override fun createCategoryRepository(
+        clock: MutableClock,
+        ids: IdGenerator,
+    ): TaskCategoryRepository = fixture.categories(clock, ids)
+
+    @After
+    fun closeDatabase() = fixture.close()
+}
+
+@RunWith(RobolectricTestRunner::class)
+class RoomTaskChangeContractTest : TaskChangeContractTest() {
     private val fixture = RoomTaskFixture()
 
     override fun createTaskRepository(
