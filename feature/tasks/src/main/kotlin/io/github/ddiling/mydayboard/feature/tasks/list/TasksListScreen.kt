@@ -15,9 +15,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -28,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import io.github.ddiling.mydayboard.core.designsystem.component.PrimaryButton
 import io.github.ddiling.mydayboard.core.designsystem.theme.TaskColors
 import io.github.ddiling.mydayboard.feature.tasks.R
+import io.github.ddiling.mydayboard.feature.tasks.common.TaskUndoSnackbar
 
 /** Stateless: everything shown comes from [uiState]. The late count sits in the top bar, to find late tasks. */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -38,7 +42,9 @@ internal fun TasksListScreen(
     modifier: Modifier = Modifier,
 ) {
     BackHandler(onBack = actions.onBack)
+    val snackbarHostState = remember { SnackbarHostState() }
     val content = uiState as? TasksListUiState.Content
+    TaskUndoSnackbar(content?.undo, snackbarHostState, actions.onUndo, actions.onUndoDismissed)
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -64,6 +70,7 @@ internal fun TasksListScreen(
                 },
             )
         },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
         val body = Modifier.fillMaxSize().padding(padding)
         when (uiState) {
