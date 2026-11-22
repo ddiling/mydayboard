@@ -12,6 +12,8 @@ import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.assertWidthIsAtLeast
+import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasAnyDescendant
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasText
@@ -24,6 +26,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.width
 import io.github.ddiling.mydayboard.core.domain.task.TaskCategory
 import io.github.ddiling.mydayboard.core.domain.task.TaskFormError
 import org.junit.Assert.assertEquals
@@ -175,6 +178,34 @@ class TaskFormScreenTest {
         composeRule.onNodeWithContentDescription("Tuesday").assertIsOff().performClick()
 
         assertEquals(listOf(DayOfWeek.TUESDAY), toggled)
+    }
+
+    @Test
+    fun `weekday buttons run from Monday to Sunday`() {
+        show(blank.copy(repeatType = RepeatType.WEEKDAYS))
+
+        val names = listOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
+        val lefts = (1..7).map { composeRule.onNodeWithTag("tasks_form_weekday_$it").getUnclippedBoundsInRoot().left }
+        assertEquals(lefts.sorted(), lefts)
+        names.forEachIndexed { index, name ->
+            composeRule.onNodeWithTag("tasks_form_weekday_${index + 1}").assert(
+                SemanticsMatcher.expectValue(SemanticsProperties.ContentDescription, listOf(name)),
+            )
+        }
+    }
+
+    @Test
+    @Config(qualifiers = "w411dp")
+    fun `each weekday touch area is an equal share of the row and at least 48 dp tall`() {
+        show(blank.copy(repeatType = RepeatType.WEEKDAYS))
+
+        val share = composeRule.onNodeWithTag("tasks_form_weekdays").getUnclippedBoundsInRoot().width / 7
+        (1..7).forEach { day ->
+            composeRule
+                .onNodeWithTag("tasks_form_weekday_$day")
+                .assertWidthIsAtLeast(share - 0.1.dp)
+                .assertHeightIsAtLeast(48.dp)
+        }
     }
 
     @Test

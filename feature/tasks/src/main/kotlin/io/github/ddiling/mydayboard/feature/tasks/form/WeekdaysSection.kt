@@ -5,7 +5,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
@@ -16,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -26,9 +29,12 @@ import java.time.DayOfWeek
 import java.time.format.TextStyle
 
 private val DayButtonSize = 40.dp
+private val MinTouchHeight = 48.dp
 
 /**
- * Seven round buttons, Monday first. The letter alone is ambiguous (two T, two S), so each button is announced
+ * Seven round buttons, Monday first. Each touch area takes an equal share of the row, so the areas never overlap and
+ * are as wide as the screen allows (about 45 dp on a 360 dp phone, 48 dp or more on wider ones); the visible 40 dp
+ * circle stays centred in it. The letter alone is ambiguous (two T, two S), so each button is announced
  * with the full weekday name, taken from the current locale.
  */
 @Composable
@@ -38,9 +44,10 @@ internal fun WeekdaysSection(
 ) {
     val locale = LocalConfiguration.current.locales[0]
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween) {
+        Row(Modifier.fillMaxWidth().testTag("tasks_form_weekdays")) {
             DayOfWeek.entries.forEach { day ->
                 DayButton(
+                    tag = "tasks_form_weekday_${day.value}",
                     letter = day.getDisplayName(TextStyle.NARROW, locale),
                     name = day.getDisplayName(TextStyle.FULL, locale),
                     on = day in uiState.weekdays,
@@ -53,7 +60,8 @@ internal fun WeekdaysSection(
 }
 
 @Composable
-private fun DayButton(
+private fun RowScope.DayButton(
+    tag: String,
     letter: String,
     name: String,
     on: Boolean,
@@ -70,13 +78,17 @@ private fun DayButton(
     val text = if (on) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
     Box(
         Modifier
-            .size(DayButtonSize)
-            .clip(CircleShape)
-            .background(fill)
+            .weight(1f)
+            .heightIn(min = MinTouchHeight)
+            .testTag(tag)
             .toggleable(value = on, role = Role.Checkbox, onValueChange = { onToggle() })
             .semantics { contentDescription = name },
         Alignment.Center,
-    ) { Text(letter, color = text, modifier = Modifier.clearAndSetSemantics {}) }
+    ) {
+        Box(Modifier.size(DayButtonSize).clip(CircleShape).background(fill), Alignment.Center) {
+            Text(letter, color = text, modifier = Modifier.clearAndSetSemantics {})
+        }
+    }
 }
 
 private const val OFF_ALPHA = 0.12f
