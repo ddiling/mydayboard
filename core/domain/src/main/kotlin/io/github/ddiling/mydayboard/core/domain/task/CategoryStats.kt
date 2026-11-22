@@ -15,11 +15,13 @@ data class CategoryStats(
 )
 
 /**
- * Statistics of [tasks] together as of [today]. Archived tasks keep their history in the numbers, but each
- * one stops at the day it was archived in [zone], so the days after archiving are never counted as missed
- * and archiving does not make the average drop later. Days are counted from the earliest start inside the
- * window, so a task added later never lowers the average of the days before it existed. The caller
- * leaves out the tasks of a deleted category.
+ * Statistics of [tasks] together as of [today], over ONE window shared by all tasks: the last
+ * [STATS_WINDOW_DAYS] calendar days ending yesterday (or today when a task is due today and every task due
+ * today is done, like the window of a single task), and starting no earlier than the earliest start of
+ * the tasks, so a young category is not averaged over days before any task existed. Each task adds only its
+ * days inside that window and up to its own last day (the day it was archived in [zone]), so a task archived
+ * before the window adds nothing and old history never leaks into the recent average. The average is per
+ * day of that window. The caller leaves out the tasks of a deleted category.
  */
 fun computeCategoryStats(
     tasks: List<Task>,
@@ -27,22 +29,30 @@ fun computeCategoryStats(
     today: LocalDate,
     zone: ZoneId,
 ): CategoryStats {
-    val windows =
+    val occurrences =
         tasks.map { task ->
             val own = ticks.filter { it.taskId == task.id }
-            val until = lastDayOf(task, today, zone)
-            statsWindow(task, own, occurrencesOf(task, own, today, until), today, until)
+            occurrencesOf(task, own, today, lastDayOf(task, today, zone))
         }
-    val from = windows.minOfOrNull { it.from }
-    val last = windows.maxOfOrNull { it.last }
-    val days = if (from == null || last == null) 0 else maxOf(0, ChronoUnit.DAYS.between(from, last).toInt() + 1)
-    val credit = windows.sumOf { it.credit }
+    val dueToday = occurrences.flatten().filter { it.due == today }
+    val last =
+        if (dueToday.isNotEmpty() && dueToday.all { it.status == OccurrenceStatus.DONE }) today else today.minusDays(1)
+    val earliestStart = tasks.minOfOrNull { it.startDate }
+    val from = earliestStart?.let { maxOf(it, last.minusDays(STATS_WINDOW_DAYS - 1L)) }
+    val settled =
+        if (from == null) {
+            emptyList()
+        } else {
+            occurrences.flatten().filter { it.isSettled() && !it.due.isBefore(from) && !it.due.isAfter(last) }
+        }
+    val days = if (from == null) 0 else maxOf(0, ChronoUnit.DAYS.between(from, last).toInt() + 1)
+    val credit = settled.sumOf { it.credit }
     return CategoryStats(
         taskCount = tasks.size,
         creditPerDay = credit.perDay(days),
         doneOfPlanned = credit,
-        plannedDays = windows.sumOf { it.settled.size },
-        skipped = windows.sumOf { w -> w.settled.count { it.done == 0 } },
+        plannedDays = settled.size,
+        skipped = settled.count { it.done == 0 },
     )
 }
 
