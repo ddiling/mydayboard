@@ -70,7 +70,7 @@ class TaskActions
         /**
          * Makes [day] match [slots]. Allowed from the task's start date up to yesterday; today and the future use
          * the swipe and the big button, so a mistaken tap cannot pre-fill days that have not happened. Null when
-         * the day is not allowed.
+         * the day is not allowed, or a several-times task gets a time that is not one of its own.
          */
         suspend fun markDay(
             taskId: String,
@@ -80,7 +80,7 @@ class TaskActions
             lock.withLock {
                 val today = today()
                 val task = liveTask(taskId) ?: return null
-                val allowed = !day.isBefore(task.startDate) && day.isBefore(today)
+                val allowed = !day.isBefore(task.startDate) && day.isBefore(today) && slotsFit(task, slots)
                 if (allowed) TickOutcome.DayReplaced(taskId, day, ticks.replaceDay(taskId, day, slots)) else null
             }
 
@@ -92,6 +92,11 @@ class TaskActions
                 is TickOutcome.DayReplaced -> ticks.undoDayChange(outcome.change)
             }
         }
+
+        private fun slotsFit(
+            task: Task,
+            slots: List<LocalTime?>,
+        ): Boolean = (task.repeat as? Repeat.TimesPerDay)?.let { slots.all { slot -> slot in it.times } } ?: true
 
         private fun today(): LocalDate = clock.instant().atZone(clock.zone).toLocalDate()
 
