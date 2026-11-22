@@ -41,6 +41,7 @@
     <string name="tasks_form_mode_from_last_help">Zrobione w śr., następne w sob. Zrobione późno w czw., następne w niedz.</string>
     <string name="tasks_form_mode_fixed">Stały kalendarz</string>
     <string name="tasks_form_mode_fixed_help">Zawsze w te same dni, nawet jeśli odhaczysz późno.</string>
+    <string name="tasks_form_next_dates">Najbliższe terminy: %1$s</string>
     <string name="tasks_form_starting_on">Od dnia</string>
     <string name="tasks_form_on_day">W dniu</string>
     <string name="tasks_form_on_day_help">Jeśli miesiąc jest krótszy, używany jest ostatni dzień.</string>
