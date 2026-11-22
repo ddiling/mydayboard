@@ -13,6 +13,8 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import java.time.DayOfWeek
+import java.time.Duration
 import java.time.LocalTime
 
 /** Robolectric supplies the real `Bundle` that `toRoute` needs to read the route arguments. */
@@ -155,6 +157,24 @@ class TaskDetailButtonTest {
                     .first()
                     .size,
             )
+        }
+
+    @Test
+    fun `a button press that does nothing keeps the Undo offer of the earlier tick`() =
+        runTest {
+            val task = fixture.addTask("Vacuum", Repeat.Weekdays(setOf(DayOfWeek.WEDNESDAY)))
+            val viewModel = fixture.viewModel(task.id)
+            collectContent(viewModel)
+            press(viewModel)
+            val firstOffer = viewModel.content.pendingUndo
+            fixture.clock.advanceBy(Duration.ofDays(1))
+            fixture.ticker.tryEmit(fixture.clock.instant())
+            runCurrent()
+            assertEquals(BigButton.None, viewModel.content.bigButton)
+
+            press(viewModel)
+
+            assertEquals(firstOffer, viewModel.content.pendingUndo)
         }
 
     @Test
