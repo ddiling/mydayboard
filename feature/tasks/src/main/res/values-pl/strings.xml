@@ -62,8 +62,6 @@
         <item quantity="other">%1$d spóźnionego</item>
     </plurals>
     <string name="tasks_list_empty_hint">Nie masz jeszcze zadań. Dodaj pierwsze.</string>
-    <string name="tasks_detail_back">Wstecz</string>
-    <string name="tasks_detail_edit">Edytuj zadanie</string>
     <string name="tasks_detail_hero_not_done">Jeszcze nie zrobione</string>
     <string name="tasks_detail_hero_done_today">Zrobione dzisiaj</string>
     <string name="tasks_detail_hero_not_due">Nie na dziś</string>
@@ -80,17 +78,11 @@
         <item quantity="other">%1$d/%2$d dzisiaj</item>
     </plurals>
     <string name="tasks_detail_hero_late">Spóźnione od %1$s</string>
-    <string name="tasks_detail_late_note">To zadanie czeka, aż je zrobisz. Nie pokazuje się na pulpicie.</string>
     <string name="tasks_detail_next">Następne: %1$s</string>
     <string name="tasks_detail_button_done">Oznacz jako zrobione</string>
     <string name="tasks_detail_button_tick">Odhacz %1$s</string>
     <string name="tasks_detail_button_plus_one">+1</string>
     <string name="tasks_detail_button_untick">Cofnij dzisiaj</string>
-    <string name="tasks_detail_unticked">Cofnięto: %1$s</string>
-    <string name="tasks_detail_chip_ticked">%1$s, zrobione. Dotknij, aby cofnąć</string>
-    <string name="tasks_detail_chip_open">%1$s, nie zrobione. Dotknij, aby odhaczyć</string>
-    <string name="tasks_detail_history_title">HISTORIA</string>
-    <string name="tasks_detail_history_row">%1$s, %2$s. Dotknij, aby zmienić</string>
     <string name="tasks_detail_history_half_day">%1$d z %2$d · pół dnia</string>
     <string name="tasks_detail_history_times">%1$d z %2$d</string>
     <string name="tasks_detail_history_not_reached">%1$d/%2$d · nie osiągnięto</string>
@@ -111,6 +103,9 @@
     <string name="tasks_detail_stat_skipped">pominięte</string>
     <string name="tasks_detail_stat_half_days">pół dni</string>
     <string name="tasks_detail_stat_late">spóźnienie</string>
+    <string name="tasks_detail_back">Wstecz</string>
+    <string name="tasks_detail_edit">Edytuj zadanie</string>
+    <string name="tasks_detail_late_note">To zadanie czeka, aż je zrobisz. Nie pokazuje się na pulpicie.</string>
     <string name="tasks_detail_not_found_title">Tego zadania już nie ma</string>
     <string name="tasks_detail_not_found_hint">Zostało usunięte albo nigdy nie istniało.</string>
     <string name="tasks_detail_not_found_back">Wróć do zadań</string>

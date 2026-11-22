@@ -58,8 +58,6 @@
         <item quantity="other">%1$d late</item>
     </plurals>
     <string name="tasks_list_empty_hint">No tasks yet. Add your first one.</string>
-    <string name="tasks_detail_back">Back</string>
-    <string name="tasks_detail_edit">Edit task</string>
     <string name="tasks_detail_hero_not_done">Not done yet</string>
     <string name="tasks_detail_hero_done_today">Done today</string>
     <string name="tasks_detail_hero_not_due">Not due today</string>
@@ -72,17 +70,11 @@
         <item quantity="other">%1$d/%2$d today</item>
     </plurals>
     <string name="tasks_detail_hero_late">Late since %1$s</string>
-    <string name="tasks_detail_late_note">This task stays until you do it. It does not show on the dashboard.</string>
     <string name="tasks_detail_next">Next: %1$s</string>
     <string name="tasks_detail_button_done">Mark as done</string>
     <string name="tasks_detail_button_tick">Tick %1$s</string>
     <string name="tasks_detail_button_plus_one">+1</string>
     <string name="tasks_detail_button_untick">Untick today</string>
-    <string name="tasks_detail_unticked">%1$s unticked</string>
-    <string name="tasks_detail_chip_ticked">%1$s, done. Tap to untick</string>
-    <string name="tasks_detail_chip_open">%1$s, not done. Tap to tick</string>
-    <string name="tasks_detail_history_title">HISTORY</string>
-    <string name="tasks_detail_history_row">%1$s, %2$s. Tap to change</string>
     <string name="tasks_detail_history_half_day">%1$d of %2$d · half a day</string>
     <string name="tasks_detail_history_times">%1$d of %2$d</string>
     <string name="tasks_detail_history_not_reached">%1$d/%2$d · not reached</string>
@@ -101,6 +93,9 @@
     <string name="tasks_detail_stat_skipped">skipped</string>
     <string name="tasks_detail_stat_half_days">half days</string>
     <string name="tasks_detail_stat_late">late</string>
+    <string name="tasks_detail_back">Back</string>
+    <string name="tasks_detail_edit">Edit task</string>
+    <string name="tasks_detail_late_note">This task stays until you do it. It does not show on the dashboard.</string>
     <string name="tasks_detail_not_found_title">This task is gone</string>
     <string name="tasks_detail_not_found_hint">It was deleted or it never existed.</string>
     <string name="tasks_detail_not_found_back">Back to tasks</string>
