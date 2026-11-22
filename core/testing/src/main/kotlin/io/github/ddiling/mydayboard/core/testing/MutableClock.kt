@@ -17,7 +17,10 @@ class MutableClock(
     @get:JvmName("currentZone")
     var zone: ZoneId,
 ) : Clock() {
-    override fun instant(): Instant = now
+    /** How far [now] moves after every [instant] reading, so a test can catch code that reads the clock twice. */
+    var tickPerReading: Duration = Duration.ZERO
+
+    override fun instant(): Instant = now.also { now += tickPerReading }
 
     override fun getZone(): ZoneId = zone
 

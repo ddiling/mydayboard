@@ -8,12 +8,15 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
+import java.time.Duration
 import java.time.LocalTime
 
 /** Contract for creating and observing tasks. */
 abstract class TaskContractTest : TaskRepositoryContractBase() {
     /** More than 9, so that ids compared as text (`id-10` before `id-2`) differ from creation order. */
     private val tiedCount = 10
+
+    private val subMillisecondNanos = 789_123L
 
     @Test
     fun `created task has the injected id, clock times and the given start date`() =
@@ -32,6 +35,28 @@ abstract class TaskContractTest : TaskRepositoryContractBase() {
             val task = givenTask()
 
             assertEquals(task, tasks.observeTask(task.id).first())
+        }
+
+    @Test
+    fun `a created task equals what is read back when the clock has sub-millisecond precision`() =
+        runTest {
+            clock.advanceBy(Duration.ofNanos(subMillisecondNanos))
+
+            val task = tasks.createTask(draft, notToday)
+
+            assertEquals(task, tasks.observeTask(task.id).first())
+        }
+
+    @Test
+    fun `an archived task has the same archivedAt and updatedAt even when the clock moves on every reading`() =
+        runTest {
+            val task = givenTask()
+            clock.tickPerReading = clockAdvance
+
+            tasks.archiveTask(task.id)
+
+            val archived = tasks.observeTask(task.id).first()
+            assertEquals(archived?.updatedAt, archived?.archivedAt)
         }
 
     @Test

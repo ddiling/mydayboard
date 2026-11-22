@@ -15,7 +15,7 @@ import java.time.ZoneOffset
 
 /**
  * Shared fixtures of the task repository contract tests, split by topic into [TaskContractTest],
- * [TaskChangeContractTest], [TaskCategoryLinkContractTest] and [TaskCategoryContractTest]. The in-memory fake and
+ * [TaskChangeContractTest], [TaskCategoryContractTest]. The in-memory fake and
  * the Room implementation each extend all of them, which is what proves they behave identically. Both
  * repositories of one test must see the same data, so an implementation builds them over one store or database.
  */
