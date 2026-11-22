@@ -6,6 +6,7 @@ import kotlinx.coroutines.sync.withLock
 import java.time.Clock
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 
 /**
@@ -61,6 +62,48 @@ class TaskActions
                         .filter { it.day == today }
                         .maxWithOrNull(compareBy<TaskTick> { it.createdAt }.thenBy { it.id })
                 newest?.let {
+                    ticks.deleteTick(it.id)
+                    val progress = progressOn(task, today)
+                    TickOutcome.Removed(taskId, it.id, progress?.done ?: 0, progress?.target ?: targetOf(task))
+                }
+            }
+
+        /**
+         * Ticks one [chosen] time of a several-times task for today, for the details screen where the user picks
+         * the time (a swipe always takes the next one). The time is cut to whole minutes first, because the task's
+         * times have none, so 08:00:30 counts as 08:00. Null when the task is not live, has no such time, is not
+         * due today, or that time is already ticked.
+         */
+        suspend fun tickSlotToday(
+            taskId: String,
+            chosen: LocalTime,
+        ): TickOutcome.Added? =
+            lock.withLock {
+                val slot = chosen.truncatedTo(ChronoUnit.MINUTES)
+                val today = today()
+                val task = liveTask(taskId) ?: return null
+                val times = (task.repeat as? Repeat.TimesPerDay)?.times ?: return null
+                val ticksNow = ticks.observeTicks(taskId).first()
+                val dueToday = occurrencesOf(task, ticksNow, today).any { it.status == OccurrenceStatus.DUE_TODAY }
+                val free = ticksNow.none { it.day == today && it.slot == slot }
+                val tick = if (dueToday && slot in times && free) ticks.addTick(taskId, today, slot) else null
+                tick?.let {
+                    val progress = progressOn(task, today)
+                    TickOutcome.Added(taskId, it.id, progress?.done ?: 1, progress?.target ?: 1, slot)
+                }
+            }
+
+        /** Removes today's tick of one [chosen] time (cut to whole minutes). Null when that time is not ticked. */
+        suspend fun untickSlotToday(
+            taskId: String,
+            chosen: LocalTime,
+        ): TickOutcome.Removed? =
+            lock.withLock {
+                val slot = chosen.truncatedTo(ChronoUnit.MINUTES)
+                val today = today()
+                val task = liveTask(taskId) ?: return null
+                val tick = ticks.observeTicks(taskId).first().firstOrNull { it.day == today && it.slot == slot }
+                tick?.let {
                     ticks.deleteTick(it.id)
                     val progress = progressOn(task, today)
                     TickOutcome.Removed(taskId, it.id, progress?.done ?: 0, progress?.target ?: targetOf(task))
