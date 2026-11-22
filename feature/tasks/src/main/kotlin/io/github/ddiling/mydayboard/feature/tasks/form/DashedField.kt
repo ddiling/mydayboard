@@ -1,13 +1,16 @@
 package io.github.ddiling.mydayboard.feature.tasks.form
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
@@ -64,7 +67,8 @@ internal fun DashedField(
 /**
  * A single-line text input in a [DashedField]; [modifier] goes on the input itself so tests can find it.
  * The visible label is a separate `Text`, so the input gets the label as its accessible name and the [error]
- * as its error semantics; otherwise a screen reader announces an unnamed edit box without the problem.
+ * as its error semantics; otherwise a screen reader announces an unnamed edit box without the problem. The box is
+ * at least 48 dp tall so it is as easy to hit as the other controls.
  */
 @Composable
 internal fun DashedTextField(
@@ -83,6 +87,9 @@ internal fun DashedTextField(
             keyboardOptions = keyboardOptions,
             textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
             cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+            decorationBox = { input ->
+                Box(Modifier.heightIn(min = 48.dp), contentAlignment = Alignment.CenterStart) { input() }
+            },
             modifier =
                 modifier.fillMaxWidth().semantics {
                     contentDescription = label
