@@ -98,7 +98,8 @@ class TaskDetailTextsTest {
             ).map { historyResultText(resources, it) }
 
         assertEquals(
-            listOf("Done", "Missed", "Late · not done yet", "1 of 2 · half a day", "1 of 2", "1/3 · not reached", "2/3"),
+            listOf("Done", "Missed", "Late · not done yet",
+                "1 of 2 · half a day", "1 of 2", "1/3 · not reached", "2/3"),
             results,
         )
     }
