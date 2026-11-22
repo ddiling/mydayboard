@@ -38,6 +38,6 @@ fun MyDayboardNavHost(
             SettingsScreen(onBack = { navController.popBackStack() })
         }
         trackersGraph(navController)
-        tasksGraph()
+        tasksGraph(navController)
     }
 }
