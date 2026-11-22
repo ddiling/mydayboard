@@ -13,5 +13,6 @@ internal fun TaskFormError?.message(): String? =
         is TaskFormError.NameTooLong -> stringResource(R.string.tasks_form_error_name_too_long, max)
         is TaskFormError.NoteTooLong -> stringResource(R.string.tasks_form_error_note_too_long, max)
         TaskFormError.NoTimes -> stringResource(R.string.tasks_form_error_no_times)
+        TaskFormError.NoWeekdays -> stringResource(R.string.tasks_form_error_no_days)
         else -> null
     }

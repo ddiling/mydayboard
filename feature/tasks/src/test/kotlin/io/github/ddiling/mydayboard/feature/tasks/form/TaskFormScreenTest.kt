@@ -9,7 +9,11 @@ import androidx.compose.ui.test.assertHeightIsAtLeast
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertIsOff
+import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.assertWidthIsAtLeast
+import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasAnyDescendant
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasText
@@ -22,6 +26,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.width
 import io.github.ddiling.mydayboard.core.domain.task.TaskCategory
 import io.github.ddiling.mydayboard.core.domain.task.TaskFormError
 import org.junit.Assert.assertEquals
@@ -30,6 +35,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
+import org.robolectric.annotation.Config
+import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
@@ -160,6 +167,48 @@ class TaskFormScreenTest {
     }
 
     @Test
+    fun `weekday buttons report their day and show whether they are on`() {
+        val toggled = mutableListOf<DayOfWeek>()
+        show(
+            blank.copy(repeatType = RepeatType.WEEKDAYS, weekdays = setOf(DayOfWeek.MONDAY)),
+            TaskFormActions(onToggleWeekday = { toggled += it }),
+        )
+
+        composeRule.onNodeWithContentDescription("Monday").assertIsOn()
+        composeRule.onNodeWithContentDescription("Tuesday").assertIsOff().performClick()
+
+        assertEquals(listOf(DayOfWeek.TUESDAY), toggled)
+    }
+
+    @Test
+    fun `weekday buttons run from Monday to Sunday`() {
+        show(blank.copy(repeatType = RepeatType.WEEKDAYS))
+
+        val names = listOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
+        val lefts = (1..7).map { composeRule.onNodeWithTag("tasks_form_weekday_$it").getUnclippedBoundsInRoot().left }
+        assertEquals(lefts.sorted(), lefts)
+        names.forEachIndexed { index, name ->
+            composeRule.onNodeWithTag("tasks_form_weekday_${index + 1}").assert(
+                SemanticsMatcher.expectValue(SemanticsProperties.ContentDescription, listOf(name)),
+            )
+        }
+    }
+
+    @Test
+    @Config(qualifiers = "w411dp")
+    fun `each weekday touch area is an equal share of the row and at least 48 dp tall`() {
+        show(blank.copy(repeatType = RepeatType.WEEKDAYS))
+
+        val share = composeRule.onNodeWithTag("tasks_form_weekdays").getUnclippedBoundsInRoot().width / 7
+        (1..7).forEach { day ->
+            composeRule
+                .onNodeWithTag("tasks_form_weekday_$day")
+                .assertWidthIsAtLeast(share - 0.1.dp)
+                .assertHeightIsAtLeast(48.dp)
+        }
+    }
+
+    @Test
     fun `a category id that is not in the list shows no category`() {
         show(blank.copy(categoryId = "gone"), categories = listOf(home))
 
@@ -247,6 +296,13 @@ class TaskFormScreenTest {
     }
 
     @Test
+    fun `weekdays without a day show their error`() {
+        show(blank.copy(repeatType = RepeatType.WEEKDAYS, errors = listOf(TaskFormError.NoWeekdays)))
+
+        composeRule.onNodeWithText("Choose at least one day").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
     fun `the name input is named by its label and carries the error`() {
         show(blank.copy(name = " ", errors = listOf(TaskFormError.BlankName)))
 
@@ -263,17 +319,18 @@ class TaskFormScreenTest {
     }
 
     @Test
+    @Config(qualifiers = "w320dp-h480dp")
+    fun `the weekdays form is scrollable and its last field is reachable at double font size`() {
+        RuntimeEnvironment.setFontScale(2f)
+        show(blank.copy(repeatType = RepeatType.WEEKDAYS))
+
+        composeRule.onNodeWithText("Time (optional)").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
     fun `a task that was not found says so`() {
         show(blank.copy(load = FormLoad.NotFound))
 
         composeRule.onNodeWithText("Task not found").assertIsDisplayed()
-    }
-
-    @Test
-    fun `the form is scrollable and its last field is reachable at double font size`() {
-        RuntimeEnvironment.setFontScale(2f)
-        show(blank)
-
-        composeRule.onNodeWithTag("tasks_form_repeat").performScrollTo().assertIsDisplayed()
     }
 }

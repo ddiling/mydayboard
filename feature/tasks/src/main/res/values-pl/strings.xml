@@ -27,4 +27,5 @@
     <string name="tasks_form_error_name_too_long">Nazwa jest za długa (maks. %1$d)</string>
     <string name="tasks_form_error_note_too_long">Notatka jest za długa (maks. %1$d)</string>
     <string name="tasks_form_error_no_times">Dodaj co najmniej jedną godzinę</string>
+    <string name="tasks_form_error_no_days">Wybierz co najmniej jeden dzień</string>
 </resources>

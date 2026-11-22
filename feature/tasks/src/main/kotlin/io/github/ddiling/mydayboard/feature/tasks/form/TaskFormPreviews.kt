@@ -7,6 +7,7 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import io.github.ddiling.mydayboard.core.designsystem.preview.PreviewSurface
 import io.github.ddiling.mydayboard.core.domain.task.TaskCategory
 import io.github.ddiling.mydayboard.core.domain.task.TaskFormError
+import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
@@ -54,11 +55,24 @@ private fun TaskFormEveryDayPreview() =
 
 @PreviewLightDark
 @Composable
+private fun TaskFormWeekdaysPreview() =
+    PreviewForm(
+        emptyForm.copy(
+            name = "English",
+            repeatType = RepeatType.WEEKDAYS,
+            weekdays = setOf(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY),
+            canSave = true,
+        ),
+    )
+
+@PreviewLightDark
+@Composable
 private fun TaskFormErrorsPreview() =
     PreviewForm(
         emptyForm.copy(
             name = " ",
-            errors = listOf(TaskFormError.BlankName),
+            repeatType = RepeatType.WEEKDAYS,
+            errors = listOf(TaskFormError.BlankName, TaskFormError.NoWeekdays),
         ),
     )
 
@@ -69,6 +83,8 @@ private fun TaskFormLargeFontPreview() =
     PreviewForm(
         emptyForm.copy(
             name = "Pills",
+            repeatType = RepeatType.WEEKDAYS,
+            weekdays = setOf(DayOfWeek.TUESDAY),
             canSave = true,
         ),
     )
