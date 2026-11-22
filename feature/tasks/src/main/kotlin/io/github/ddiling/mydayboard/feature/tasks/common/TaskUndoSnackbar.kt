@@ -31,25 +31,25 @@ internal fun undoMessage(offer: UndoOffer): String {
 
 /**
  * Shows [offer] with an Undo action on [hostState] and reports how it ended: [onUndo] when the user taps Undo,
- * [onDismissed] when it times out or is swiped away. A newer offer replaces the shown one without calling either,
- * because the older tick stays.
+ * [onDismissed] (with the offer that was shown) when it times out or is swiped away. A newer offer replaces the
+ * shown one without calling either, because the older tick stays.
  */
 @Composable
 internal fun TaskUndoSnackbar(
     offer: UndoOffer?,
     hostState: SnackbarHostState,
     onUndo: () -> Unit,
-    onDismissed: () -> Unit,
+    onDismissed: (UndoOffer) -> Unit,
 ) {
     val message = offer?.let { undoMessage(it) }
     val actionLabel = stringResource(R.string.tasks_undo_action)
     val currentOnUndo = rememberUpdatedState(onUndo)
     val currentOnDismissed = rememberUpdatedState(onDismissed)
     LaunchedEffect(offer) {
-        if (message != null) {
+        if (offer != null && message != null) {
             when (hostState.showSnackbar(message, actionLabel, duration = SnackbarDuration.Short)) {
                 SnackbarResult.ActionPerformed -> currentOnUndo.value()
-                SnackbarResult.Dismissed -> currentOnDismissed.value()
+                SnackbarResult.Dismissed -> currentOnDismissed.value(offer)
             }
         }
     }
