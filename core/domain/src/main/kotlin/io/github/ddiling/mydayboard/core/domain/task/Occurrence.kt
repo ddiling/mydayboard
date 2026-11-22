@@ -49,7 +49,7 @@ fun occurrencesOf(
     until: LocalDate = today,
 ): List<Occurrence> {
     val days = countedDays(task, ticks)
-    return dueWindows(task)
+    return dueWindows(task, days)
         .takeWhile { !it.due.isAfter(until) }
         .map { occurrenceOf(task, it, days, today) }
         .toList()
@@ -65,7 +65,7 @@ fun nextDueDate(
     today: LocalDate,
 ): LocalDate? {
     val days = countedDays(task, ticks)
-    return dueWindows(task)
+    return dueWindows(task, days)
         .map { occurrenceOf(task, it, days, today) }
         .firstOrNull {
             it.due.isAfter(today) || it.status == OccurrenceStatus.LATE || it.status == OccurrenceStatus.DUE_TODAY
