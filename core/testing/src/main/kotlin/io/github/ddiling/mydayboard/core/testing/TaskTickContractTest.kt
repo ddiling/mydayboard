@@ -1,10 +1,16 @@
 package io.github.ddiling.mydayboard.core.testing
 
 import io.github.ddiling.mydayboard.core.domain.task.TaskTick
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withContext
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
+import java.time.LocalTime
+import java.util.concurrent.Executors
 
 /** Contract for adding, deleting and restoring single ticks. */
 abstract class TaskTickContractTest : TaskTickRepositoryContractBase() {
@@ -39,6 +45,32 @@ abstract class TaskTickContractTest : TaskTickRepositoryContractBase() {
             val first = givenTick(task.id, slot = morning)
 
             val second = ticks.addTick(task.id, day, morning)
+
+            assertEquals(first, second)
+            assertEquals(listOf(first), liveTicksOf(task.id))
+        }
+
+    @Test
+    fun `adding the same timed slot from parallel coroutines leaves one live tick`() =
+        runTest {
+            val task = givenTask()
+
+            Executors.newFixedThreadPool(PARALLEL_ADDS).asCoroutineDispatcher().use { threads ->
+                withContext(threads) {
+                    (1..PARALLEL_ADDS).map { async { ticks.addTick(task.id, day, morning) } }.awaitAll()
+                }
+            }
+
+            assertEquals(1, liveTicksOf(task.id).size)
+        }
+
+    @Test
+    fun `adding a slot with seconds keeps whole minutes and matches the tick of that minute`() =
+        runTest {
+            val task = givenTask()
+            val first = givenTick(task.id, slot = morning)
+
+            val second = ticks.addTick(task.id, day, LocalTime.of(8, 0, 30))
 
             assertEquals(first, second)
             assertEquals(listOf(first), liveTicksOf(task.id))
@@ -93,4 +125,8 @@ abstract class TaskTickContractTest : TaskTickRepositoryContractBase() {
 
             assertEquals(listOf(replacement), liveTicksOf(task.id))
         }
+
+    private companion object {
+        const val PARALLEL_ADDS = 8
+    }
 }
