@@ -15,12 +15,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -41,9 +38,7 @@ internal fun TaskDetailScreen(
     modifier: Modifier = Modifier,
 ) {
     BackHandler(onBack = actions.onBack)
-    val snackbarHostState = remember { SnackbarHostState() }
     val content = uiState as? TaskDetailUiState.Content
-    TaskDetailUndoSnackbar(content?.pendingUndo, snackbarHostState, actions.onUndo, actions.onUndoDismissed)
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -63,7 +58,6 @@ internal fun TaskDetailScreen(
                 },
             )
         },
-        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
         val body = Modifier.fillMaxSize().padding(padding)
         when (uiState) {
