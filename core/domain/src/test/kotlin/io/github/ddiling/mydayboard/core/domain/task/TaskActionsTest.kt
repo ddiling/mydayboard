@@ -204,6 +204,133 @@ class TaskActionsTest {
         }
 
     @Test
+    fun `markDay for yesterday adds the tick for that day`() =
+        runTest {
+            val task = fixture.addTask("Vacuum", startDate = yesterday.minusDays(3))
+
+            val outcome = actions.markDay(task.id, yesterday, listOf(null))
+
+            assertEquals(yesterday, outcome?.day)
+            assertEquals(listOf(yesterday), ticksOf(task).map { it.day })
+        }
+
+    @Test
+    fun `markDay makes the day match the given slots`() =
+        runTest {
+            val task = fixture.addTask("Pills", Repeat.TimesPerDay(listOf(morning, evening)), startDate = yesterday)
+            actions.markDay(task.id, yesterday, listOf(morning, evening))
+
+            actions.markDay(task.id, yesterday, listOf(morning))
+
+            assertEquals(listOf(morning), ticksOf(task).map { it.slot })
+        }
+
+    @Test
+    fun `markDay for today or the future returns null and stores nothing`() =
+        runTest {
+            val task = fixture.addTask("Vacuum", startDate = yesterday)
+
+            assertNull(actions.markDay(task.id, today, listOf(null)))
+            assertNull(actions.markDay(task.id, today.plusDays(1), listOf(null)))
+            assertTrue(ticksOf(task).isEmpty())
+        }
+
+    @Test
+    fun `markDay before the start date returns null`() =
+        runTest {
+            val task = fixture.addTask("Vacuum", startDate = yesterday)
+
+            assertNull(actions.markDay(task.id, yesterday.minusDays(1), listOf(null)))
+            assertTrue(ticksOf(task).isEmpty())
+        }
+
+    @Test
+    fun `undo of a replaced day restores the ticks of that day exactly`() =
+        runTest {
+            val task = fixture.addTask("Pills", Repeat.TimesPerDay(listOf(morning, evening)), startDate = yesterday)
+            actions.markDay(task.id, yesterday, listOf(morning, evening))
+            val before = ticksOf(task).map { Triple(it.id, it.day, it.slot) }
+            val change = checkNotNull(actions.markDay(task.id, yesterday, listOf(morning)))
+
+            actions.undo(change)
+
+            assertEquals(before, ticksOf(task).map { Triple(it.id, it.day, it.slot) })
+        }
+
+    @Test
+    fun `undo of a markDay on a day without ticks leaves the day empty`() =
+        runTest {
+            val task = fixture.addTask("Vacuum", startDate = yesterday)
+            val change = checkNotNull(actions.markDay(task.id, yesterday, listOf(null)))
+
+            actions.undo(change)
+
+            assertTrue(ticksOf(task).isEmpty())
+        }
+
+    @Test
+    fun `markDay with a time that is not one of the task times returns null and stores nothing`() =
+        runTest {
+            val task = fixture.addTask("Pills", Repeat.TimesPerDay(listOf(morning, evening)), startDate = yesterday)
+
+            assertNull(actions.markDay(task.id, yesterday, listOf(LocalTime.of(13, 0))))
+            assertTrue(ticksOf(task).isEmpty())
+        }
+
+    @Test
+    fun `two concurrent markDay calls never write at the same time`() =
+        runTest {
+            val ticks = ConcurrencyCountingTicks(fixture.ticks)
+            val task = fixture.addTask("Vacuum", startDate = yesterday)
+            val racing = TaskActions(fixture.tasks, ticks, fixture.clock)
+
+            listOf(
+                async { racing.markDay(task.id, yesterday, listOf(null)) },
+                async { racing.markDay(task.id, yesterday, emptyList()) },
+            ).awaitAll()
+
+            assertEquals(1, ticks.mostAtOnce)
+        }
+
+    @Test
+    fun `markDay on the spring-forward day allows the day before and refuses that day at both ends`() =
+        runTest {
+            val springDay = LocalDate.of(2026, 3, 29)
+            assertMarkRangeAtBothEnds(springDay, warsaw(2026, 3, 29, 0, 30), warsaw(2026, 3, 29, 23, 30))
+        }
+
+    @Test
+    fun `markDay on the fall-back day allows the day before and refuses that day at both ends`() =
+        runTest {
+            val fallDay = LocalDate.of(2026, 10, 25)
+            assertMarkRangeAtBothEnds(fallDay, warsaw(2026, 10, 25, 0, 30), warsaw(2026, 10, 25, 23, 30))
+        }
+
+    @Test
+    fun `after a zone change the same instant lets the day that was today be marked`() =
+        runTest {
+            val task = fixture.addTask("Vacuum", startDate = today)
+            fixture.clock.now = warsaw(2026, 11, 18, 23, 30)
+            assertNull(actions.markDay(task.id, today, listOf(null)))
+            fixture.clock.zone = TestZones.TOKYO
+
+            val outcome = actions.markDay(task.id, today, listOf(null))
+
+            assertEquals(today, outcome?.day)
+        }
+
+    @Test
+    fun `stats change at once after markDay`() =
+        runTest {
+            val task = fixture.addTask("Vacuum", startDate = today.minusDays(3))
+            val before = computeTaskStats(task, ticksOf(task), today).streak
+
+            actions.markDay(task.id, yesterday, listOf(null))
+
+            assertEquals(before + 1, computeTaskStats(task, ticksOf(task), today).streak)
+        }
+
+    @Test
     fun `swipe just before midnight ticks that day and just after ticks the next`() =
         runTest {
             val task = fixture.addTask("Vacuum")
@@ -214,6 +341,34 @@ class TaskActionsTest {
             actions.swipeDone(task.id)
 
             assertEquals(listOf(today, today.plusDays(1)), ticksOf(task).map { it.day })
+        }
+
+    @Test
+    fun `at ten past midnight yesterday can be marked`() =
+        runTest {
+            val dayBeforeMidnight = today
+            val task = fixture.addTask("Dinner", startDate = dayBeforeMidnight)
+            fixture.clock.now = warsaw(2026, 11, 19, 0, 10)
+            val yesterdayAfterMidnight =
+                fixture.clock
+                    .instant()
+                    .atZone(fixture.clock.zone)
+                    .toLocalDate()
+                    .minusDays(1)
+
+            val outcome = actions.markDay(task.id, yesterdayAfterMidnight, listOf(null))
+
+            assertEquals(dayBeforeMidnight, outcome?.day)
+            assertEquals(listOf(dayBeforeMidnight), ticksOf(task).map { it.day })
+        }
+
+    @Test
+    fun `at ten past midnight the new today can no longer be marked`() =
+        runTest {
+            val task = fixture.addTask("Dinner", startDate = today)
+            fixture.clock.now = warsaw(2026, 11, 19, 0, 10)
+
+            assertNull(actions.markDay(task.id, today.plusDays(1), listOf(null)))
         }
 
     @Test
@@ -235,6 +390,26 @@ class TaskActionsTest {
             fixture.tasks.deleteTask(task.id)
 
             assertNull(actions.untickToday(task.id))
+        }
+
+    @Test
+    fun `markDay on an archived task returns null and stores nothing`() =
+        runTest {
+            val task = fixture.addTask("Vacuum", startDate = yesterday)
+            fixture.tasks.archiveTask(task.id)
+
+            assertNull(actions.markDay(task.id, yesterday, listOf(null)))
+            assertTrue(ticksOf(task).isEmpty())
+        }
+
+    @Test
+    fun `markDay on a deleted task returns null and stores nothing`() =
+        runTest {
+            val task = fixture.addTask("Vacuum", startDate = yesterday)
+            fixture.tasks.deleteTask(task.id)
+
+            assertNull(actions.markDay(task.id, yesterday, listOf(null)))
+            assertTrue(ticksOf(task).isEmpty())
         }
 
     @Test
@@ -275,6 +450,19 @@ class TaskActionsTest {
             assertEquals(listOf(today.plusDays(1)), ticksOf(task).map { it.day })
         }
 
+    private suspend fun assertMarkRangeAtBothEnds(
+        day: LocalDate,
+        early: Instant,
+        late: Instant,
+    ) {
+        val task = fixture.addTask("Dinner", startDate = day.minusDays(2))
+        listOf(early, late).forEach { instant ->
+            fixture.clock.now = instant
+            assertNull(actions.markDay(task.id, day, listOf(null)))
+            assertEquals(day.minusDays(1), actions.markDay(task.id, day.minusDays(1), listOf(null))?.day)
+        }
+    }
+
     private suspend fun assertSwipesLandOnOneDate(
         day: LocalDate,
         early: Instant,
@@ -295,4 +483,24 @@ private class YieldingTicks(
     private val inner: TaskTickRepository,
 ) : TaskTickRepository by inner {
     override fun observeTicks(taskId: String): Flow<List<TaskTick>> = inner.observeTicks(taskId).onEach { yield() }
+}
+
+/** Lets other coroutines run while a day is being written and counts how many writes overlap. */
+private class ConcurrencyCountingTicks(
+    private val inner: TaskTickRepository,
+) : TaskTickRepository by inner {
+    private var running = 0
+    var mostAtOnce = 0
+        private set
+
+    override suspend fun replaceDay(
+        taskId: String,
+        day: LocalDate,
+        slots: List<LocalTime?>,
+    ): DayChange {
+        running++
+        mostAtOnce = maxOf(mostAtOnce, running)
+        yield()
+        return inner.replaceDay(taskId, day, slots).also { running-- }
+    }
 }
