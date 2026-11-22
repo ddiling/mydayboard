@@ -90,13 +90,17 @@ class TaskDetailTextsTest {
             listOf(
                 HistoryResult.Done,
                 HistoryResult.Missed,
+                HistoryResult.Late,
                 HistoryResult.Partial(1, 2, severalTimes = true, settled = true),
                 HistoryResult.Partial(1, 2, severalTimes = true, settled = false),
                 HistoryResult.Partial(1, 3, severalTimes = false, settled = true),
                 HistoryResult.Partial(2, 3, severalTimes = false, settled = false),
             ).map { historyResultText(resources, it) }
 
-        assertEquals(listOf("Done", "Missed", "1 of 2 · half a day", "1 of 2", "1/3 · not reached", "2/3"), results)
+        assertEquals(
+            listOf("Done", "Missed", "Late · not done yet", "1 of 2 · half a day", "1 of 2", "1/3 · not reached", "2/3"),
+            results,
+        )
     }
 
     @Test
