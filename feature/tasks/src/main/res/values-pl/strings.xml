@@ -47,4 +47,5 @@
     <string name="tasks_row_done">Zrobione</string>
     <string name="tasks_row_done_label">Zrobione</string>
     <string name="tasks_row_mark_done">Oznacz jako zrobione</string>
+    <string name="tasks_row_swipe_hint">przesuń w prawo, aby oznaczyć jako zrobione</string>
 </resources>
