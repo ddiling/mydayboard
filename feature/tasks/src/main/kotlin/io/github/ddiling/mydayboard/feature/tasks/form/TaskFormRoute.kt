@@ -6,6 +6,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.ddiling.mydayboard.feature.tasks.categories.CategoryDialog
+import io.github.ddiling.mydayboard.feature.tasks.categories.CategoryDialogState
 
 /** Hilt provides the ViewModel; the form leaves itself when a save has finished, so no caller has to watch for it. */
 @Composable
@@ -22,5 +24,7 @@ internal fun TaskFormRoute(
             onBack()
         }
     }
+    val categoryDialog by viewModel.categoryDialog.collectAsStateWithLifecycle()
+    (categoryDialog as? CategoryDialogState.Editing)?.let { CategoryDialog(it, viewModel.categoryDialogActions) }
     TaskFormScreen(uiState, categories, viewModel.actions.copy(onClose = onBack), modifier)
 }

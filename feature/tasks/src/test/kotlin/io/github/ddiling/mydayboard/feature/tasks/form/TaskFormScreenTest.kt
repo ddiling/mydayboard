@@ -84,6 +84,17 @@ class TaskFormScreenTest {
     }
 
     @Test
+    fun `the new category row of the category menu calls onNewCategory`() {
+        var opened = 0
+        show(blank, TaskFormActions(onNewCategory = { opened++ }))
+
+        composeRule.onNodeWithTag("tasks_form_category").performClick()
+        composeRule.onNodeWithTag("tasks_form_category_new").performClick()
+
+        assertEquals(1, opened)
+    }
+
+    @Test
     fun `the close button calls onClose`() {
         var closes = 0
         show(blank, TaskFormActions(onClose = { closes++ }))
@@ -114,16 +125,16 @@ class TaskFormScreenTest {
     }
 
     @Test
-    fun `the repeat dropdown offers the basic types and choosing one reports it`() {
+    fun `the repeat dropdown offers all six types and choosing one reports it`() {
         val chosen = mutableListOf<RepeatType>()
         show(blank, TaskFormActions(onRepeatTypeChange = { chosen += it }))
 
         composeRule.onNodeWithTag("tasks_form_repeat").performClick()
         composeRule.onNodeWithText("Several times a day").assertIsDisplayed()
         composeRule.onAllNodesWithText("Every day").assertCountEquals(2) // the field and the menu entry
-        composeRule.onNodeWithText("Every N days").assertDoesNotExist()
-        composeRule.onNodeWithText("Once a month").assertDoesNotExist()
-        composeRule.onNodeWithText("One time").assertDoesNotExist()
+        composeRule.onNodeWithText("Every N days").assertIsDisplayed()
+        composeRule.onNodeWithText("Once a month").assertIsDisplayed()
+        composeRule.onNodeWithText("One time").assertIsDisplayed()
         composeRule.onNodeWithText("Chosen weekdays").performClick()
 
         assertEquals(listOf(RepeatType.WEEKDAYS), chosen)
