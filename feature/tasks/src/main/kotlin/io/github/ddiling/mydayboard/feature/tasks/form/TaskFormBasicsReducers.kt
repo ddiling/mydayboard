@@ -22,6 +22,7 @@ internal fun TaskFormUiState.withOnMiss(onMiss: OnMiss) =
 /**
  * Switches the repeat type. Name, category, note and goal are about the task, not its schedule, so they stay;
  * the fields of the schedule start again from their defaults. Hidden settings are forced to their value, and the
+ * one-time task starts due today so it never has an empty date, and the
  * missed-task default follows a change between one-time and repeating, where the sensible choice differs.
  */
 internal fun TaskFormUiState.withRepeatType(type: RepeatType): TaskFormUiState {
@@ -35,7 +36,7 @@ internal fun TaskFormUiState.withRepeatType(type: RepeatType): TaskFormUiState {
         intervalMode = EveryNDaysMode.FROM_LAST_DONE,
         firstDue = today,
         dayOfMonth = today.dayOfMonth,
-        dueDate = null,
+        dueDate = today.takeIf { type == RepeatType.ONE_TIME },
         time = time.takeIf { type != RepeatType.TIMES_PER_DAY },
         goalOn = goalOn && !type.hidesGoal(),
         onMiss =
