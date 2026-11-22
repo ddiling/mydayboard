@@ -95,7 +95,7 @@ internal class OfflineTaskRepository
         }
 
         private fun liveCategoryIds(): Flow<Set<String>> =
-            categoryDao.observeLive().map { rows -> rows.map { it.id }.toSet() }.distinctUntilChanged()
+            categoryDao.observeLive().map { rows -> rows.map { it.id }.toSet() }
 
         private fun Task.withLiveCategory(live: Set<String>): Task =
             if (categoryId == null || categoryId in live) this else copy(categoryId = null)
