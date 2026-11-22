@@ -20,4 +20,11 @@ class TaskDraftNormalizationTest {
     fun `other repeat types are left as they are`() {
         assertEquals(draft, draft.normalized())
     }
+
+    @Test
+    fun `times are cut to whole minutes before repeats are dropped`() {
+        val withSeconds = draft.copy(repeat = Repeat.TimesPerDay(listOf(morning.withSecond(30), morning)))
+
+        assertEquals(Repeat.TimesPerDay(listOf(morning)), withSeconds.normalized().repeat)
+    }
 }
