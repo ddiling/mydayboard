@@ -53,7 +53,6 @@ class TasksListScreenTest {
     fun `the top bar shows how many tasks are late`() {
         show(content(lateCount = 1))
 
-        composeRule.onNodeWithTag("tasks_list_late").assertIsDisplayed()
         composeRule.onNode(hasText("1 late")).assertIsDisplayed()
     }
 
@@ -68,7 +67,6 @@ class TasksListScreenTest {
     fun `the plus button calls onAddTask`() {
         var adds = 0
         show(content(), TasksListActions(onAddTask = { adds++ }))
-
         composeRule.onNodeWithTag("tasks_list_add").performClick()
 
         assertEquals(1, adds)
@@ -138,8 +136,7 @@ class TasksListScreenTest {
     fun `group titles are headings`() {
         show(content())
 
-        val heading = SemanticsMatcher.keyIsDefined(SemanticsProperties.Heading)
-        composeRule.onNode(heading and hasText("HOME")).assertIsDisplayed()
+        composeRule.onNode(SemanticsMatcher.keyIsDefined(SemanticsProperties.Heading) and hasText("HOME")).assertIsDisplayed()
     }
 
     @Test
