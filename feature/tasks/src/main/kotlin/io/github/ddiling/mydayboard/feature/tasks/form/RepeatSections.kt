@@ -65,6 +65,11 @@ internal fun RepeatSections(
             note()
         }
 
+        RepeatType.WEEKDAYS -> {
+            WeekdaysSection(uiState, actions)
+            TimeField(uiState.time, actions.onTimeChange)
+        }
+
         else -> {}
     }
 }

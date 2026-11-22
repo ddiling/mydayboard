@@ -27,4 +27,5 @@
     <string name="tasks_form_error_name_too_long">Name is too long (max %1$d)</string>
     <string name="tasks_form_error_note_too_long">Note is too long (max %1$d)</string>
     <string name="tasks_form_error_no_times">Add at least one time</string>
+    <string name="tasks_form_error_no_days">Choose at least one day</string>
 </resources>
