@@ -114,6 +114,16 @@
     <string name="tasks_detail_chip_open">%1$s, nie zrobione. Dotknij, aby odhaczyć</string>
     <string name="tasks_detail_history_title">HISTORIA</string>
     <string name="tasks_detail_history_row">%1$s, %2$s. Dotknij, aby zmienić</string>
+    <string name="tasks_day_title">%1$s · %2$s</string>
+    <string name="tasks_day_hint">Dzień z przeszłości. Popraw go, jeśli coś się nie zgadza.</string>
+    <string name="tasks_day_times_hint">Dotknij godziny, aby ją odhaczyć lub cofnąć.</string>
+    <string name="tasks_day_count_hint">Ile razy to zrobiono?</string>
+    <string name="tasks_day_not_done">Nie zrobione</string>
+    <string name="tasks_day_done">Zrobione</string>
+    <string name="tasks_day_save">Zapisz</string>
+    <string name="tasks_day_less">Jedno mniej</string>
+    <string name="tasks_day_more">Jedno więcej</string>
+    <string name="tasks_day_count">%1$d / %2$d</string>
     <string name="tasks_day_marked_done">%1$s · %2$s: zrobione</string>
     <string name="tasks_day_marked_not_done">%1$s · %2$s: nie zrobione</string>
     <string name="tasks_day_updated">%1$s · %2$s: zmieniono</string>

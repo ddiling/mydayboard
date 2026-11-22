@@ -49,9 +49,10 @@ private val ButtonHeight = 52.dp
 internal fun TimeChips(
     chips: List<TimeChip>,
     onChipClick: (LocalTime) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     FlowRow(
-        Modifier.fillMaxWidth().padding(bottom = 16.dp).testTag("tasks_detail_chips"),
+        modifier.fillMaxWidth().padding(bottom = 16.dp),
         Arrangement.spacedBy(8.dp),
         Arrangement.spacedBy(8.dp),
     ) {

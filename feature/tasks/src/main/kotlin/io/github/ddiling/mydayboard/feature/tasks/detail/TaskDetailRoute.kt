@@ -6,32 +6,37 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import java.time.LocalDate
+import io.github.ddiling.mydayboard.feature.tasks.day.DaySheetActions
 
 /**
- * Hilt provides the ViewModel; where Edit and a history row lead is up to the caller, so the details know no
- * other screen. [onHistoryRowClick] is a no-op until the day sheet exists.
+ * Hilt provides the ViewModel; where Edit leads is up to the caller, so the details know no other screen. A
+ * history row opens the day sheet.
  */
 @Composable
 internal fun TaskDetailRoute(
     onBack: () -> Unit,
     onEdit: () -> Unit,
     modifier: Modifier = Modifier,
-    onHistoryRowClick: (LocalDate) -> Unit = {},
     viewModel: TaskDetailViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val actions =
-        remember(viewModel, onBack, onEdit, onHistoryRowClick) {
+        remember(viewModel, onBack, onEdit) {
             TaskDetailActions(
                 onBack = onBack,
                 onEdit = onEdit,
                 onBigButton = viewModel::onBigButton,
                 onChipClick = viewModel::onChipClick,
-                onHistoryRowClick = onHistoryRowClick,
+                onHistoryRowClick = viewModel::onDayClick,
                 onUndo = viewModel::onUndo,
                 onUndoDismissed = viewModel::onUndoDismissed,
             )
         }
-    TaskDetailScreen(uiState, actions, modifier)
+    val daySheet by viewModel.daySheet.state.collectAsStateWithLifecycle()
+    val sheet = viewModel.daySheet
+    val sheetActions =
+        remember(viewModel) {
+            DaySheetActions(sheet::setSingle, sheet::toggle, sheet::step, viewModel::onDaySave, sheet::dismiss)
+        }
+    TaskDetailScreen(uiState, actions, modifier, daySheet, sheetActions)
 }
