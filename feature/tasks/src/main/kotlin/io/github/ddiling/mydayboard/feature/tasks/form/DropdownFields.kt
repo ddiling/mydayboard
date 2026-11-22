@@ -24,13 +24,13 @@ import io.github.ddiling.mydayboard.core.domain.task.TaskCategory
 import io.github.ddiling.mydayboard.feature.tasks.R
 
 /** One entry of a dropdown: [value] is what the callback gets, [text] what the user reads. */
-private data class DropdownOption<T>(
+internal data class DropdownOption<T>(
     val value: T,
     val text: String,
 )
 
 @Composable
-private fun <T> DashedDropdown(
+internal fun <T> DashedDropdown(
     label: String,
     selected: String,
     options: List<DropdownOption<T>>,
@@ -65,21 +65,37 @@ private fun <T> DashedDropdown(
     }
 }
 
+private const val NEW_CATEGORY_MARKER = "__new_category__"
+
 /** "No category" is an entry of its own, so a task can be moved out of a category again. */
 @Composable
 internal fun CategoryField(
     categoryId: String?,
     categories: List<TaskCategory>,
     onCategoryChange: (String?) -> Unit,
+    onCreateCategory: (String) -> Unit = {},
 ) {
+    var creating by remember { mutableStateOf(false) }
+    val newLabel = stringResource(R.string.tasks_form_category_new)
     val none = stringResource(R.string.tasks_form_category_none)
     val options =
-        listOf(DropdownOption<String?>(null, none)) + categories.map { DropdownOption<String?>(it.id, it.name) }
+        listOf(DropdownOption<String?>(null, none)) + categories.map { DropdownOption<String?>(it.id, it.name) } +
+            DropdownOption<String?>(NEW_CATEGORY_MARKER, newLabel)
+    if (creating) {
+        TextEntryDialog(
+            title = newLabel,
+            onConfirm = {
+                creating = false
+                onCreateCategory(it)
+            },
+            onDismiss = { creating = false },
+        )
+    }
     DashedDropdown(
         label = stringResource(R.string.tasks_form_category),
         selected = options.firstOrNull { it.value == categoryId }?.text ?: none,
         options = options,
-        onSelect = onCategoryChange,
+        onSelect = { if (it == NEW_CATEGORY_MARKER) creating = true else onCategoryChange(it) },
         tag = "tasks_form_category",
     )
 }
@@ -92,7 +108,7 @@ internal fun RepeatField(
     DashedDropdown(
         label = stringResource(R.string.tasks_form_repeat),
         selected = stringResource(repeatType.label()),
-        options = availableRepeatTypes.map { DropdownOption(it, stringResource(it.label())) },
+        options = RepeatType.entries.map { DropdownOption(it, stringResource(it.label())) },
         onSelect = onRepeatTypeChange,
         tag = "tasks_form_repeat",
     )

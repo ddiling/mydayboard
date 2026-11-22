@@ -24,6 +24,7 @@ internal data class TaskFormActions(
     val onGoalOnChange: (Boolean) -> Unit = {},
     val onGoalChange: (Int) -> Unit = {},
     val onOnMissChange: (OnMiss) -> Unit = {},
+    val onCreateCategory: (String) -> Unit = {},
     val onSave: () -> Unit = {},
     val onSavedHandled: () -> Unit = {},
     val onClose: () -> Unit = {},
