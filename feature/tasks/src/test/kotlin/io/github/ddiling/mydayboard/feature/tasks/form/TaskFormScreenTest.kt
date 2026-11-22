@@ -114,14 +114,14 @@ class TaskFormScreenTest {
     }
 
     @Test
-    fun `the repeat dropdown offers the basic types and choosing one reports it`() {
+    fun `the repeat dropdown offers the types with fields and choosing one reports it`() {
         val chosen = mutableListOf<RepeatType>()
         show(blank, TaskFormActions(onRepeatTypeChange = { chosen += it }))
 
         composeRule.onNodeWithTag("tasks_form_repeat").performClick()
         composeRule.onNodeWithText("Several times a day").assertIsDisplayed()
         composeRule.onAllNodesWithText("Every day").assertCountEquals(2) // the field and the menu entry
-        composeRule.onNodeWithText("Every N days").assertDoesNotExist()
+        composeRule.onNodeWithText("Every N days").assertIsDisplayed()
         composeRule.onNodeWithText("Once a month").assertDoesNotExist()
         composeRule.onNodeWithText("One time").assertDoesNotExist()
         composeRule.onNodeWithText("Chosen weekdays").performClick()

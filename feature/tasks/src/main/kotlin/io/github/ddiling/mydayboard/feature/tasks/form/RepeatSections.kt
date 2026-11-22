@@ -38,7 +38,7 @@ private val timeFormat = DateTimeFormatter.ofPattern("HH:mm")
 /** The time shown on chips and in fields: 24-hour, so the picker (also 24-hour) and the text always agree. */
 internal fun LocalTime.display(): String = format(timeFormat)
 
-/** The fields that depend on the repeat type. The types without fields here yet show none. */
+/** The fields that depend on the repeat type; the other types get their fields in a later change. */
 @Composable
 internal fun RepeatSections(
     uiState: TaskFormUiState,
@@ -68,6 +68,10 @@ internal fun RepeatSections(
         RepeatType.WEEKDAYS -> {
             WeekdaysSection(uiState, actions)
             TimeField(uiState.time, actions.onTimeChange)
+        }
+
+        RepeatType.EVERY_N_DAYS -> {
+            IntervalSection(uiState, actions)
         }
 
         else -> {}

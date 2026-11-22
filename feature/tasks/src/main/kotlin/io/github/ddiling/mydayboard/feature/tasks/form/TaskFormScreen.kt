@@ -31,9 +31,9 @@ import io.github.ddiling.mydayboard.core.domain.task.TaskCategory
 import io.github.ddiling.mydayboard.core.domain.task.TaskFormError
 import io.github.ddiling.mydayboard.feature.tasks.R
 
-/** The repeat types offered for now: the other three get their fields in a later change and stay hidden until then. */
+/** The repeat types offered for now: the other two get their fields in a later change and stay hidden until then. */
 internal val availableRepeatTypes: List<RepeatType> =
-    RepeatType.entries - setOf(RepeatType.EVERY_N_DAYS, RepeatType.MONTHLY, RepeatType.ONE_TIME)
+    RepeatType.entries - setOf(RepeatType.MONTHLY, RepeatType.ONE_TIME)
 
 /** Stateless: everything shown comes from [uiState] and [categories], everything the user does goes to [actions]. */
 @OptIn(ExperimentalMaterial3Api::class)
