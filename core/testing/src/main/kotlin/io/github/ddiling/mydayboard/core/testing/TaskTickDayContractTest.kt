@@ -5,6 +5,7 @@ import io.github.ddiling.mydayboard.core.domain.task.TaskTick
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import java.time.LocalTime
 
 /** Contract for replacing the ticks of one day and undoing that. */
 abstract class TaskTickDayContractTest : TaskTickRepositoryContractBase() {
@@ -41,6 +42,19 @@ abstract class TaskTickDayContractTest : TaskTickRepositoryContractBase() {
             val change = ticks.replaceDay(task.id, day, listOf(morning, evening))
 
             assertEquals(kept, liveTicksOf(task.id))
+            assertEquals(DayChange(emptyList(), emptyList()), change)
+        }
+
+    @Test
+    fun `replacing a day twice with a slot that has seconds is stable`() =
+        runTest {
+            val task = givenTask()
+            val withSeconds = listOf(LocalTime.of(8, 0, 30))
+            ticks.replaceDay(task.id, day, withSeconds)
+
+            val change = ticks.replaceDay(task.id, day, withSeconds)
+
+            assertEquals(listOf(morning), liveTicksOf(task.id).map { it.slot })
             assertEquals(DayChange(emptyList(), emptyList()), change)
         }
 

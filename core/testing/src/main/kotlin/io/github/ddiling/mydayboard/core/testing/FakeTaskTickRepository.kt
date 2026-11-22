@@ -13,6 +13,7 @@ import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.temporal.ChronoUnit
 
 /**
  * In-memory [TaskTickRepository] for ViewModel tests. It passes the same contract tests as the Room
@@ -36,7 +37,7 @@ class FakeTaskTickRepository(
         taskId: String,
         day: LocalDate,
         slot: LocalTime?,
-    ): TaskTick? = insert(taskId, day, slot, clock.instant())
+    ): TaskTick? = insert(taskId, day, slot?.truncatedTo(ChronoUnit.MINUTES), clock.instant())
 
     override suspend fun deleteTick(tickId: String) {
         removeTick(tickId, clock.instant())
@@ -54,7 +55,7 @@ class FakeTaskTickRepository(
     ): DayChange {
         val now = clock.instant()
         val live = state.value.liveTicks().filter { it.taskId == taskId && it.day == day }
-        val plan = planDay(live, slots)
+        val plan = planDay(live, slots.map { it?.truncatedTo(ChronoUnit.MINUTES) })
         plan.toRemove.forEach { removeTick(it.id, now) }
         val added = plan.toAdd.mapNotNull { insert(taskId, day, it, now)?.id }
         return DayChange(addedIds = added, removedIds = plan.toRemove.map { it.id })
@@ -66,18 +67,22 @@ class FakeTaskTickRepository(
         state.update { s -> change.removedIds.fold(s) { acc, id -> acc.withRestored(id, now) } }
     }
 
+    /** The check and the add happen inside one [update], so parallel calls for one slot add one tick. */
     private fun insert(
         taskId: String,
         day: LocalDate,
         slot: LocalTime?,
         now: Instant,
     ): TaskTick? {
-        val s = state.value
-        if (s.tasks.none { it.id == taskId }) return null
-        val duplicate = slot?.let { s.ticks.firstOrNull { t -> t.taskId == taskId && t.day == day && t.slot == slot } }
-        val tick = duplicate ?: TaskTick(ids.newId(), taskId, day, slot, now, now)
-        if (duplicate == null) state.update { it.copy(ticks = it.ticks + tick) }
-        return tick
+        val fresh = TaskTick(ids.newId(), taskId, day, slot, now, now)
+        var result: TaskTick? = null
+        state.update { s ->
+            val duplicate =
+                slot?.let { s.ticks.firstOrNull { t -> t.taskId == taskId && t.day == day && t.slot == slot } }
+            result = if (s.tasks.none { it.id == taskId }) null else duplicate ?: fresh
+            if (result == fresh) s.copy(ticks = s.ticks + fresh) else s
+        }
+        return result
     }
 
     private fun removeTick(
