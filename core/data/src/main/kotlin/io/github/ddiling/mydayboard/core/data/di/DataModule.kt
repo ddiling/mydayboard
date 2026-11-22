@@ -6,10 +6,12 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import io.github.ddiling.mydayboard.core.data.OfflineTaskCategoryRepository
 import io.github.ddiling.mydayboard.core.data.OfflineTaskRepository
+import io.github.ddiling.mydayboard.core.data.OfflineTaskTickRepository
 import io.github.ddiling.mydayboard.core.data.OfflineTrackerReasonRepository
 import io.github.ddiling.mydayboard.core.data.OfflineTrackerRepository
 import io.github.ddiling.mydayboard.core.domain.task.TaskCategoryRepository
 import io.github.ddiling.mydayboard.core.domain.task.TaskRepository
+import io.github.ddiling.mydayboard.core.domain.task.TaskTickRepository
 import io.github.ddiling.mydayboard.core.domain.tracker.TrackerReasonRepository
 import io.github.ddiling.mydayboard.core.domain.tracker.TrackerRepository
 
@@ -27,4 +29,7 @@ internal interface DataModule {
 
     @Binds
     fun bindTaskCategoryRepository(impl: OfflineTaskCategoryRepository): TaskCategoryRepository
+
+    @Binds
+    fun bindTaskTickRepository(impl: OfflineTaskTickRepository): TaskTickRepository
 }

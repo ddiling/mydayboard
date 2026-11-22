@@ -5,12 +5,16 @@ import io.github.ddiling.mydayboard.core.database.MyDayboardDatabase
 import io.github.ddiling.mydayboard.core.domain.id.IdGenerator
 import io.github.ddiling.mydayboard.core.domain.task.TaskCategoryRepository
 import io.github.ddiling.mydayboard.core.domain.task.TaskRepository
+import io.github.ddiling.mydayboard.core.domain.task.TaskTickRepository
 import io.github.ddiling.mydayboard.core.testing.MutableClock
 import io.github.ddiling.mydayboard.core.testing.TaskCategoryContractTest
 import io.github.ddiling.mydayboard.core.testing.TaskCategoryLinkContractTest
 import io.github.ddiling.mydayboard.core.testing.TaskCategoryNoOpContractTest
 import io.github.ddiling.mydayboard.core.testing.TaskChangeContractTest
 import io.github.ddiling.mydayboard.core.testing.TaskContractTest
+import io.github.ddiling.mydayboard.core.testing.TaskTickContractTest
+import io.github.ddiling.mydayboard.core.testing.TaskTickDayContractTest
+import io.github.ddiling.mydayboard.core.testing.TaskTickObserveContractTest
 import org.junit.After
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -36,6 +40,11 @@ private class RoomTaskFixture {
         clock: MutableClock,
         ids: IdGenerator,
     ): TaskCategoryRepository = with(database.value) { OfflineTaskCategoryRepository(taskCategoryDao(), clock, ids) }
+
+    fun ticks(
+        clock: MutableClock,
+        ids: IdGenerator,
+    ): TaskTickRepository = OfflineTaskTickRepository(database.value.taskTickDao(), clock, ids)
 
     fun close() {
         if (database.isInitialized()) database.value.close()
@@ -127,6 +136,75 @@ class RoomTaskCategoryNoOpContractTest : TaskCategoryNoOpContractTest() {
         clock: MutableClock,
         ids: IdGenerator,
     ): TaskCategoryRepository = fixture.categories(clock, ids)
+
+    @After
+    fun closeDatabase() = fixture.close()
+}
+
+@RunWith(RobolectricTestRunner::class)
+class RoomTaskTickContractTest : TaskTickContractTest() {
+    private val fixture = RoomTaskFixture()
+
+    override fun createTaskRepository(
+        clock: MutableClock,
+        ids: IdGenerator,
+    ): TaskRepository = fixture.tasks(clock, ids)
+
+    override fun createCategoryRepository(
+        clock: MutableClock,
+        ids: IdGenerator,
+    ): TaskCategoryRepository = fixture.categories(clock, ids)
+
+    override fun createTickRepository(
+        clock: MutableClock,
+        ids: IdGenerator,
+    ): TaskTickRepository = fixture.ticks(clock, ids)
+
+    @After
+    fun closeDatabase() = fixture.close()
+}
+
+@RunWith(RobolectricTestRunner::class)
+class RoomTaskTickObserveContractTest : TaskTickObserveContractTest() {
+    private val fixture = RoomTaskFixture()
+
+    override fun createTaskRepository(
+        clock: MutableClock,
+        ids: IdGenerator,
+    ): TaskRepository = fixture.tasks(clock, ids)
+
+    override fun createCategoryRepository(
+        clock: MutableClock,
+        ids: IdGenerator,
+    ): TaskCategoryRepository = fixture.categories(clock, ids)
+
+    override fun createTickRepository(
+        clock: MutableClock,
+        ids: IdGenerator,
+    ): TaskTickRepository = fixture.ticks(clock, ids)
+
+    @After
+    fun closeDatabase() = fixture.close()
+}
+
+@RunWith(RobolectricTestRunner::class)
+class RoomTaskTickDayContractTest : TaskTickDayContractTest() {
+    private val fixture = RoomTaskFixture()
+
+    override fun createTaskRepository(
+        clock: MutableClock,
+        ids: IdGenerator,
+    ): TaskRepository = fixture.tasks(clock, ids)
+
+    override fun createCategoryRepository(
+        clock: MutableClock,
+        ids: IdGenerator,
+    ): TaskCategoryRepository = fixture.categories(clock, ids)
+
+    override fun createTickRepository(
+        clock: MutableClock,
+        ids: IdGenerator,
+    ): TaskTickRepository = fixture.ticks(clock, ids)
 
     @After
     fun closeDatabase() = fixture.close()
