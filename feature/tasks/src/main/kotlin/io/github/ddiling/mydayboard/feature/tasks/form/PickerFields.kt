@@ -1,6 +1,7 @@
 package io.github.ddiling.mydayboard.feature.tasks.form
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.text.KeyboardOptions
@@ -15,11 +16,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import io.github.ddiling.mydayboard.feature.tasks.R
 import java.time.Instant
@@ -33,8 +36,11 @@ private fun LocalDate.toPickerMillis(): Long = atStartOfDay(ZoneOffset.UTC).toIn
 
 private fun Long.toPickedDate(): LocalDate = Instant.ofEpochMilli(this).atZone(ZoneOffset.UTC).toLocalDate()
 
-/** A date field: tap to pick. A null [date] shows an empty field, with [error]
- * under it when the date is required; the calendar then opens on [opensOn]. */
+/**
+ * A date field: tap to pick. The whole row is a button of at least 48 dp, because the date text alone is too small
+ * to hit. A null [date] shows an empty field, with [error] under it when the date is required; the calendar then
+ * opens on [opensOn].
+ */
 @Composable
 internal fun DateField(
     label: String,
@@ -48,14 +54,16 @@ internal fun DateField(
     var picking by remember { mutableStateOf(false) }
     val locale = LocalConfiguration.current.locales[0]
     DashedField(label, modifier, error) {
-        Text(
-            date?.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale)).orEmpty(),
+        Box(
             Modifier
                 .fillMaxWidth()
-                .heightIn(min = 32.dp)
-                .clickable { picking = true }
+                .heightIn(min = 48.dp)
+                .clickable(role = Role.Button) { picking = true }
                 .testTag(tag),
-        )
+            contentAlignment = Alignment.CenterStart,
+        ) {
+            Text(date?.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale)).orEmpty())
+        }
     }
     if (picking) {
         DatePickerPopup(
