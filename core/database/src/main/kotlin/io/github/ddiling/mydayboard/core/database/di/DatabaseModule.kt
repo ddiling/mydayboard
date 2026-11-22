@@ -8,6 +8,9 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.github.ddiling.mydayboard.core.database.MyDayboardDatabase
+import io.github.ddiling.mydayboard.core.database.dao.TaskCategoryDao
+import io.github.ddiling.mydayboard.core.database.dao.TaskDao
+import io.github.ddiling.mydayboard.core.database.dao.TaskTickDao
 import io.github.ddiling.mydayboard.core.database.dao.TrackerDao
 import io.github.ddiling.mydayboard.core.database.dao.TrackerEventDao
 import io.github.ddiling.mydayboard.core.database.dao.TrackerReasonDao
@@ -32,4 +35,13 @@ object DatabaseModule {
 
     @Provides
     fun provideTrackerReasonDao(database: MyDayboardDatabase): TrackerReasonDao = database.trackerReasonDao()
+
+    @Provides
+    fun provideTaskCategoryDao(database: MyDayboardDatabase): TaskCategoryDao = database.taskCategoryDao()
+
+    @Provides
+    fun provideTaskDao(database: MyDayboardDatabase): TaskDao = database.taskDao()
+
+    @Provides
+    fun provideTaskTickDao(database: MyDayboardDatabase): TaskTickDao = database.taskTickDao()
 }
