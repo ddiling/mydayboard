@@ -11,6 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -22,6 +23,8 @@ import io.github.ddiling.mydayboard.core.domain.task.EveryNDaysMode
 import io.github.ddiling.mydayboard.core.domain.task.MAX_INTERVAL_DAYS
 import io.github.ddiling.mydayboard.core.domain.task.MIN_INTERVAL_DAYS
 import io.github.ddiling.mydayboard.feature.tasks.R
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 /**
  * "Every N days": the stepper, the two ways to count, and the start date that only the fixed calendar needs (the
@@ -58,6 +61,7 @@ internal fun IntervalSection(
                 tag = "tasks_form_first_due",
             )
         }
+        NextDates(uiState.nextDueDates())
     }
 }
 
@@ -111,4 +115,22 @@ private fun StepButton(
         enabled = enabled,
         modifier = Modifier.testTag(tag).semantics { contentDescription = description },
     ) { Text(symbol, Modifier.clearAndSetSemantics {}, style = MaterialTheme.typography.titleLarge) }
+}
+
+/** Short weekday, day and month, no year: the dates are near, and a comma-free date keeps the separator clear. */
+private const val NEXT_DATE_PATTERN = "EEE d MMM"
+private const val NEXT_DATES_SEPARATOR = " \u00B7 "
+
+/** The info line under the options: the dates, in the same style as the date fields. Nothing when there are none. */
+@Composable
+private fun NextDates(dates: List<LocalDate>) {
+    if (dates.isEmpty()) return
+    val locale = LocalConfiguration.current.locales[0]
+    val format = DateTimeFormatter.ofPattern(NEXT_DATE_PATTERN, locale)
+    Text(
+        stringResource(R.string.tasks_form_next_dates, dates.joinToString(NEXT_DATES_SEPARATOR) { it.format(format) }),
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.testTag("tasks_form_next_dates"),
+    )
 }

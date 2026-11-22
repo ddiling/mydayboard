@@ -20,7 +20,15 @@ internal fun TaskFormUiState.withWeekdayToggled(day: DayOfWeek) =
 internal fun TaskFormUiState.withInterval(days: Int) =
     copy(intervalDays = days.coerceIn(MIN_INTERVAL_DAYS, MAX_INTERVAL_DAYS)).revalidated()
 
-internal fun TaskFormUiState.withIntervalMode(mode: EveryNDaysMode) = copy(intervalMode = mode).revalidated()
+/**
+ * Counting from the last time has no "Starting on" field, so a date picked for the fixed calendar must not stay
+ * hidden in the state: it would show in the dates line and be saved. Switching to it starts the task today.
+ */
+internal fun TaskFormUiState.withIntervalMode(mode: EveryNDaysMode) =
+    copy(
+        intervalMode = mode,
+        firstDue = if (mode == EveryNDaysMode.FROM_LAST_DONE) today else firstDue,
+    ).revalidated()
 
 internal fun TaskFormUiState.withFirstDue(date: LocalDate) = copy(firstDue = date).revalidated()
 

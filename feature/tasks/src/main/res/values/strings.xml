@@ -39,6 +39,7 @@
     <string name="tasks_form_mode_from_last_help">Done on Wed, next on Sat. Done late on Thu, next on Sun.</string>
     <string name="tasks_form_mode_fixed">Fixed calendar</string>
     <string name="tasks_form_mode_fixed_help">Always on the same dates, even if you tick it late.</string>
+    <string name="tasks_form_next_dates">Next: %1$s</string>
     <string name="tasks_form_starting_on">Starting on</string>
     <string name="tasks_form_on_day">On day</string>
     <string name="tasks_form_on_day_help">If a month is shorter, the last day is used.</string>

@@ -6,6 +6,7 @@ import io.github.ddiling.mydayboard.core.domain.task.MAX_TASK_GOAL
 import io.github.ddiling.mydayboard.core.domain.task.MIN_TASK_GOAL
 import io.github.ddiling.mydayboard.core.domain.task.OnMiss
 import io.github.ddiling.mydayboard.core.domain.task.TaskFormError
+import java.time.DayOfWeek
 
 @PreviewLightDark
 @Composable
@@ -31,5 +32,31 @@ private fun TaskFormGoalErrorPreview() =
             goalOn = true,
             goal = 1,
             errors = listOf(TaskFormError.GoalOutOfRange(MIN_TASK_GOAL, MAX_TASK_GOAL)),
+        ),
+    )
+
+@PreviewLightDark
+@Composable
+private fun TaskFormEveryNDaysFromLastPreview() =
+    PreviewForm(
+        emptyForm.copy(
+            name = "Water filter",
+            repeatType = RepeatType.EVERY_N_DAYS,
+            intervalDays = 14,
+            canSave = true,
+        ),
+    )
+
+@PreviewLightDark
+@Composable
+private fun TaskFormWeekdaysGoalPreview() =
+    PreviewForm(
+        emptyForm.copy(
+            name = "English",
+            repeatType = RepeatType.WEEKDAYS,
+            weekdays = setOf(DayOfWeek.MONDAY, DayOfWeek.THURSDAY),
+            goalOn = true,
+            goal = 3,
+            canSave = true,
         ),
     )
