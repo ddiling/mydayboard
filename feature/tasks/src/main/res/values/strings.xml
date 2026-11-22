@@ -28,4 +28,18 @@
     <string name="tasks_form_error_note_too_long">Note is too long (max %1$d)</string>
     <string name="tasks_form_error_no_times">Add at least one time</string>
     <string name="tasks_form_error_no_days">Choose at least one day</string>
+    <string name="tasks_schedule_every_day">every day</string>
+    <string name="tasks_schedule_every_weekday">every weekday</string>
+    <plurals name="tasks_schedule_every_n_days">
+        <item quantity="one">every day</item>
+        <item quantity="other">every %1$d days</item>
+    </plurals>
+    <string name="tasks_schedule_monthly">every month on the %1$d%2$s</string>
+    <string name="tasks_ordinal_st">st</string>
+    <string name="tasks_ordinal_nd">nd</string>
+    <string name="tasks_ordinal_rd">rd</string>
+    <string name="tasks_ordinal_th">th</string>
+    <string name="tasks_details_late">late · was due %1$s</string>
+    <string name="tasks_details_done">Done</string>
+    <string name="tasks_details_missed">Missed</string>
 </resources>

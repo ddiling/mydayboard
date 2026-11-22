@@ -28,4 +28,20 @@
     <string name="tasks_form_error_note_too_long">Notatka jest za długa (maks. %1$d)</string>
     <string name="tasks_form_error_no_times">Dodaj co najmniej jedną godzinę</string>
     <string name="tasks_form_error_no_days">Wybierz co najmniej jeden dzień</string>
+    <string name="tasks_schedule_every_day">codziennie</string>
+    <string name="tasks_schedule_every_weekday">w dni robocze</string>
+    <plurals name="tasks_schedule_every_n_days">
+        <item quantity="one">co dzień</item>
+        <item quantity="few">co %1$d dni</item>
+        <item quantity="many">co %1$d dni</item>
+        <item quantity="other">co %1$d dnia</item>
+    </plurals>
+    <string name="tasks_schedule_monthly">co miesiąc, %1$d%2$s</string>
+    <string name="tasks_ordinal_st">.</string>
+    <string name="tasks_ordinal_nd">.</string>
+    <string name="tasks_ordinal_rd">.</string>
+    <string name="tasks_ordinal_th">.</string>
+    <string name="tasks_details_late">spóźnione · termin: %1$s</string>
+    <string name="tasks_details_done">Zrobione</string>
+    <string name="tasks_details_missed">Pominięte</string>
 </resources>
