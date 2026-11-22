@@ -2,6 +2,7 @@ package io.github.ddiling.mydayboard.feature.tasks.common
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -29,7 +30,8 @@ import io.github.ddiling.mydayboard.feature.tasks.R
 import kotlinx.coroutines.launch
 
 /**
- * Swipe right to mark done, with a green "Done" label under the finger. The row always springs back: the
+ * Swipe right to mark done, with a green "Done" label under the finger (shown only while swiping, so the row
+ * is plain the rest of the time). The row always springs back: the
  * change shows through the data (the row turns done or its count goes up), never through the row staying
  * swiped away, so one swipe is one step and the row is ready for the next. The
  * same action is offered to screen readers as a custom "Mark done" action, because a swipe is hard to make
@@ -58,7 +60,9 @@ internal fun SwipeToDoneRow(
     val markDone = stringResource(R.string.tasks_row_mark_done)
     SwipeToDismissBox(
         state = state,
-        backgroundContent = { if (enabled) DoneLabel() },
+        backgroundContent = {
+            if (enabled && state.dismissDirection == SwipeToDismissBoxValue.StartToEnd) DoneLabel()
+        },
         modifier =
             modifier.semantics {
                 if (enabled) {
@@ -74,14 +78,14 @@ internal fun SwipeToDoneRow(
         enableDismissFromEndToStart = false,
         enableDismissFromStartToEnd = enabled,
         onDismiss = onDismiss,
-        content = { content() },
+        content = { Box(Modifier.background(MaterialTheme.colorScheme.background)) { content() } },
     )
 }
 
 @Composable
 private fun DoneLabel() {
     Row(
-        Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).padding(horizontal = 20.dp),
+        Modifier.fillMaxSize().padding(horizontal = 20.dp),
         Arrangement.spacedBy(8.dp),
         Alignment.CenterVertically,
     ) {
