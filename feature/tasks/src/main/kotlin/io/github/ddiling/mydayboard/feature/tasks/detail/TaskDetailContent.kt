@@ -115,7 +115,10 @@ private fun openButton(
     }
 }
 
-/** Today's untouched occurrence is not history yet, and an upcoming one has not happened. */
+/**
+ * Today's untouched occurrence is not history yet, and an upcoming one has not happened. A late one can still be
+ * done, so it is neither missed nor settled.
+ */
 private fun historyRowOf(
     task: Task,
     occurrence: Occurrence,
@@ -123,6 +126,7 @@ private fun historyRowOf(
     when {
         occurrence.status == OccurrenceStatus.UPCOMING -> null
         occurrence.status == OccurrenceStatus.DONE -> HistoryRow(occurrence.due, HistoryResult.Done)
+        occurrence.status == OccurrenceStatus.LATE -> HistoryRow(occurrence.due, HistoryResult.Late)
         occurrence.done == 0 && occurrence.status == OccurrenceStatus.DUE_TODAY -> null
         occurrence.done == 0 -> HistoryRow(occurrence.due, HistoryResult.Missed)
         else -> HistoryRow(occurrence.due, partialOf(task, occurrence))
