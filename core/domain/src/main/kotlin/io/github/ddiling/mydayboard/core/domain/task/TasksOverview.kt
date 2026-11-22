@@ -16,8 +16,9 @@ enum class RowState {
 
     /**
      * Not due today; [TaskRow.nextDue] says when it is next due. It is null when nothing is left, for example a
-     * finished one-time task: it stays in the list so the user can still open, untick or archive it, and the UI
-     * shows it as done.
+     * one-time task whose day has passed: it stays in the list so the user can still open, untick or archive it.
+     * Then [TaskRow.done] and [TaskRow.target] are those of its last occurrence, so the UI shows "Done" when they
+     * are equal and "Missed" otherwise.
      */
     UPCOMING,
 }
@@ -27,7 +28,8 @@ enum class RowState {
  *
  * [time] is the time the row sorts and displays by: the task's own time, or for a several-times task the next
  * time not yet done today (its first time once all are done). [done] and [target] are of the occurrence the
- * row is about, so "1 of 2" and a count goal read the same way; both are 0 for an upcoming row.
+ * row is about, so "1 of 2" and a count goal read the same way; both are 0 for an upcoming row that
+ * still has a next due date, and those of the last occurrence when nothing is left.
  */
 data class TaskRow(
     val task: Task,

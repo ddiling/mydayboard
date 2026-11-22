@@ -83,7 +83,10 @@ private fun rowOf(
         }
 
         else -> {
-            TaskRow(task, category, RowState.UPCOMING, 0, 0, task.time, nextDueDate(task, ticks, today), null)
+            val nextDue = nextDueDate(task, ticks, today)
+            // Nothing left: keep the last occurrence's counts so the UI can tell "done" from "missed".
+            val last = if (nextDue == null) occurrences.lastOrNull() else null
+            TaskRow(task, category, RowState.UPCOMING, last?.done ?: 0, last?.target ?: 0, task.time, nextDue, null)
         }
     }
 }

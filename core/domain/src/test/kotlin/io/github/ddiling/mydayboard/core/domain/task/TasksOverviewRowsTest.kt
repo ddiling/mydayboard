@@ -64,7 +64,20 @@ class TasksOverviewRowsTest {
         }
 
     @Test
-    fun `a finished one-time task stays as an upcoming row with nothing left`() =
+    fun `a one-time task ticked on its due day is upcoming with nothing left and fully done`() =
+        runTest {
+            val task = fixture.addTask("CVs", repeat = Repeat.OneTime(yesterday), startDate = yesterday)
+            fixture.ticks.addTick(task.id, yesterday, null)
+
+            val row = fixture.rowOf(task)
+
+            assertEquals(RowState.UPCOMING, row.state)
+            assertNull(row.nextDue)
+            assertEquals(row.target, row.done)
+        }
+
+    @Test
+    fun `a one-time task that expired undone is upcoming with nothing left and not fully done`() =
         runTest {
             val task = fixture.addTask("CVs", repeat = Repeat.OneTime(yesterday), startDate = yesterday)
 
@@ -72,6 +85,7 @@ class TasksOverviewRowsTest {
 
             assertEquals(RowState.UPCOMING, row.state)
             assertNull(row.nextDue)
+            assertTrue(row.done < row.target)
         }
 
     @Test
