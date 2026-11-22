@@ -24,6 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import io.github.ddiling.mydayboard.core.designsystem.theme.TaskColors
 import io.github.ddiling.mydayboard.feature.tasks.R
@@ -35,7 +36,9 @@ import kotlinx.coroutines.launch
  * change shows through the data (the row turns done or its count goes up), never through the row staying
  * swiped away, so one swipe is one step and the row is ready for the next. The
  * same action is offered to screen readers as a custom "Mark done" action, because a swipe is hard to make
- * with assistive tools; [enabled] false (a task that is not due) turns off both.
+ * with assistive tools; [enabled] false (a task that is not due) turns off both. An enabled row also reads its
+ * name and details followed by the hint "swipe right to mark done", so the gesture can be discovered; a
+ * disabled row has no hint.
  */
 @Composable
 internal fun SwipeToDoneRow(
@@ -58,14 +61,16 @@ internal fun SwipeToDoneRow(
             }
         }
     val markDone = stringResource(R.string.tasks_row_mark_done)
+    val swipeHint = stringResource(R.string.tasks_row_swipe_hint)
     SwipeToDismissBox(
         state = state,
         backgroundContent = {
             if (enabled && state.dismissDirection == SwipeToDismissBoxValue.StartToEnd) DoneLabel()
         },
         modifier =
-            modifier.semantics {
+            modifier.semantics(mergeDescendants = true) {
                 if (enabled) {
+                    stateDescription = swipeHint
                     customActions =
                         listOf(
                             CustomAccessibilityAction(markDone) {
