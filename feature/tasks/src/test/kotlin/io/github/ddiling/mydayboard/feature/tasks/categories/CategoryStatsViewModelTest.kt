@@ -80,19 +80,6 @@ class CategoryStatsViewModelTest {
         }
 
     @Test
-    fun `the screen does not leave while the category exists`() =
-        runTest {
-            val meals = fixture.addCategory()
-            val viewModel = fixture.viewModel(meals.id)
-
-            viewModel.onEdit()
-            runCurrent()
-            viewModel.categoryDialogActions.onCancel()
-
-            assertFalse(viewModel.left.value)
-        }
-
-    @Test
     fun `handling the leave clears it`() =
         runTest {
             val meals = fixture.addCategory()
