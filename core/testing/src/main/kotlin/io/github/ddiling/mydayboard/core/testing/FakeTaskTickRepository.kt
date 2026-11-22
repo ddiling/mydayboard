@@ -93,7 +93,9 @@ class FakeTaskTickRepository(
         now: Instant,
     ): FakeTaskState {
         val tick = deletedTicks.firstOrNull { it.id == id }
-        if (tick == null || tasks.none { it.id == tick.taskId }) return this
+        val twinned =
+            tick?.slot != null && ticks.any { it.taskId == tick.taskId && it.day == tick.day && it.slot == tick.slot }
+        if (tick == null || twinned || tasks.none { it.id == tick.taskId }) return this
         return copy(ticks = ticks + tick.copy(updatedAt = now), deletedTicks = deletedTicks - tick)
     }
 
