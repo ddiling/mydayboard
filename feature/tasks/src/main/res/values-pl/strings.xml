@@ -28,4 +28,23 @@
     <string name="tasks_form_error_note_too_long">Notatka jest za długa (maks. %1$d)</string>
     <string name="tasks_form_error_no_times">Dodaj co najmniej jedną godzinę</string>
     <string name="tasks_form_error_no_days">Wybierz co najmniej jeden dzień</string>
+    <string name="tasks_form_interval_every">Co</string>
+    <string name="tasks_form_interval_less">Mniej dni</string>
+    <string name="tasks_form_interval_more">Więcej dni</string>
+    <plurals name="tasks_form_interval_unit">
+        <item quantity="one">dzień</item>
+        <item quantity="few">dni</item>
+        <item quantity="many">dni</item>
+        <item quantity="other">dni</item>
+    </plurals>
+    <string name="tasks_form_mode_from_last">Od ostatniego wykonania</string>
+    <string name="tasks_form_mode_from_last_help">Zrobione w śr., następne w sob. Zrobione późno w czw., następne w niedz.</string>
+    <string name="tasks_form_mode_fixed">Stały kalendarz</string>
+    <string name="tasks_form_mode_fixed_help">Zawsze w te same dni, nawet jeśli odhaczysz późno.</string>
+    <string name="tasks_form_starting_on">Od dnia</string>
+    <string name="tasks_form_on_day">W dniu</string>
+    <string name="tasks_form_on_day_help">Jeśli miesiąc jest krótszy, używany jest ostatni dzień.</string>
+    <string name="tasks_form_due_date">Termin</string>
+    <string name="tasks_form_error_due_required">Wybierz termin</string>
+    <string name="tasks_form_error_day_of_month">Podaj dzień od 1 do 31</string>
 </resources>

@@ -95,7 +95,7 @@ internal fun RepeatField(
     DashedDropdown(
         label = stringResource(R.string.tasks_form_repeat),
         selected = stringResource(repeatType.label()),
-        options = availableRepeatTypes.map { DropdownOption(it, stringResource(it.label())) },
+        options = RepeatType.entries.map { DropdownOption(it, stringResource(it.label())) },
         onSelect = onRepeatTypeChange,
         tag = "tasks_form_repeat",
     )

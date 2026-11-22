@@ -28,4 +28,21 @@
     <string name="tasks_form_error_note_too_long">Note is too long (max %1$d)</string>
     <string name="tasks_form_error_no_times">Add at least one time</string>
     <string name="tasks_form_error_no_days">Choose at least one day</string>
+    <string name="tasks_form_interval_every">Every</string>
+    <string name="tasks_form_interval_less">Fewer days</string>
+    <string name="tasks_form_interval_more">More days</string>
+    <plurals name="tasks_form_interval_unit">
+        <item quantity="one">day</item>
+        <item quantity="other">days</item>
+    </plurals>
+    <string name="tasks_form_mode_from_last">From the last time I did it</string>
+    <string name="tasks_form_mode_from_last_help">Done on Wed, next on Sat. Done late on Thu, next on Sun.</string>
+    <string name="tasks_form_mode_fixed">Fixed calendar</string>
+    <string name="tasks_form_mode_fixed_help">Always on the same dates, even if you tick it late.</string>
+    <string name="tasks_form_starting_on">Starting on</string>
+    <string name="tasks_form_on_day">On day</string>
+    <string name="tasks_form_on_day_help">If a month is shorter, the last day is used.</string>
+    <string name="tasks_form_due_date">Due date</string>
+    <string name="tasks_form_error_due_required">Choose a due date</string>
+    <string name="tasks_form_error_day_of_month">Enter a day from 1 to 31</string>
 </resources>
