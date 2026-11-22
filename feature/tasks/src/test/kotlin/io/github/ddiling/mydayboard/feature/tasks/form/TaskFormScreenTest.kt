@@ -4,16 +4,22 @@ import androidx.activity.ComponentActivity
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertHeightIsAtLeast
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.unit.dp
+import io.github.ddiling.mydayboard.core.domain.task.TaskCategory
 import io.github.ddiling.mydayboard.core.domain.task.TaskFormError
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -21,6 +27,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
+import java.time.Instant
 import java.time.LocalDate
 
 @RunWith(RobolectricTestRunner::class)
@@ -29,13 +36,15 @@ class TaskFormScreenTest {
     val composeRule = createAndroidComposeRule<ComponentActivity>()
 
     private val today = LocalDate.of(2026, 3, 2)
+    private val home = TaskCategory("home", "Home", Instant.EPOCH, Instant.EPOCH)
 
     private val blank = TaskFormUiState(today = today)
 
     private fun show(
         state: TaskFormUiState,
         actions: TaskFormActions = TaskFormActions(),
-    ) = composeRule.setContent { TaskFormScreen(state, actions) }
+        categories: List<TaskCategory> = emptyList(),
+    ) = composeRule.setContent { TaskFormScreen(state, categories, actions) }
 
     @Test
     fun `save is disabled while the form is invalid`() {
@@ -92,6 +101,49 @@ class TaskFormScreenTest {
     }
 
     @Test
+    fun `the repeat dropdown offers the basic types and choosing one reports it`() {
+        val chosen = mutableListOf<RepeatType>()
+        show(blank, TaskFormActions(onRepeatTypeChange = { chosen += it }))
+
+        composeRule.onNodeWithTag("tasks_form_repeat").performClick()
+        composeRule.onNodeWithText("Several times a day").assertIsDisplayed()
+        composeRule.onAllNodesWithText("Every day").assertCountEquals(2) // the field and the menu entry
+        composeRule.onNodeWithText("Every N days").assertDoesNotExist()
+        composeRule.onNodeWithText("Once a month").assertDoesNotExist()
+        composeRule.onNodeWithText("One time").assertDoesNotExist()
+        composeRule.onNodeWithText("Chosen weekdays").performClick()
+
+        assertEquals(listOf(RepeatType.WEEKDAYS), chosen)
+    }
+
+    @Test
+    fun `the category dropdown lists no category and the categories and choosing one reports its id`() {
+        val chosen = mutableListOf<String?>()
+        show(blank, TaskFormActions(onCategoryChange = { chosen += it }), listOf(home))
+
+        composeRule.onNodeWithTag("tasks_form_category").performClick()
+        composeRule.onAllNodesWithText("No category").assertCountEquals(2)
+        composeRule.onNodeWithText("Home").performClick()
+
+        assertEquals(listOf<String?>("home"), chosen)
+    }
+
+    @Test
+    fun `a category id that is not in the list shows no category`() {
+        show(blank.copy(categoryId = "gone"), categories = listOf(home))
+
+        composeRule.onNodeWithTag("tasks_form_category").assertTextEquals("No category")
+    }
+
+    @Test
+    fun `the dropdown fields are at least 48 dp tall to tap`() {
+        show(blank)
+
+        composeRule.onNodeWithTag("tasks_form_category").assertHeightIsAtLeast(48.dp)
+        composeRule.onNodeWithTag("tasks_form_repeat").assertHeightIsAtLeast(48.dp)
+    }
+
+    @Test
     fun `a blank name shows its error`() {
         show(blank.copy(name = " ", errors = listOf(TaskFormError.BlankName)))
 
@@ -126,6 +178,6 @@ class TaskFormScreenTest {
         RuntimeEnvironment.setFontScale(2f)
         show(blank)
 
-        composeRule.onNodeWithTag("tasks_form_name").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithTag("tasks_form_repeat").performScrollTo().assertIsDisplayed()
     }
 }

@@ -15,11 +15,12 @@ internal fun TaskFormRoute(
     viewModel: TaskFormViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val categories by viewModel.categories.collectAsStateWithLifecycle()
     LaunchedEffect(uiState.saved) {
         if (uiState.saved) {
             viewModel.onSavedHandled()
             onBack()
         }
     }
-    TaskFormScreen(uiState, viewModel.actions.copy(onClose = onBack), modifier)
+    TaskFormScreen(uiState, categories, viewModel.actions.copy(onClose = onBack), modifier)
 }
