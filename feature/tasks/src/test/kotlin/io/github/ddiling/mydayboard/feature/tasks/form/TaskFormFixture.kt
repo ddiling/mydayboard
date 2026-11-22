@@ -32,13 +32,14 @@ internal class TaskFormFixture(
 
     suspend fun storedTasks(): List<Task> = tasks.observeTasks().first()
 
+    fun draftOf(
+        name: String,
+        repeat: Repeat = Repeat.EveryDay,
+    ) = TaskDraft(name, categoryId = null, repeat, time = null, note = null, goal = null, onMiss = OnMiss.EXPIRES)
+
     suspend fun givenTask(
         name: String = "Pills",
         repeat: Repeat = Repeat.EveryDay,
         startDate: LocalDate = LocalDate.of(2026, 2, 1),
-    ): Task =
-        tasks.createTask(
-            TaskDraft(name, categoryId = null, repeat, time = null, note = null, goal = null, onMiss = OnMiss.EXPIRES),
-            startDate,
-        )
+    ): Task = tasks.createTask(draftOf(name, repeat), startDate)
 }
