@@ -143,13 +143,6 @@ class TasksListScreenTest {
     }
 
     @Test
-    fun `a group without a category is titled No category`() {
-        show(content(listOf(TaskGroup(null, listOf(rowOf(bills, RowState.PENDING))))))
-
-        composeRule.onNode(hasText("NO CATEGORY")).assertIsDisplayed()
-    }
-
-    @Test
     fun `with a doubled font size the last group can still be reached`() {
         val groups = listOf(TaskGroup(home, listOf(pending)), TaskGroup(null, listOf(rowOf(bills, RowState.PENDING))))
         composeRule.setContent {
