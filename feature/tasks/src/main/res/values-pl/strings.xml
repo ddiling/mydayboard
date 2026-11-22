@@ -178,5 +178,11 @@
         <item quantity="many">pominięte %1$d razy</item>
         <item quantity="other">pominięte %1$d razy</item>
     </plurals>
+    <string name="tasks_catstats_back">Wstecz</string>
+    <string name="tasks_catstats_edit">Edytuj kategorię</string>
+    <string name="tasks_catstats_empty_title">Brak zadań w kategorii %1$s</string>
+    <string name="tasks_catstats_empty_hint">Dodaj zadanie i wybierz tę kategorię.</string>
+    <string name="tasks_catstats_not_found_title">Tej kategorii już nie ma</string>
+    <string name="tasks_catstats_not_found_hint">Została usunięta albo nigdy nie istniała.</string>
     <string name="tasks_row_swipe_hint">przesuń w prawo, aby oznaczyć jako zrobione</string>
 </resources>
