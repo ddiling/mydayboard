@@ -17,9 +17,9 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
 
-private val previewToday = LocalDate.of(2026, 11, 20)
+internal val previewToday = LocalDate.of(2026, 11, 20)
 
-private fun previewRow(
+internal fun previewRow(
     name: String,
     repeat: Repeat,
     state: RowState,
