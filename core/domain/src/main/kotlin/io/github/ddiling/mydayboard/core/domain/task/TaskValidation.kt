@@ -133,10 +133,7 @@ fun validateCategoryName(
     }
 }
 
-/**
- * Every problem in [draft], in the order of the form (name, repeat, goal, note), so the UI can show all at once
- * and focus the first. Empty means the draft can be saved. The name is checked as [validateTaskName] does.
- */
+/** Every problem in [draft], in form order (name, repeat, goal, note), so the UI can show all and focus the first. */
 fun validateTaskDraft(draft: TaskDraft): List<TaskFormError> =
     listOfNotNull(nameError(draft.name)) +
         listOfNotNull(repeatError(draft.repeat)) +

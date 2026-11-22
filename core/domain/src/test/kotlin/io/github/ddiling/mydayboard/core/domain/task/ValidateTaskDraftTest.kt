@@ -72,11 +72,13 @@ class ValidateTaskDraftTest {
     }
 
     @Test
-    fun `a note of 81 code points is too long and 80 is valid`() {
-        val tooLong = listOf(TaskFormError.NoteTooLong(80))
+    fun `a note of 80 emoji is valid because the limit counts code points not UTF-16 chars`() {
+        assertEquals(emptyList<TaskFormError>(), validateTaskDraft(draft(note = "\uD83C\uDF4E".repeat(80))))
+    }
 
-        assertEquals(tooLong, validateTaskDraft(draft(note = "a".repeat(81))))
-        assertEquals(emptyList<TaskFormError>(), validateTaskDraft(draft(note = "a".repeat(80))))
+    @Test
+    fun `a note of 81 code points is too long`() {
+        assertEquals(listOf(TaskFormError.NoteTooLong(80)), validateTaskDraft(draft(note = "a".repeat(81))))
     }
 
     @Test
