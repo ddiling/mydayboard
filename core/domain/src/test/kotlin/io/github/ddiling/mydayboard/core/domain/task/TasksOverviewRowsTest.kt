@@ -64,7 +64,7 @@ class TasksOverviewRowsTest {
         }
 
     @Test
-    fun `a one-time task that expired yesterday is upcoming with nothing left`() =
+    fun `a finished one-time task stays as an upcoming row with nothing left`() =
         runTest {
             val task = fixture.addTask("CVs", repeat = Repeat.OneTime(yesterday), startDate = yesterday)
 
@@ -87,8 +87,13 @@ class TasksOverviewRowsTest {
         }
 
     @Test
-    fun `today's totals count only tasks due today`() =
+    fun `today's totals count only tasks due today, not a late one`() =
         runTest {
+            fixture.addTask(
+                "Pay bills",
+                repeat = Repeat.Monthly(15),
+                startDate = LocalDate.of(2026, 11, 1),
+            ) { copy(onMiss = OnMiss.STAYS) }
             val done = fixture.addTask("Breakfast")
             fixture.addTask("Vacuum")
             fixture.addTask("Water filter", repeat = Repeat.Weekdays(setOf(DayOfWeek.MONDAY)))

@@ -14,7 +14,11 @@ enum class RowState {
     /** A stays task whose due day has passed and which can still be done. Never shown on the dashboard. */
     LATE,
 
-    /** Not due today; [TaskRow.nextDue] says when it is next due (null when nothing is left). */
+    /**
+     * Not due today; [TaskRow.nextDue] says when it is next due. It is null when nothing is left, for example a
+     * finished one-time task: it stays in the list so the user can still open, untick or archive it, and the UI
+     * shows it as done.
+     */
     UPCOMING,
 }
 
