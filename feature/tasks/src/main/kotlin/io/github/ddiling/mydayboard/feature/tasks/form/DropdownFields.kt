@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.DropdownMenu
@@ -20,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.unit.dp
 import io.github.ddiling.mydayboard.core.domain.task.TaskCategory
 import io.github.ddiling.mydayboard.feature.tasks.R
 
@@ -43,6 +45,7 @@ private fun <T> DashedDropdown(
             Row(
                 Modifier
                     .fillMaxWidth()
+                    .heightIn(min = 48.dp)
                     .clickable(role = Role.DropdownList) { expanded = true }
                     .testTag(tag),
                 verticalAlignment = Alignment.CenterVertically,
