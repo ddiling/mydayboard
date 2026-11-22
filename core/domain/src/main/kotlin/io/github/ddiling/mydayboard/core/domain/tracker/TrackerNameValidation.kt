@@ -1,6 +1,8 @@
 package io.github.ddiling.mydayboard.core.domain.tracker
 
-import java.text.Normalizer
+import io.github.ddiling.mydayboard.core.domain.text.codePointLength
+import io.github.ddiling.mydayboard.core.domain.text.hasNoVisibleCharacter
+import io.github.ddiling.mydayboard.core.domain.text.normalizeName
 
 /**
  * The longest tracker name, in Unicode code points. Long enough for a short phrase, short enough to fit on a
@@ -46,46 +48,12 @@ sealed interface TrackerNameValidation {
  * and predictable, and the limit only has to keep names reasonably short.
  */
 fun validateTrackerName(raw: String): TrackerNameValidation {
-    val name = collapseWhitespace(Normalizer.normalize(raw, Normalizer.Form.NFC)).trim()
-    val codePoints = name.codePointCount(0, name.length)
+    val name = normalizeName(raw)
+    val codePoints = name.codePointLength()
     // An empty name is Blank too: every one of its zero code points is invisible.
     return when {
-        name.codePoints().allMatch(::isInvisible) -> TrackerNameValidation.Blank
+        hasNoVisibleCharacter(name) -> TrackerNameValidation.Blank
         codePoints > MAX_TRACKER_NAME_LENGTH -> TrackerNameValidation.TooLong(MAX_TRACKER_NAME_LENGTH)
         else -> TrackerNameValidation.Valid(name)
     }
-}
-
-/**
- * Replaces every run of Unicode whitespace (line breaks, tabs, no-break and other wide spaces) with one space.
- *
- * Plain code, not a regex: the JVM needs the `(?U)` flag for a Unicode `\s`, and Android's ICU regex engine
- * rejects that flag at runtime, so a regex would pass the JVM unit tests and crash on a device.
- */
-private fun collapseWhitespace(text: String): String =
-    buildString {
-        var inRun = false
-        text.codePoints().forEach { codePoint ->
-            if (isUnicodeWhitespace(codePoint)) {
-                if (!inRun) append(' ')
-                inRun = true
-            } else {
-                appendCodePoint(codePoint)
-                inRun = false
-            }
-        }
-    }
-
-/** Unicode White_Space: ASCII whitespace, NEL (U+0085), and space (incl. no-break), line and paragraph separators. */
-private fun isUnicodeWhitespace(codePoint: Int): Boolean =
-    Character.isWhitespace(codePoint) || Character.isSpaceChar(codePoint) || codePoint == NEXT_LINE
-
-private const val NEXT_LINE = 0x85
-
-private fun isInvisible(codePoint: Int): Boolean {
-    val category = Character.getType(codePoint)
-    // After the collapse and trim, the only whitespace left is the plain space, which isWhitespace covers.
-    return Character.isWhitespace(codePoint) ||
-        category == Character.FORMAT.toInt() ||
-        category == Character.CONTROL.toInt()
 }
