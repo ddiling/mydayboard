@@ -1,6 +1,9 @@
 package io.github.ddiling.mydayboard.feature.tasks.form
 
 import androidx.activity.ComponentActivity
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
@@ -159,6 +162,15 @@ class TaskFormScreenTest {
         show(blank.copy(repeatType = RepeatType.TIMES_PER_DAY, errors = listOf(TaskFormError.NoTimes)))
 
         composeRule.onNodeWithText("Add at least one time").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun `the name input is named by its label and carries the error`() {
+        show(blank.copy(name = " ", errors = listOf(TaskFormError.BlankName)))
+
+        composeRule
+            .onNodeWithContentDescription("Name")
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.Error, "Enter a name"))
     }
 
     @Test
