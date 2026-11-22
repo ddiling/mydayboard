@@ -14,7 +14,17 @@
     <string name="tasks_form_repeat_every_n_days">Co N dni</string>
     <string name="tasks_form_repeat_monthly">Raz w miesiącu</string>
     <string name="tasks_form_repeat_one_time">Jednorazowo</string>
+    <string name="tasks_form_times_title">GODZINY</string>
+    <string name="tasks_form_add_time">Dodaj godzinę</string>
+    <string name="tasks_form_remove_time">Usuń %1$s</string>
+    <string name="tasks_form_note">Notatka (opcjonalnie)</string>
+    <string name="tasks_form_time_optional">Godzina (opcjonalnie)</string>
+    <string name="tasks_form_clear_time">Wyczyść godzinę</string>
+    <string name="tasks_form_ok">OK</string>
+    <string name="tasks_form_cancel">Anuluj</string>
     <string name="tasks_form_not_found">Nie znaleziono zadania</string>
     <string name="tasks_form_error_name_blank">Wpisz nazwę</string>
     <string name="tasks_form_error_name_too_long">Nazwa jest za długa (maks. %1$d)</string>
+    <string name="tasks_form_error_note_too_long">Notatka jest za długa (maks. %1$d)</string>
+    <string name="tasks_form_error_no_times">Dodaj co najmniej jedną godzinę</string>
 </resources>

@@ -23,6 +23,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
 
 @RunWith(RobolectricTestRunner::class)
 class TaskFormScreenTest {
@@ -30,6 +31,8 @@ class TaskFormScreenTest {
     val composeRule = createAndroidComposeRule<ComponentActivity>()
 
     private val today = LocalDate.of(2026, 3, 2)
+    private val morning = LocalTime.of(8, 0)
+    private val evening = LocalTime.of(21, 30)
     private val home = TaskCategory("home", "Home", Instant.EPOCH, Instant.EPOCH)
 
     private val blank = TaskFormUiState(today = today)
@@ -120,10 +123,42 @@ class TaskFormScreenTest {
     }
 
     @Test
+    fun `several times a day shows the times as chips and the x removes one`() {
+        val removed = mutableListOf<LocalTime>()
+        show(
+            blank.copy(repeatType = RepeatType.TIMES_PER_DAY, times = listOf(morning, evening)),
+            TaskFormActions(onRemoveTime = { removed += it }),
+        )
+
+        composeRule.onNodeWithText("21:30").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Remove 08:00").performClick()
+
+        assertEquals(listOf(morning), removed)
+    }
+
+    @Test
+    fun `add time opens the clock and confirming reports the picked time`() {
+        val added = mutableListOf<LocalTime>()
+        show(blank.copy(repeatType = RepeatType.TIMES_PER_DAY), TaskFormActions(onAddTime = { added += it }))
+
+        composeRule.onNodeWithText("Add time").performClick()
+        composeRule.onNodeWithText("OK").performClick()
+
+        assertEquals(listOf(DEFAULT_PICKER_TIME), added)
+    }
+
+    @Test
     fun `a blank name shows its error`() {
         show(blank.copy(name = " ", errors = listOf(TaskFormError.BlankName)))
 
         composeRule.onNodeWithText("Enter a name").assertIsDisplayed()
+    }
+
+    @Test
+    fun `several times a day without a time shows its error`() {
+        show(blank.copy(repeatType = RepeatType.TIMES_PER_DAY, errors = listOf(TaskFormError.NoTimes)))
+
+        composeRule.onNodeWithText("Add at least one time").performScrollTo().assertIsDisplayed()
     }
 
     @Test

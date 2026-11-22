@@ -14,7 +14,17 @@
     <string name="tasks_form_repeat_every_n_days">Every N days</string>
     <string name="tasks_form_repeat_monthly">Once a month</string>
     <string name="tasks_form_repeat_one_time">One time</string>
+    <string name="tasks_form_times_title">TIMES</string>
+    <string name="tasks_form_add_time">Add time</string>
+    <string name="tasks_form_remove_time">Remove %1$s</string>
+    <string name="tasks_form_note">Note (optional)</string>
+    <string name="tasks_form_time_optional">Time (optional)</string>
+    <string name="tasks_form_clear_time">Clear time</string>
+    <string name="tasks_form_ok">OK</string>
+    <string name="tasks_form_cancel">Cancel</string>
     <string name="tasks_form_not_found">Task not found</string>
     <string name="tasks_form_error_name_blank">Enter a name</string>
     <string name="tasks_form_error_name_too_long">Name is too long (max %1$d)</string>
+    <string name="tasks_form_error_note_too_long">Note is too long (max %1$d)</string>
+    <string name="tasks_form_error_no_times">Add at least one time</string>
 </resources>
