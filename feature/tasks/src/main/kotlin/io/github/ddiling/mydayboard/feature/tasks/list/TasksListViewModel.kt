@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -55,7 +54,10 @@ internal class TasksListViewModel
             viewModelScope.launch { actions.undo(offer.outcome) }
         }
 
-        fun onUndoDismissed() = undo.update { null }
+        /** Clears [offer] only; a newer swipe that replaced it has its own message, which stays. */
+        fun onUndoDismissed(offer: UndoOffer) {
+            undo.compareAndSet(offer, null)
+        }
     }
 
 private fun TasksOverview.toUiState(undo: UndoOffer?): TasksListUiState =

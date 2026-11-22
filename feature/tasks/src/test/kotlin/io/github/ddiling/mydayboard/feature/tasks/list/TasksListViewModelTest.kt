@@ -71,6 +71,24 @@ class TasksListViewModelTest {
         }
 
     @Test
+    fun `only late rows count as late`() =
+        runTest {
+            val yesterday = fixture.today.minusDays(1)
+            fixture.addTask("Electricity bill", Repeat.OneTime(yesterday), onMiss = OnMiss.STAYS)
+            fixture.addTask("Rent", Repeat.OneTime(yesterday), onMiss = OnMiss.STAYS)
+            fixture.addTask("Pills")
+            fixture.addTask("Trash", Repeat.Weekdays(setOf(fixture.today.plusDays(1).dayOfWeek)))
+            val breakfast = fixture.addTask("Breakfast")
+            content()
+            viewModel.onSwipeDone(breakfast.id)
+            runCurrent()
+
+            val state = viewModel.uiState.value as TasksListUiState.Content
+            assertEquals(2, state.lateCount)
+            assertEquals(RowState.entries.toSet(), state.rowStates().values.toSet())
+        }
+
+    @Test
     fun `a swipe ticks the task and offers Undo with its name and progress`() =
         runTest {
             val cvs = fixture.addTask("Send CVs", goal = 3)
@@ -138,12 +156,31 @@ class TasksListViewModelTest {
             viewModel.onSwipeDone(breakfast.id)
             runCurrent()
 
-            viewModel.onUndoDismissed()
+            viewModel.onUndoDismissed(checkNotNull((viewModel.uiState.value as TasksListUiState.Content).undo))
             runCurrent()
 
             val state = viewModel.uiState.value as TasksListUiState.Content
             assertNull(state.undo)
             assertEquals(RowState.DONE, state.rowStates().getValue("Breakfast"))
+        }
+
+    @Test
+    fun `dismissing an older message keeps the newer Undo`() =
+        runTest {
+            val breakfast = fixture.addTask("Breakfast")
+            val pills = fixture.addTask("Pills")
+            content()
+            viewModel.onSwipeDone(breakfast.id)
+            runCurrent()
+            val olderOffer = checkNotNull((viewModel.uiState.value as TasksListUiState.Content).undo)
+            viewModel.onSwipeDone(pills.id)
+            runCurrent()
+
+            viewModel.onUndoDismissed(olderOffer)
+            runCurrent()
+
+            val state = viewModel.uiState.value as TasksListUiState.Content
+            assertEquals("Pills", state.undo?.name)
         }
 
     @Test
