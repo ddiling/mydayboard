@@ -93,4 +93,10 @@
     <string name="tasks_detail_stat_skipped">skipped</string>
     <string name="tasks_detail_stat_half_days">half days</string>
     <string name="tasks_detail_stat_late">late</string>
+    <string name="tasks_detail_back">Back</string>
+    <string name="tasks_detail_edit">Edit task</string>
+    <string name="tasks_detail_late_note">This task stays until you do it. It does not show on the dashboard.</string>
+    <string name="tasks_detail_not_found_title">This task is gone</string>
+    <string name="tasks_detail_not_found_hint">It was deleted or it never existed.</string>
+    <string name="tasks_detail_not_found_back">Back to tasks</string>
 </resources>
