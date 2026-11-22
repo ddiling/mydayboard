@@ -1,8 +1,6 @@
 package io.github.ddiling.mydayboard.feature.tasks.form
 
-import io.github.ddiling.mydayboard.core.domain.task.OnMiss
 import io.github.ddiling.mydayboard.core.domain.task.Repeat
-import io.github.ddiling.mydayboard.core.domain.task.TaskDraft
 import io.github.ddiling.mydayboard.core.testing.MainDispatcherRule
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
@@ -67,18 +65,7 @@ class TaskFormEditTest {
             advanceUntilIdle()
             viewModel.actions.onNameChange("Vacuum the stairs")
 
-            fixture.tasks.updateTask(
-                stored.id,
-                TaskDraft(
-                    "Changed elsewhere",
-                    categoryId = null,
-                    Repeat.EveryDay,
-                    time = null,
-                    note = null,
-                    goal = null,
-                    onMiss = OnMiss.EXPIRES,
-                ),
-            )
+            fixture.tasks.updateTask(stored.id, fixture.draftOf("Changed elsewhere"))
             advanceUntilIdle()
 
             assertEquals("Vacuum the stairs", viewModel.uiState.value.name)
