@@ -123,15 +123,16 @@ internal fun HistoryRowLine(
         Alignment.CenterVertically,
     ) {
         Text(day, style = MaterialTheme.typography.bodyMedium)
-        Text(result, style = MaterialTheme.typography.bodyMedium, color = resultColor(row.result))
+        Text(result, style = MaterialTheme.typography.bodyMedium, color = historyResultColor(row.result))
     }
 }
 
+/** Late is red like late rows in the list; its text ("Late · not done yet") keeps colour from being the only sign. */
 @Composable
-private fun resultColor(result: HistoryResult): Color =
+internal fun historyResultColor(result: HistoryResult): Color =
     when {
         result == HistoryResult.Done -> TaskColors.done
-        result == HistoryResult.Missed -> TaskColors.late
+        result == HistoryResult.Missed || result == HistoryResult.Late -> TaskColors.late
         result is HistoryResult.Partial && result.settled -> TaskColors.late
         else -> MaterialTheme.colorScheme.onSurface
     }
