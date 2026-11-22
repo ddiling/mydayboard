@@ -109,4 +109,9 @@
     <string name="tasks_detail_not_found_title">Tego zadania już nie ma</string>
     <string name="tasks_detail_not_found_hint">Zostało usunięte albo nigdy nie istniało.</string>
     <string name="tasks_detail_not_found_back">Wróć do zadań</string>
+    <string name="tasks_detail_unticked">Cofnięto: %1$s</string>
+    <string name="tasks_detail_chip_ticked">%1$s, zrobione. Dotknij, aby cofnąć</string>
+    <string name="tasks_detail_chip_open">%1$s, nie zrobione. Dotknij, aby odhaczyć</string>
+    <string name="tasks_detail_history_title">HISTORIA</string>
+    <string name="tasks_detail_history_row">%1$s, %2$s. Dotknij, aby zmienić</string>
 </resources>
