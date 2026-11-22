@@ -5,6 +5,8 @@ import io.github.ddiling.mydayboard.core.domain.task.OnMiss
 import io.github.ddiling.mydayboard.core.domain.task.Repeat
 import io.github.ddiling.mydayboard.core.domain.task.Task
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
@@ -90,5 +92,14 @@ class TaskMappersTest {
 
         assertEquals(leapDay.toEpochDay(), taskOf(Repeat.EveryDay, leapDay).toEntity().startDate)
         assertEquals(newYear, taskOf(Repeat.EveryDay, newYear).toEntity().toDomain().startDate)
+    }
+
+    @Test
+    fun `a weekdays row without its weekdays column fails naming the column`() {
+        val corrupt = taskOf(Repeat.Weekdays(setOf(DayOfWeek.MONDAY))).toEntity().copy(weekdays = null)
+
+        val error = assertThrows(IllegalStateException::class.java) { corrupt.toDomain() }
+
+        assertTrue(error.message.orEmpty().contains("weekdays"))
     }
 }
