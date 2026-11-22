@@ -1,5 +1,6 @@
 package io.github.ddiling.mydayboard.core.domain.task
 
+import io.github.ddiling.mydayboard.core.domain.time.today
 import io.github.ddiling.mydayboard.core.testing.MutableClock
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -95,16 +96,40 @@ class ScheduleWindowTest {
         assertEquals(listOf(OccurrenceStatus.DUE_TODAY, OccurrenceStatus.LATE), listOf(beforeMidnight, atMidnight))
     }
 
+    private fun statusOnDayAt(
+        instant: String,
+        day: LocalDate,
+    ): OccurrenceStatus {
+        val clock = MutableClock(Instant.parse(instant), warsaw)
+        return occurrencesOf(task(startDate = day), emptyList(), clock.today()).single().status
+    }
+
     @Test
-    fun `an every day task has exactly one occurrence on each daylight saving change day`() {
-        val springForward = LocalDate.of(2026, 3, 29)
-        val fallBack = LocalDate.of(2026, 10, 25)
+    fun `on the spring forward day just before 02 00 the occurrence is still due today`() {
+        val status = statusOnDayAt("2026-03-29T00:59:59.999Z", LocalDate.of(2026, 3, 29))
 
-        val spring = occurrencesOf(task(startDate = springForward.minusDays(1)), emptyList(), springForward.plusDays(1))
-        val fall = occurrencesOf(task(startDate = fallBack.minusDays(1)), emptyList(), fallBack.plusDays(1))
+        assertEquals(OccurrenceStatus.DUE_TODAY, status)
+    }
 
-        assertEquals(listOf(springForward.minusDays(1), springForward, springForward.plusDays(1)), spring.dues())
-        assertEquals(listOf(fallBack.minusDays(1), fallBack, fallBack.plusDays(1)), fall.dues())
+    @Test
+    fun `on the spring forward day just after 03 00 the occurrence is still due today`() {
+        val status = statusOnDayAt("2026-03-29T01:00:00Z", LocalDate.of(2026, 3, 29))
+
+        assertEquals(OccurrenceStatus.DUE_TODAY, status)
+    }
+
+    @Test
+    fun `on the fall back day at the first 02 30 the occurrence is due today`() {
+        val status = statusOnDayAt("2026-10-25T00:30:00Z", LocalDate.of(2026, 10, 25))
+
+        assertEquals(OccurrenceStatus.DUE_TODAY, status)
+    }
+
+    @Test
+    fun `on the fall back day at the second 02 30 the occurrence is still due today`() {
+        val status = statusOnDayAt("2026-10-25T01:30:00Z", LocalDate.of(2026, 10, 25))
+
+        assertEquals(OccurrenceStatus.DUE_TODAY, status)
     }
 
     @Test

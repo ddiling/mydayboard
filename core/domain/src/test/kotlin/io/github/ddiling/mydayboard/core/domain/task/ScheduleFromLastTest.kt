@@ -66,4 +66,37 @@ class ScheduleFromLastTest {
 
         assertEquals(OccurrenceStatus.DUE_TODAY, result.status)
     }
+
+    @Test
+    fun `a goal of 3 completes the occurrence on the day of the third tick and the next due day counts from it`() {
+        val thursday = wednesday.plusDays(1)
+        val friday = wednesday.plusDays(2)
+        val ticks = listOf(tick(wednesday), tick(thursday), tick(friday))
+
+        val result = occurrencesOf(task(everyThreeDays, onMiss = OnMiss.STAYS, goal = 3), ticks, friday.plusDays(3))
+
+        assertEquals(listOf(wednesday, friday.plusDays(3)), result.dues())
+    }
+
+    @Test
+    fun `a completed staying occurrence ends the day before the next due day`() {
+        val thursday = wednesday.plusDays(1)
+        val saturday = wednesday.plusDays(3)
+        val sunday = wednesday.plusDays(4)
+
+        val result = occurrencesOf(task(everyThreeDays, onMiss = OnMiss.STAYS), listOf(tick(thursday)), sunday)
+
+        assertEquals(saturday, result.first().lastDay)
+    }
+
+    @Test
+    fun `a tick on the next due day counts only for the next occurrence`() {
+        val thursday = wednesday.plusDays(1)
+        val sunday = wednesday.plusDays(4)
+        val ticks = listOf(tick(thursday), tick(sunday))
+
+        val result = occurrencesOf(task(everyThreeDays, onMiss = OnMiss.STAYS), ticks, sunday)
+
+        assertEquals(listOf(1, 1), result.map { it.done })
+    }
 }
