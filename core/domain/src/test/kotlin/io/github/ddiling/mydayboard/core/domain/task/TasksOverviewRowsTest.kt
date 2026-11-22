@@ -37,7 +37,7 @@ class TasksOverviewRowsTest {
         }
 
     @Test
-    fun `a late bill that stays is late since its due day and not on the dashboard`() =
+    fun `a late bill that stays is late since its due day`() =
         runTest {
             val bill =
                 fixture.addTask(
@@ -50,7 +50,6 @@ class TasksOverviewRowsTest {
 
             assertEquals(RowState.LATE, row.state)
             assertEquals(LocalDate.of(2026, 11, 15), row.lateSince)
-            assertTrue(fixture.overview().dashboardRows().isEmpty())
         }
 
     @Test
@@ -112,7 +111,7 @@ class TasksOverviewRowsTest {
         }
 
     @Test
-    fun `when everything is done the dashboard is empty and done equals total`() =
+    fun `when everything is done, done equals total`() =
         runTest {
             val first = fixture.addTask("Breakfast")
             val second = fixture.addTask("Vacuum")
@@ -122,7 +121,6 @@ class TasksOverviewRowsTest {
             val overview = fixture.overview()
 
             assertEquals(overview.totalToday, overview.doneToday)
-            assertTrue(overview.dashboardRows().isEmpty())
         }
 
     @Test

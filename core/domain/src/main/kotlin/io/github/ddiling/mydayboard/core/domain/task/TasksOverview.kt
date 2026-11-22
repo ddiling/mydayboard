@@ -50,9 +50,3 @@ data class TasksOverview(
 
     val doneToday: Int get() = rows.count { it.state == RowState.DONE }
 }
-
-/** A category and its rows in the full list; [category] is null for the "No category" group. */
-data class TaskGroup(
-    val category: TaskCategory?,
-    val rows: List<TaskRow>,
-)
