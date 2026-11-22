@@ -264,6 +264,16 @@ class TaskStatsTest {
     }
 
     @Test
+    fun `the window is 30 calendar days across the fall back day`() {
+        val fallBack = LocalDate.of(2026, 10, 25)
+        val start = fallBack.minusDays(60)
+
+        val stats = computeTaskStats(task(startDate = start), emptyList(), fallBack.plusDays(5))
+
+        assertEquals(STATS_WINDOW_DAYS, stats.plannedDays)
+    }
+
+    @Test
     fun `the window is 30 calendar days across a leap day`() {
         val leapDay = LocalDate.of(2028, 2, 29)
 
