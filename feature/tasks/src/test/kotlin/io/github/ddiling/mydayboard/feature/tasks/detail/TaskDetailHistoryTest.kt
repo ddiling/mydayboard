@@ -47,6 +47,14 @@ class TaskDetailHistoryTest {
         }
 
     @Test
+    fun `a one-time task that expired undone shows as missed`() =
+        runTest {
+            val task = fixture.addTask("Send CVs", Repeat.OneTime(yesterday), startDate = yesterday)
+
+            assertEquals(listOf(HistoryRow(yesterday, HistoryResult.Missed)), fixture.content(task).history)
+        }
+
+    @Test
     fun `a half day of a several-times task is settled as a partial row`() =
         runTest {
             val task =

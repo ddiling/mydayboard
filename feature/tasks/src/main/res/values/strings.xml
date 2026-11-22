@@ -42,6 +42,7 @@
     <string name="tasks_details_late">late · was due %1$s</string>
     <string name="tasks_details_done">Done</string>
     <string name="tasks_details_missed">Missed</string>
+    <string name="tasks_details_late_open">Late · not done yet</string>
     <string name="tasks_row_done">Done</string>
     <string name="tasks_row_done_label">Done</string>
     <string name="tasks_row_mark_done">Mark done</string>
@@ -155,4 +156,5 @@
     <string name="tasks_category_delete">Delete category</string>
     <string name="tasks_category_error_duplicate">A category with this name already exists</string>
     <string name="tasks_category_error_too_long">The name is too long (limit: %1$d)</string>
+    <string name="tasks_row_swipe_hint">swipe right to mark done</string>
 </resources>

@@ -44,6 +44,7 @@
     <string name="tasks_details_late">spóźnione · termin: %1$s</string>
     <string name="tasks_details_done">Zrobione</string>
     <string name="tasks_details_missed">Pominięte</string>
+    <string name="tasks_details_late_open">Spóźnione · jeszcze nie zrobione</string>
     <string name="tasks_row_done">Zrobione</string>
     <string name="tasks_row_done_label">Zrobione</string>
     <string name="tasks_row_mark_done">Oznacz jako zrobione</string>
@@ -167,4 +168,5 @@
     <string name="tasks_category_delete">Usuń kategorię</string>
     <string name="tasks_category_error_duplicate">Kategoria o tej nazwie już istnieje</string>
     <string name="tasks_category_error_too_long">Nazwa jest za długa (limit: %1$d)</string>
+    <string name="tasks_row_swipe_hint">przesuń w prawo, aby oznaczyć jako zrobione</string>
 </resources>
