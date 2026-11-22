@@ -163,4 +163,10 @@
         <item quantity="one">skipped %1$d time</item>
         <item quantity="other">skipped %1$d times</item>
     </plurals>
+    <string name="tasks_catstats_back">Back</string>
+    <string name="tasks_catstats_edit">Edit category</string>
+    <string name="tasks_catstats_empty_title">No tasks in %1$s</string>
+    <string name="tasks_catstats_empty_hint">Add a task and choose this category.</string>
+    <string name="tasks_catstats_not_found_title">This category is gone</string>
+    <string name="tasks_catstats_not_found_hint">It was deleted or never existed.</string>
 </resources>
