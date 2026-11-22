@@ -44,7 +44,7 @@
     <string name="tasks_details_late">spóźnione · termin: %1$s</string>
     <string name="tasks_details_done">Zrobione</string>
     <string name="tasks_details_missed">Pominięte</string>
-    <string name="tasks_details_late">Spóźnione · jeszcze nie zrobione</string>
+    <string name="tasks_details_late_open">Spóźnione · jeszcze nie zrobione</string>
     <string name="tasks_row_done">Zrobione</string>
     <string name="tasks_row_done_label">Zrobione</string>
     <string name="tasks_row_mark_done">Oznacz jako zrobione</string>

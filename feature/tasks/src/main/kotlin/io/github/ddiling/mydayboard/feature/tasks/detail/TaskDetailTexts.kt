@@ -83,7 +83,7 @@ internal fun historyResultText(
     when (result) {
         HistoryResult.Done -> resources.getString(R.string.tasks_details_done)
         HistoryResult.Missed -> resources.getString(R.string.tasks_details_missed)
-        HistoryResult.Late -> resources.getString(R.string.tasks_details_late)
+        HistoryResult.Late -> resources.getString(R.string.tasks_details_late_open)
         is HistoryResult.Partial -> partialText(resources, result)
     }
 
