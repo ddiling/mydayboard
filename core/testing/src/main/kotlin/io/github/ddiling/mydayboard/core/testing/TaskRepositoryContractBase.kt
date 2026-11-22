@@ -44,8 +44,7 @@ abstract class TaskRepositoryContractBase {
     /** Not the clock's day, so a test can tell a given start date from one taken from the clock. */
     protected val startDay: LocalDate = LocalDate.of(2025, 3, 10)
 
-    protected val draft =
-        TaskDraft("Vacuum", null, Repeat.EveryDay, null, null, null, OnMiss.STAYS)
+    protected val draft = TaskDraft("Vacuum", null, Repeat.EveryDay, null, null, null, OnMiss.STAYS)
 
     protected suspend fun givenTask(draft: TaskDraft = this.draft): Task = tasks.createTask(draft, startDay)
 
