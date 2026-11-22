@@ -2,8 +2,13 @@ package io.github.ddiling.mydayboard.core.domain.task
 
 import io.github.ddiling.mydayboard.core.testing.TestZones
 import io.github.ddiling.mydayboard.core.testing.warsaw
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.yield
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -279,13 +284,82 @@ class TaskActionsTest {
     @Test
     fun `at ten past midnight yesterday can be marked`() =
         runTest {
-            val task = fixture.addTask("Dinner", startDate = yesterday)
+            val dayBeforeMidnight = today
+            val task = fixture.addTask("Dinner", startDate = dayBeforeMidnight)
+            fixture.clock.now = warsaw(2026, 11, 19, 0, 10)
+            val yesterdayAfterMidnight =
+                fixture.clock
+                    .instant()
+                    .atZone(fixture.clock.zone)
+                    .toLocalDate()
+                    .minusDays(1)
+
+            val outcome = actions.markDay(task.id, yesterdayAfterMidnight, listOf(null))
+
+            assertEquals(dayBeforeMidnight, outcome?.day)
+            assertEquals(listOf(dayBeforeMidnight), ticksOf(task).map { it.day })
+        }
+
+    @Test
+    fun `at ten past midnight the new today can no longer be marked`() =
+        runTest {
+            val task = fixture.addTask("Dinner", startDate = today)
             fixture.clock.now = warsaw(2026, 11, 19, 0, 10)
 
-            val outcome = actions.markDay(task.id, today, listOf(null))
+            assertNull(actions.markDay(task.id, today.plusDays(1), listOf(null)))
+        }
 
-            assertEquals(today, outcome?.day)
-            assertEquals(listOf(today), ticksOf(task).map { it.day })
+    @Test
+    fun `untick on an archived task returns null and keeps its ticks`() =
+        runTest {
+            val task = fixture.addTask("Vacuum")
+            actions.swipeDone(task.id)
+            fixture.tasks.archiveTask(task.id)
+
+            assertNull(actions.untickToday(task.id))
+            assertEquals(1, ticksOf(task).size)
+        }
+
+    @Test
+    fun `untick on a deleted task returns null`() =
+        runTest {
+            val task = fixture.addTask("Vacuum")
+            actions.swipeDone(task.id)
+            fixture.tasks.deleteTask(task.id)
+
+            assertNull(actions.untickToday(task.id))
+        }
+
+    @Test
+    fun `markDay on an archived task returns null and stores nothing`() =
+        runTest {
+            val task = fixture.addTask("Vacuum", startDate = yesterday)
+            fixture.tasks.archiveTask(task.id)
+
+            assertNull(actions.markDay(task.id, yesterday, listOf(null)))
+            assertTrue(ticksOf(task).isEmpty())
+        }
+
+    @Test
+    fun `markDay on a deleted task returns null and stores nothing`() =
+        runTest {
+            val task = fixture.addTask("Vacuum", startDate = yesterday)
+            fixture.tasks.deleteTask(task.id)
+
+            assertNull(actions.markDay(task.id, yesterday, listOf(null)))
+            assertTrue(ticksOf(task).isEmpty())
+        }
+
+    @Test
+    fun `two concurrent swipes on a count goal at two of three end at three`() =
+        runTest {
+            val slowActions = TaskActions(fixture.tasks, YieldingTicks(fixture.ticks), fixture.clock)
+            val task = goalTask(goal = 3)
+            repeat(2) { actions.swipeDone(task.id) }
+
+            listOf(async { slowActions.swipeDone(task.id) }, async { slowActions.swipeDone(task.id) }).awaitAll()
+
+            assertEquals(3, ticksOf(task).size)
         }
 
     @Test
@@ -327,4 +401,11 @@ class TaskActionsTest {
 
         assertEquals(listOf(day, day), ticksOf(task).map { it.day })
     }
+}
+
+/** Lets other coroutines run between reading the ticks and writing, the way a real database does. */
+private class YieldingTicks(
+    private val inner: TaskTickRepository,
+) : TaskTickRepository by inner {
+    override fun observeTicks(taskId: String): Flow<List<TaskTick>> = inner.observeTicks(taskId).onEach { yield() }
 }
