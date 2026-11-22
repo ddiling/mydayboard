@@ -14,7 +14,6 @@ import io.github.ddiling.mydayboard.core.testing.MutableClock
 import io.github.ddiling.mydayboard.core.testing.SequentialIdGenerator
 import io.github.ddiling.mydayboard.core.testing.TestZones
 import io.github.ddiling.mydayboard.core.testing.warsaw
-import io.github.ddiling.mydayboard.feature.tasks.day.DaySheet
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
@@ -47,16 +46,8 @@ internal class TaskDetailFixture(
     }
 
     // Built after the Main dispatcher is set: the view model starts its scope on it.
-    fun viewModel(taskId: String): TaskDetailViewModel {
-        val actions = TaskActions(tasks, ticks, clock)
-        return TaskDetailViewModel(
-            SavedStateHandle(mapOf("taskId" to taskId)),
-            observe,
-            actions,
-            ticks,
-            DaySheet(actions, clock),
-        )
-    }
+    fun viewModel(taskId: String) =
+        TaskDetailViewModel(SavedStateHandle(mapOf("taskId" to taskId)), observe, TaskActions(tasks, ticks, clock))
 
     suspend fun addTask(
         name: String,
