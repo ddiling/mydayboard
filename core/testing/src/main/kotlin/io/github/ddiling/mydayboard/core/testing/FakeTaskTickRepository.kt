@@ -36,9 +36,7 @@ class FakeTaskTickRepository(
         taskId: String,
         day: LocalDate,
         slot: LocalTime?,
-    ): TaskTick? {
-        return insert(taskId, day, slot, clock.instant())
-    }
+    ): TaskTick? = insert(taskId, day, slot, clock.instant())
 
     override suspend fun deleteTick(tickId: String) {
         removeTick(tickId, clock.instant())
@@ -46,7 +44,7 @@ class FakeTaskTickRepository(
 
     override suspend fun restoreTick(tickId: String) {
         val now = clock.instant()
-        state.update { s -> s.withRestored(tickId, now) }
+        state.update { it.withRestored(tickId, now) }
     }
 
     override suspend fun replaceDay(
@@ -75,27 +73,11 @@ class FakeTaskTickRepository(
         now: Instant,
     ): TaskTick? {
         val s = state.value
-        val existing = s.ticks.firstOrNull { it.taskId == taskId && it.day == day && it.slot == slot }
-        return when {
-            s.tasks.none { it.id == taskId } -> {
-                null
-            }
-
-            slot != null && existing != null -> {
-                existing
-            }
-
-            else -> {
-                TaskTick(ids.newId(), taskId, day, slot, now, now).also { tick ->
-                    state.update {
-                        it.copy(
-                            ticks =
-                                it.ticks + tick,
-                        )
-                    }
-                }
-            }
-        }
+        if (s.tasks.none { it.id == taskId }) return null
+        val duplicate = slot?.let { s.ticks.firstOrNull { t -> t.taskId == taskId && t.day == day && t.slot == slot } }
+        val tick = duplicate ?: TaskTick(ids.newId(), taskId, day, slot, now, now)
+        if (duplicate == null) state.update { it.copy(ticks = it.ticks + tick) }
+        return tick
     }
 
     private fun removeTick(

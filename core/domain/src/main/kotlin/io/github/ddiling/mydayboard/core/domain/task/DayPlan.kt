@@ -9,10 +9,9 @@ data class DayPlan(
 )
 
 /**
- * Compares the live ticks of one day with the wanted [slots]. Both repositories use it, so they cannot drift apart.
- * A timed slot is a yes/no mark, so it never has two ticks, even if the list names it twice. A tick without a slot
- * is a count, so its wanted number is how many nulls the list has. When ticks must go, the newest go first, so an
- * old completion keeps its original time.
+ * Compares the live ticks of one day with the wanted [slots]; both repositories use it so they cannot drift. A
+ * timed slot is a yes/no mark with one tick, even if named twice. A tick without a slot is a count: as many as
+ * there are nulls. Surplus ticks go newest first, so an old completion keeps its original time.
  */
 fun planDay(
     existing: List<TaskTick>,

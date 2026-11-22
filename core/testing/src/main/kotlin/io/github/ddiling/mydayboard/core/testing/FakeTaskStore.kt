@@ -16,8 +16,7 @@ internal data class FakeTaskState(
 /**
  * The data behind [FakeTaskRepository], [FakeTaskCategoryRepository] and [FakeTaskTickRepository]. They share
  * one store, like the one Room database behind the real ones: a task reads as uncategorised while its category
- * is deleted. Deleted categories and ticks are kept aside only so that a restore can bring them back. Ticks of
- * a task that is gone stay in the lists but are hidden, as the Room join hides them.
+ * is deleted. Deleted categories and ticks are kept aside only so that a restore can bring them back.
  */
 class FakeTaskStore {
     internal val state = MutableStateFlow(FakeTaskState())

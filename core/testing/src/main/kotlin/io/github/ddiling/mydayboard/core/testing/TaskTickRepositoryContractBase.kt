@@ -7,11 +7,7 @@ import kotlinx.coroutines.flow.first
 import java.time.LocalDate
 import java.time.LocalTime
 
-/**
- * Shared fixtures of the tick repository contract tests, split into [TaskTickContractTest],
- * [TaskTickObserveContractTest] and [TaskTickDayContractTest]. The tick repository must see the same tasks as the
- * task repository, so an implementation builds both over one store or database.
- */
+/** Fixtures of [TaskTickContractTest], [TaskTickObserveContractTest] and [TaskTickDayContractTest]. */
 abstract class TaskTickRepositoryContractBase : TaskRepositoryContractBase() {
     abstract fun createTickRepository(
         clock: MutableClock,

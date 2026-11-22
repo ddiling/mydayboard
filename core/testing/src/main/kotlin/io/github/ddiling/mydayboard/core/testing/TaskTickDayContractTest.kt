@@ -8,8 +8,6 @@ import org.junit.Test
 
 /** Contract for replacing the ticks of one day and undoing that. */
 abstract class TaskTickDayContractTest : TaskTickRepositoryContractBase() {
-    private val countGoal = 3
-
     @Test
     fun `replacing a day adds the missing slots`() =
         runTest {
@@ -50,6 +48,7 @@ abstract class TaskTickDayContractTest : TaskTickRepositoryContractBase() {
     fun `replacing a day with a count of three and no slot adds three ticks`() =
         runTest {
             val task = givenTask()
+            val countGoal = 3
 
             val change = ticks.replaceDay(task.id, day, List(countGoal) { null })
 
