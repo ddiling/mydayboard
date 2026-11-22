@@ -68,6 +68,45 @@ class TaskActions
             }
 
         /**
+         * Ticks one chosen [slot] of a several-times task for today, for the details screen where the user picks
+         * the time (a swipe always takes the next one). Null when the task is not live, has no such time, is not
+         * due today, or that time is already ticked.
+         */
+        suspend fun tickSlotToday(
+            taskId: String,
+            slot: LocalTime,
+        ): TickOutcome.Added? =
+            lock.withLock {
+                val today = today()
+                val task = liveTask(taskId) ?: return null
+                val times = (task.repeat as? Repeat.TimesPerDay)?.times ?: return null
+                val ticksNow = ticks.observeTicks(taskId).first()
+                val dueToday = occurrencesOf(task, ticksNow, today).any { it.status == OccurrenceStatus.DUE_TODAY }
+                val free = ticksNow.none { it.day == today && it.slot == slot }
+                val tick = if (dueToday && slot in times && free) ticks.addTick(taskId, today, slot) else null
+                tick?.let {
+                    val progress = progressOn(task, today)
+                    TickOutcome.Added(taskId, it.id, progress?.done ?: 1, progress?.target ?: 1, slot)
+                }
+            }
+
+        /** Removes today's tick of one [slot], leaving the other times alone. Null when that time is not ticked. */
+        suspend fun untickSlotToday(
+            taskId: String,
+            slot: LocalTime,
+        ): TickOutcome.Removed? =
+            lock.withLock {
+                val today = today()
+                val task = liveTask(taskId) ?: return null
+                val tick = ticks.observeTicks(taskId).first().firstOrNull { it.day == today && it.slot == slot }
+                tick?.let {
+                    ticks.deleteTick(it.id)
+                    val progress = progressOn(task, today)
+                    TickOutcome.Removed(taskId, it.id, progress?.done ?: 0, progress?.target ?: targetOf(task))
+                }
+            }
+
+        /**
          * Makes [day] match [slots]. Allowed from the task's start date up to yesterday; today and the future use
          * the swipe and the big button, so a mistaken tap cannot pre-fill days that have not happened. Null when
          * the day is not allowed, or a several-times task gets a time that is not one of its own.
