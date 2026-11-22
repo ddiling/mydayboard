@@ -33,6 +33,20 @@ interface TaskTickDao {
     )
     fun observeAllLive(): Flow<List<TaskTickEntity>>
 
+    /** Live ticks of one day, empty while the task is soft-deleted; oldest first within a slot. */
+    @Query(
+        """
+        SELECT k.* FROM task_ticks AS k
+        INNER JOIN tasks AS t ON t.id = k.task_id
+        WHERE k.task_id = :taskId AND k.day = :day AND k.deleted_at IS NULL AND t.deleted_at IS NULL
+        ORDER BY k.slot_minute, k.created_at, k.id
+        """,
+    )
+    suspend fun findLiveForDay(
+        taskId: String,
+        day: Long,
+    ): List<TaskTickEntity>
+
     /** Inserts only while the task is live; returns the new row id, or -1 when it inserts nothing. */
     @Query(
         """
