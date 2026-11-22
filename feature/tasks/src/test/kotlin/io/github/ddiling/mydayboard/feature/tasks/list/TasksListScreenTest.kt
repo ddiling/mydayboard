@@ -136,7 +136,8 @@ class TasksListScreenTest {
     fun `group titles are headings`() {
         show(content())
 
-        composeRule.onNode(SemanticsMatcher.keyIsDefined(SemanticsProperties.Heading) and hasText("HOME")).assertIsDisplayed()
+        val heading = SemanticsMatcher.keyIsDefined(SemanticsProperties.Heading)
+        composeRule.onNode(heading and hasText("HOME")).assertIsDisplayed()
     }
 
     @Test
