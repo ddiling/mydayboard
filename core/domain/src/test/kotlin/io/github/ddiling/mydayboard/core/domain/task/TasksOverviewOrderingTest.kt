@@ -111,6 +111,61 @@ class TasksOverviewOrderingTest {
         }
 
     @Test
+    fun `the dashboard orders tasks equal in time and name ignoring case by id`() =
+        runTest {
+            fixture.addTask("Water")
+            fixture.addTask("water")
+            val overview = fixture.overview()
+
+            val rows = overview.copy(rows = overview.rows.reversed()).dashboardRows()
+
+            assertEquals(listOf("id-1", "id-2"), rows.map { it.task.id })
+        }
+
+    @Test
+    fun `inside a group tasks equal in time and name ignoring case are ordered by id`() =
+        runTest {
+            fixture.addTask("Water")
+            fixture.addTask("water")
+            val overview = fixture.overview()
+
+            val group = overview.copy(rows = overview.rows.reversed()).groupedByCategory().single()
+
+            assertEquals(listOf("id-1", "id-2"), group.rows.map { it.task.id })
+        }
+
+    @Test
+    fun `categories named the same ignoring case stay separate groups ordered by id`() =
+        runTest {
+            val upper = fixture.categories.createCategory("Home")
+            val lower = fixture.categories.createCategory("home")
+            fixture.addTask("Vacuum") { copy(categoryId = upper.id) }
+            fixture.addTask("Dusting") { copy(categoryId = lower.id) }
+            val overview = fixture.overview()
+
+            val groups = overview.copy(rows = overview.rows.reversed()).groupedByCategory()
+
+            assertEquals(listOf(upper.id, lower.id), groups.map { it.category?.id })
+        }
+
+    @Test
+    fun `inside a group upcoming tasks are ordered by name, not by time`() =
+        runTest {
+            val monday = Repeat.Weekdays(setOf(java.time.DayOfWeek.MONDAY))
+            fixture.addTask("Zumba", repeat = monday, time = LocalTime.of(7, 0))
+            fixture.addTask("Aardvark", repeat = monday, time = LocalTime.of(20, 0))
+
+            val rows =
+                fixture
+                    .overview()
+                    .groupedByCategory()
+                    .single()
+                    .rows
+
+            assertEquals(listOf("Aardvark", "Zumba"), rows.map { it.task.name })
+        }
+
+    @Test
     fun `a late stays task is not on the dashboard`() =
         runTest {
             val monthly = Repeat.Monthly(15)
