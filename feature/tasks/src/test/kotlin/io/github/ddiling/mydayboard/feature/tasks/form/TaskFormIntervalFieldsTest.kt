@@ -1,6 +1,12 @@
 package io.github.ddiling.mydayboard.feature.tasks.form
 
 import androidx.activity.ComponentActivity
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertHeightIsAtLeast
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
@@ -8,10 +14,13 @@ import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onParent
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.unit.dp
 import io.github.ddiling.mydayboard.core.domain.task.EveryNDaysMode
 import io.github.ddiling.mydayboard.core.domain.task.MAX_INTERVAL_DAYS
 import io.github.ddiling.mydayboard.core.domain.task.MIN_INTERVAL_DAYS
@@ -29,6 +38,7 @@ class TaskFormIntervalFieldsTest {
 
     private val today = LocalDate.of(2026, 3, 2)
     private val everyThreeDays = TaskFormUiState(today = today, repeatType = RepeatType.EVERY_N_DAYS)
+    private val startedLater = LocalDate.of(2026, 4, 20)
     private val fixedEveryThreeDays = everyThreeDays.copy(intervalMode = EveryNDaysMode.FIXED_CALENDAR)
 
     private fun show(
@@ -66,14 +76,33 @@ class TaskFormIntervalFieldsTest {
     }
 
     @Test
-    fun `the stepper buttons report one more and one fewer`() {
+    fun `the plus button reports one more day`() {
         val intervals = mutableListOf<Int>()
         show(everyThreeDays, TaskFormActions(onIntervalChange = { intervals += it }))
 
         composeRule.onNodeWithTag("tasks_form_interval_more").performScrollTo().performClick()
+
+        assertEquals(listOf(4), intervals)
+    }
+
+    @Test
+    fun `the minus button reports one fewer day`() {
+        val intervals = mutableListOf<Int>()
+        show(everyThreeDays, TaskFormActions(onIntervalChange = { intervals += it }))
+
         composeRule.onNodeWithTag("tasks_form_interval_less").performScrollTo().performClick()
 
-        assertEquals(listOf(4, 2), intervals)
+        assertEquals(listOf(2), intervals)
+    }
+
+    @Test
+    fun `the two modes are one radio group`() {
+        show(everyThreeDays)
+
+        composeRule
+            .onNodeWithTag("tasks_form_mode_fixed")
+            .onParent()
+            .assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.SelectableGroup))
     }
 
     @Test
@@ -114,14 +143,39 @@ class TaskFormIntervalFieldsTest {
     }
 
     @Test
-    fun `confirming the date picker reports the date it opened on`() {
-        val picked = mutableListOf<LocalDate>()
-        show(fixedEveryThreeDays, TaskFormActions(onFirstDueChange = { picked += it }))
+    fun `the starting on field is a button at least 48 dp tall`() {
+        show(fixedEveryThreeDays)
+
+        composeRule
+            .onNodeWithTag("tasks_form_first_due")
+            .performScrollTo()
+            .assertHeightIsAtLeast(48.dp)
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
+    }
+
+    @Test
+    fun `the date picker opens on the date in the state, not on today`() {
+        show(fixedEveryThreeDays.copy(firstDue = startedLater))
 
         composeRule.onNodeWithTag("tasks_form_first_due").performScrollTo().performClick()
+
+        // One copy is the field behind the dialog, the other is the picker headline.
+        composeRule.onAllNodesWithText("Apr 20, 2026").assertCountEquals(2)
+    }
+
+    @Test
+    fun `confirming the date picker reports the day that was picked`() {
+        val picked = mutableListOf<LocalDate>()
+        show(
+            fixedEveryThreeDays.copy(firstDue = startedLater),
+            TaskFormActions(onFirstDueChange = { picked += it }),
+        )
+
+        composeRule.onNodeWithTag("tasks_form_first_due").performScrollTo().performClick()
+        composeRule.onNodeWithText("April 25, 2026", substring = true).performClick()
         composeRule.onNodeWithText("OK").performClick()
 
-        assertEquals(listOf(today), picked)
+        assertEquals(listOf(startedLater.withDayOfMonth(25)), picked)
     }
 
     @Test
