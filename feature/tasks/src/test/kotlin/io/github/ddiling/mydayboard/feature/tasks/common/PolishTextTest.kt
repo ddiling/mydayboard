@@ -9,6 +9,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import java.time.DayOfWeek
 import java.time.LocalDate
 
 @RunWith(RobolectricTestRunner::class)
@@ -37,5 +38,25 @@ class PolishTextTest {
         val row = rowOf(oneTime, RowState.UPCOMING).copy(done = 1, target = 1)
 
         assertEquals("Zrobione", detailsText(resources, row, textsToday))
+    }
+
+    @Test
+    fun `monday to friday reads as w dni robocze`() {
+        val task = taskOf(Repeat.Weekdays(DayOfWeek.entries.take(5).toSet()))
+
+        assertEquals("w dni robocze", scheduleText(resources, task))
+    }
+
+    @Test
+    fun `an every-day task without a time reads codziennie`() {
+        assertEquals("codziennie", scheduleText(resources, taskOf(Repeat.EveryDay)))
+    }
+
+    @Test
+    fun `a late task says termin and the date`() {
+        val oneTime = taskOf(Repeat.OneTime(LocalDate.of(2026, 11, 1)))
+        val row = rowOf(oneTime, RowState.LATE, lateSince = LocalDate.of(2026, 11, 10))
+
+        assertEquals("spóźnione · termin: 10 lis", detailsText(resources, row, textsToday))
     }
 }
