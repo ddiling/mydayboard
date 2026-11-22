@@ -1,9 +1,7 @@
 package io.github.ddiling.mydayboard.feature.tasks.form
 
 import io.github.ddiling.mydayboard.core.domain.task.EveryNDaysMode
-import io.github.ddiling.mydayboard.core.domain.task.MAX_DAY_OF_MONTH
 import io.github.ddiling.mydayboard.core.domain.task.MAX_INTERVAL_DAYS
-import io.github.ddiling.mydayboard.core.domain.task.MIN_DAY_OF_MONTH
 import io.github.ddiling.mydayboard.core.domain.task.MIN_INTERVAL_DAYS
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -26,8 +24,8 @@ internal fun TaskFormUiState.withIntervalMode(mode: EveryNDaysMode) = copy(inter
 
 internal fun TaskFormUiState.withFirstDue(date: LocalDate) = copy(firstDue = date).revalidated()
 
-internal fun TaskFormUiState.withDayOfMonth(day: Int) =
-    copy(dayOfMonth = day.coerceIn(MIN_DAY_OF_MONTH, MAX_DAY_OF_MONTH)).revalidated()
+/** Stored as typed, so 0 or 32 shows the range error instead of being silently moved into the range. */
+internal fun TaskFormUiState.withDayOfMonth(day: Int) = copy(dayOfMonth = day).revalidated()
 
 internal fun TaskFormUiState.withDueDate(date: LocalDate) = copy(dueDate = date).revalidated()
 
