@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import io.github.ddiling.mydayboard.core.designsystem.preview.PreviewSurface
+import io.github.ddiling.mydayboard.core.domain.task.EveryNDaysMode
 import io.github.ddiling.mydayboard.core.domain.task.TaskCategory
 import io.github.ddiling.mydayboard.core.domain.task.TaskFormError
 import java.time.DayOfWeek
@@ -73,6 +74,18 @@ private fun TaskFormErrorsPreview() =
             name = " ",
             repeatType = RepeatType.WEEKDAYS,
             errors = listOf(TaskFormError.BlankName, TaskFormError.NoWeekdays),
+        ),
+    )
+
+@PreviewLightDark
+@Composable
+private fun TaskFormEveryNDaysPreview() =
+    PreviewForm(
+        emptyForm.copy(
+            name = "Water filter",
+            repeatType = RepeatType.EVERY_N_DAYS,
+            intervalMode = EveryNDaysMode.FIXED_CALENDAR,
+            canSave = true,
         ),
     )
 
