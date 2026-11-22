@@ -47,5 +47,10 @@
     <string name="tasks_row_done">Zrobione</string>
     <string name="tasks_row_done_label">Zrobione</string>
     <string name="tasks_row_mark_done">Oznacz jako zrobione</string>
+    <string name="tasks_undo_action">Cofnij</string>
+    <string name="tasks_undo_done">%1$s: zrobione</string>
+    <string name="tasks_undo_progress">%1$s %2$d/%3$d</string>
+    <string name="tasks_undo_progress_done">%1$s %2$d/%3$d · zrobione</string>
+    <string name="tasks_undo_slot_done">%1$s %2$s: zrobione</string>
     <string name="tasks_row_swipe_hint">przesuń w prawo, aby oznaczyć jako zrobione</string>
 </resources>
