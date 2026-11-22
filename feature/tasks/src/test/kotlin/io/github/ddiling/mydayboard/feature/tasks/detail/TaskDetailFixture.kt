@@ -1,8 +1,10 @@
 package io.github.ddiling.mydayboard.feature.tasks.detail
 
+import androidx.lifecycle.SavedStateHandle
 import io.github.ddiling.mydayboard.core.domain.task.OnMiss
 import io.github.ddiling.mydayboard.core.domain.task.Repeat
 import io.github.ddiling.mydayboard.core.domain.task.Task
+import io.github.ddiling.mydayboard.core.domain.task.TaskActions
 import io.github.ddiling.mydayboard.core.domain.task.TaskDraft
 import io.github.ddiling.mydayboard.core.testing.FakeTaskCategoryRepository
 import io.github.ddiling.mydayboard.core.testing.FakeTaskRepository
@@ -43,6 +45,10 @@ internal class TaskDetailFixture(
         ticker.tryEmit(clock.instant())
     }
 
+    // Built after the Main dispatcher is set: the view model starts its scope on it.
+    fun viewModel(taskId: String) =
+        TaskDetailViewModel(SavedStateHandle(mapOf("taskId" to taskId)), observe, TaskActions(tasks, ticks, clock))
+
     suspend fun addTask(
         name: String,
         repeat: Repeat = Repeat.EveryDay,
@@ -70,3 +76,14 @@ internal class TaskDetailFixture(
         return seen
     }
 }
+
+/** The state is only live while someone collects it, as on screen. */
+@OptIn(ExperimentalCoroutinesApi::class)
+internal fun TestScope.collectContent(viewModel: TaskDetailViewModel): TaskDetailUiState.Content {
+    backgroundScope.launch { viewModel.uiState.collect {} }
+    runCurrent()
+    return viewModel.uiState.value as TaskDetailUiState.Content
+}
+
+internal val TaskDetailViewModel.content: TaskDetailUiState.Content
+    get() = uiState.value as TaskDetailUiState.Content
