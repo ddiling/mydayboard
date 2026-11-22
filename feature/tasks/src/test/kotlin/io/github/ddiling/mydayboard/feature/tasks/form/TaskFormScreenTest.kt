@@ -84,6 +84,17 @@ class TaskFormScreenTest {
     }
 
     @Test
+    fun `the new category row of the category menu calls onNewCategory`() {
+        var opened = 0
+        show(blank, TaskFormActions(onNewCategory = { opened++ }))
+
+        composeRule.onNodeWithTag("tasks_form_category").performClick()
+        composeRule.onNodeWithTag("tasks_form_category_new").performClick()
+
+        assertEquals(1, opened)
+    }
+
+    @Test
     fun `the close button calls onClose`() {
         var closes = 0
         show(blank, TaskFormActions(onClose = { closes++ }))

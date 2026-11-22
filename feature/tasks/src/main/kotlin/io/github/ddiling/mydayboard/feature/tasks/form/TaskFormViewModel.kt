@@ -9,6 +9,9 @@ import io.github.ddiling.mydayboard.core.domain.task.TaskCategory
 import io.github.ddiling.mydayboard.core.domain.task.TaskCategoryRepository
 import io.github.ddiling.mydayboard.core.domain.task.TaskRepository
 import io.github.ddiling.mydayboard.core.domain.time.today
+import io.github.ddiling.mydayboard.feature.tasks.categories.CategoryDialogActions
+import io.github.ddiling.mydayboard.feature.tasks.categories.CategoryDialogState
+import io.github.ddiling.mydayboard.feature.tasks.categories.CategoryEditor
 import io.github.ddiling.mydayboard.feature.tasks.navigation.TaskFormDestination
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -36,6 +39,7 @@ internal class TaskFormViewModel
         savedStateHandle: SavedStateHandle,
         private val tasks: TaskRepository,
         categories: TaskCategoryRepository,
+        private val categoryEditor: CategoryEditor,
         private val clock: Clock,
     ) : ViewModel() {
         private val taskId: String? = savedStateHandle.toRoute<TaskFormDestination>().taskId
@@ -55,10 +59,22 @@ internal class TaskFormViewModel
                 .observeCategories()
                 .stateIn(viewModelScope, SharingStarted.WhileSubscribed(SUBSCRIPTION_TIMEOUT_MS), emptyList())
 
+        /** The category dialog, opened by the "New category" row. */
+        val categoryDialog: StateFlow<CategoryDialogState> = categoryEditor.state
+
+        val categoryDialogActions =
+            CategoryDialogActions(
+                onNameChange = { name -> viewModelScope.launch { categoryEditor.onNameChange(name) } },
+                onSave = ::onCategorySave,
+                onCancel = categoryEditor::dismiss,
+                onDelete = { viewModelScope.launch { categoryEditor.onDelete() } },
+            )
+
         val actions =
             TaskFormActions(
                 onNameChange = { edit { withName(it) } },
                 onCategoryChange = { edit { withCategory(it) } },
+                onNewCategory = { viewModelScope.launch { categoryEditor.open(null) } },
                 onRepeatTypeChange = { edit { withRepeatType(it) } },
                 onAddTime = { edit { withTimeAdded(it) } },
                 onRemoveTime = { edit { withTimeRemoved(it) } },
@@ -93,6 +109,11 @@ internal class TaskFormViewModel
                     task?.toFormState(it.today) ?: it.copy(load = FormLoad.NotFound).revalidated()
                 }
             }
+        }
+
+        /** The category made in the dialog is chosen at once, so the user does not have to find it in the menu. */
+        private fun onCategorySave() {
+            viewModelScope.launch { categoryEditor.onSave()?.let { id -> edit { withCategory(id) } } }
         }
 
         fun onSave() {

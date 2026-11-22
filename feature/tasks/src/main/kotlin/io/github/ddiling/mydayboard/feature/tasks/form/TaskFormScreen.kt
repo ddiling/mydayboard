@@ -103,7 +103,7 @@ private fun Form(
             error = nameError.takeIf { nameTouched || uiState.name.isNotEmpty() }?.message(),
             modifier = Modifier.testTag("tasks_form_name"),
         )
-        CategoryField(uiState.categoryId, categories, actions.onCategoryChange)
+        CategoryField(uiState.categoryId, categories, actions.onCategoryChange, actions.onNewCategory)
         RepeatField(uiState.repeatType, actions.onRepeatTypeChange)
         RepeatSections(uiState, actions)
         GoalSection(uiState, actions)
