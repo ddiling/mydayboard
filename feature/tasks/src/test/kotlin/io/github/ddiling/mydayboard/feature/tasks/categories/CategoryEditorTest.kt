@@ -4,6 +4,7 @@ import io.github.ddiling.mydayboard.core.domain.task.MAX_CATEGORY_NAME_LENGTH
 import io.github.ddiling.mydayboard.core.domain.task.OnMiss
 import io.github.ddiling.mydayboard.core.domain.task.Repeat
 import io.github.ddiling.mydayboard.core.domain.task.TaskCategory
+import io.github.ddiling.mydayboard.core.domain.task.TaskCategoryRepository
 import io.github.ddiling.mydayboard.core.domain.task.TaskDraft
 import io.github.ddiling.mydayboard.core.testing.FakeTaskCategoryRepository
 import io.github.ddiling.mydayboard.core.testing.FakeTaskRepository
@@ -12,7 +13,14 @@ import io.github.ddiling.mydayboard.core.testing.MutableClock
 import io.github.ddiling.mydayboard.core.testing.SequentialIdGenerator
 import io.github.ddiling.mydayboard.core.testing.TestZones
 import io.github.ddiling.mydayboard.core.testing.warsaw
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -21,13 +29,15 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.LocalDate
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class CategoryEditorTest {
     private val clock = MutableClock(warsaw(2026, 3, 2, 10, 30), TestZones.WARSAW)
     private val ids = SequentialIdGenerator()
     private val store = FakeTaskStore()
     private val categories = FakeTaskCategoryRepository(clock, ids, store)
     private val tasks = FakeTaskRepository(clock, ids, store)
-    private val editor = CategoryEditor(categories)
+    private val held = HeldNameReads(categories)
+    private val editor = CategoryEditor(held)
 
     private suspend fun stored(): List<TaskCategory> = categories.observeCategories().first()
 
@@ -168,4 +178,97 @@ class CategoryEditorTest {
             assertEquals(CategoryNameError.TooLong(MAX_CATEGORY_NAME_LENGTH), editing().error)
             assertFalse(editing().canSave)
         }
+
+    @Test
+    fun `save in edit mode trims the name`() =
+        runTest {
+            val home = categories.createCategory("House")
+            editor.open(home.id)
+            editor.onNameChange("  Home  ")
+            editor.onSave()
+
+            assertEquals(listOf("Home"), stored().map { it.name })
+        }
+
+    @Test
+    fun `two concurrent saves create one category`() =
+        runTest(UnconfinedTestDispatcher()) {
+            editor.open(null)
+            editor.onNameChange("Garden")
+            held.holding = true
+            val first = launch { editor.onSave() }
+            val second = launch { editor.onSave() }
+            held.releaseAll()
+            first.join()
+            second.join()
+
+            assertEquals(listOf("Garden"), stored().map { it.name })
+        }
+
+    @Test
+    fun `a name check finishing after dismiss does not reopen the dialog`() =
+        runTest(UnconfinedTestDispatcher()) {
+            editor.open(null)
+            held.holding = true
+            val check = launch { editor.onNameChange("Garden") }
+            editor.dismiss()
+            held.releaseAll()
+            check.join()
+
+            assertEquals(CategoryDialogState.Closed, editor.state.value)
+        }
+
+    @Test
+    fun `a save finishing after dismiss saves nothing and keeps the dialog closed`() =
+        runTest(UnconfinedTestDispatcher()) {
+            editor.open(null)
+            editor.onNameChange("Garden")
+            held.holding = true
+            val save = launch { editor.onSave() }
+            editor.dismiss()
+            held.releaseAll()
+            save.join()
+
+            assertEquals(CategoryDialogState.Closed, editor.state.value)
+            assertTrue(stored().isEmpty())
+        }
+
+    @Test
+    fun `an older name check finishing last does not overwrite newer text`() =
+        runTest(UnconfinedTestDispatcher()) {
+            editor.open(null)
+            held.holding = true
+            val older = launch { editor.onNameChange("Gar") }
+            val newer = launch { editor.onNameChange("Garden") }
+            held.release(newer = true)
+            newer.join()
+            held.release(newer = false)
+            older.join()
+
+            assertEquals("Garden", editing().name)
+        }
+}
+
+/** Delays each category read until the test releases it, to make a slow name check finish at a chosen moment. */
+private class HeldNameReads(
+    private val inner: TaskCategoryRepository,
+) : TaskCategoryRepository by inner {
+    var holding = false
+    private val pending = mutableListOf<CompletableDeferred<Unit>>()
+
+    override fun observeCategories(): Flow<List<TaskCategory>> =
+        flow {
+            if (holding) CompletableDeferred<Unit>().also { pending += it }.await()
+            emitAll(inner.observeCategories())
+        }
+
+    fun releaseAll() {
+        holding = false
+        pending.forEach { it.complete(Unit) }
+    }
+
+    /** Releases the read started last when [newer] is true, otherwise the first one. */
+    fun release(newer: Boolean) {
+        (if (newer) pending.last() else pending.first()).complete(Unit)
+    }
 }
