@@ -165,12 +165,61 @@ class ScheduleFixedTest {
     }
 
     @Test
-    fun `a one time task due in the future gives no occurrence yet and its date is next`() {
-        val due = wednesday.plusDays(5)
-        val oneTime = task(Repeat.OneTime(due))
+    fun `a one time task due in the future gives no occurrence yet`() {
+        val oneTime = task(Repeat.OneTime(wednesday.plusDays(5)))
 
         assertEquals(emptyList<Occurrence>(), occurrencesOf(oneTime, emptyList(), wednesday))
-        assertEquals(due, nextDueDate(oneTime, emptyList(), wednesday))
+    }
+
+    @Test
+    fun `a due day after today is upcoming and today stays due today`() {
+        val weekdays = Repeat.Weekdays(setOf(DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY))
+
+        val result = occurrencesOf(task(weekdays), emptyList(), wednesday, wednesday.plusDays(2))
+
+        assertEquals(listOf(OccurrenceStatus.DUE_TODAY, OccurrenceStatus.UPCOMING), result.map { it.status })
+    }
+
+    @Test
+    fun `a staying window ends the day before the next due day`() {
+        val weekdays = Repeat.Weekdays(setOf(DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY))
+        val friday = wednesday.plusDays(2)
+        val nextWednesday = wednesday.plusDays(7)
+
+        val result = occurrencesOf(task(weekdays, friday, OnMiss.STAYS), listOf(tick(nextWednesday)), nextWednesday)
+
+        assertEquals(
+            listOf(OccurrenceStatus.ENDED, OccurrenceStatus.DONE),
+            result.map { it.status },
+        )
+    }
+
+    @Test
+    fun `every N days includes a start date that is exactly a due date`() {
+        val repeat = Repeat.EveryNDays(3, EveryNDaysMode.FIXED_CALENDAR, wednesday)
+        val start = wednesday.plusDays(3)
+
+        val result = occurrencesOf(task(repeat, start), emptyList(), start)
+
+        assertEquals(listOf(start), result.dues())
+    }
+
+    @Test
+    fun `monthly includes a start date equal to the due day`() {
+        val start = LocalDate.of(2026, 11, 5)
+
+        val result = occurrencesOf(task(Repeat.Monthly(5), start), emptyList(), start)
+
+        assertEquals(listOf(start), result.dues())
+    }
+
+    @Test
+    fun `monthly day 31 starting on the clamped last day of April includes it`() {
+        val start = LocalDate.of(2027, 4, 30)
+
+        val result = occurrencesOf(task(Repeat.Monthly(31), start), emptyList(), start)
+
+        assertEquals(listOf(start), result.dues())
     }
 
     @Test
@@ -197,12 +246,5 @@ class ScheduleFixedTest {
         val result = occurrencesOf(oneTime, listOf(tick(wednesday.minusDays(1))), wednesday).single()
 
         assertEquals(OccurrenceStatus.DONE, result.status)
-    }
-
-    @Test
-    fun `a finished one time task has no next due date`() {
-        val oneTime = task(Repeat.OneTime(wednesday.minusDays(3)), onMiss = OnMiss.EXPIRES)
-
-        assertNull(nextDueDate(oneTime, emptyList(), wednesday))
     }
 }

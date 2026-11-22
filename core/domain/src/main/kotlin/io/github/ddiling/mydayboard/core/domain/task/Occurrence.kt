@@ -15,6 +15,9 @@ enum class OccurrenceStatus {
 
     /** The window closed before today without the target being reached; it counts as skipped. */
     ENDED,
+
+    /** The due day is after today, so its window has not opened; it never counts as done, late or ended. */
+    UPCOMING,
 }
 
 /**
@@ -68,7 +71,9 @@ fun nextDueDate(
     return dueWindows(task, days)
         .map { occurrenceOf(task, it, days, today) }
         .firstOrNull {
-            it.due.isAfter(today) || it.status == OccurrenceStatus.LATE || it.status == OccurrenceStatus.DUE_TODAY
+            it.status == OccurrenceStatus.UPCOMING ||
+                it.status == OccurrenceStatus.LATE ||
+                it.status == OccurrenceStatus.DUE_TODAY
         }?.due
 }
 
@@ -107,6 +112,7 @@ private fun occurrenceOf(
     val open = window.lastDay == null || !window.lastDay.isBefore(today)
     val status =
         when {
+            window.due.isAfter(today) -> OccurrenceStatus.UPCOMING
             capped == target -> OccurrenceStatus.DONE
             !open -> OccurrenceStatus.ENDED
             window.due.isBefore(today) -> OccurrenceStatus.LATE
