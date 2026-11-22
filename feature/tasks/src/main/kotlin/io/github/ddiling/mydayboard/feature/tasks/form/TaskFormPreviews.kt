@@ -5,16 +5,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import io.github.ddiling.mydayboard.core.designsystem.preview.PreviewSurface
+import io.github.ddiling.mydayboard.core.domain.task.TaskCategory
 import io.github.ddiling.mydayboard.core.domain.task.TaskFormError
+import java.time.Instant
 import java.time.LocalDate
 
 private val previewToday = LocalDate.of(2026, 3, 2)
+
+private val previewCategories =
+    listOf(TaskCategory("home", "Home", Instant.EPOCH, Instant.EPOCH))
 
 private val emptyForm = TaskFormUiState(today = previewToday)
 
 @Composable
 private fun PreviewForm(state: TaskFormUiState) {
-    PreviewSurface { TaskFormScreen(state, TaskFormActions()) }
+    PreviewSurface { TaskFormScreen(state, previewCategories, TaskFormActions()) }
 }
 
 @PreviewLightDark

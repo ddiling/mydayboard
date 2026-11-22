@@ -5,6 +5,15 @@
     <string name="tasks_form_close">Close</string>
     <string name="tasks_form_save">Save</string>
     <string name="tasks_form_name">Name</string>
+    <string name="tasks_form_category">Category</string>
+    <string name="tasks_form_category_none">No category</string>
+    <string name="tasks_form_repeat">Repeat</string>
+    <string name="tasks_form_repeat_times_per_day">Several times a day</string>
+    <string name="tasks_form_repeat_every_day">Every day</string>
+    <string name="tasks_form_repeat_weekdays">Chosen weekdays</string>
+    <string name="tasks_form_repeat_every_n_days">Every N days</string>
+    <string name="tasks_form_repeat_monthly">Once a month</string>
+    <string name="tasks_form_repeat_one_time">One time</string>
     <string name="tasks_form_not_found">Task not found</string>
     <string name="tasks_form_error_name_blank">Enter a name</string>
     <string name="tasks_form_error_name_too_long">Name is too long (max %1$d)</string>

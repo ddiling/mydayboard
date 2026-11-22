@@ -27,14 +27,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import io.github.ddiling.mydayboard.core.domain.task.TaskCategory
 import io.github.ddiling.mydayboard.core.domain.task.TaskFormError
 import io.github.ddiling.mydayboard.feature.tasks.R
 
-/** Stateless: everything shown comes from [uiState], everything the user does goes to [actions]. */
+/** The repeat types offered for now: the other three get their fields in a later change and stay hidden until then. */
+internal val availableRepeatTypes: List<RepeatType> =
+    RepeatType.entries - setOf(RepeatType.EVERY_N_DAYS, RepeatType.MONTHLY, RepeatType.ONE_TIME)
+
+/** Stateless: everything shown comes from [uiState] and [categories], everything the user does goes to [actions]. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun TaskFormScreen(
     uiState: TaskFormUiState,
+    categories: List<TaskCategory>,
     actions: TaskFormActions,
     modifier: Modifier = Modifier,
 ) {
@@ -64,7 +70,7 @@ internal fun TaskFormScreen(
         when (uiState.load) {
             FormLoad.Loading -> Box(contentModifier)
             FormLoad.NotFound -> NotFound(contentModifier)
-            FormLoad.Ready -> Form(uiState, actions, contentModifier)
+            FormLoad.Ready -> Form(uiState, categories, actions, contentModifier)
         }
     }
 }
@@ -81,6 +87,7 @@ private fun NotFound(modifier: Modifier = Modifier) {
 @Composable
 private fun Form(
     uiState: TaskFormUiState,
+    categories: List<TaskCategory>,
     actions: TaskFormActions,
     modifier: Modifier = Modifier,
 ) {
@@ -100,5 +107,7 @@ private fun Form(
             error = nameError.takeIf { nameTouched || uiState.name.isNotEmpty() }?.message(),
             modifier = Modifier.testTag("tasks_form_name"),
         )
+        CategoryField(uiState.categoryId, categories, actions.onCategoryChange)
+        RepeatField(uiState.repeatType, actions.onRepeatTypeChange)
     }
 }
