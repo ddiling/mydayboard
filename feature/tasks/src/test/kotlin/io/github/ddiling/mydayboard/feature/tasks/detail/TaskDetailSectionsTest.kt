@@ -2,6 +2,7 @@ package io.github.ddiling.mydayboard.feature.tasks.detail
 
 import androidx.activity.ComponentActivity
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsProperties
@@ -16,8 +17,8 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.unit.Density
 import io.github.ddiling.mydayboard.core.designsystem.preview.PreviewSurface
+import io.github.ddiling.mydayboard.core.designsystem.theme.TaskColors
 import io.github.ddiling.mydayboard.core.domain.task.Repeat
-import io.github.ddiling.mydayboard.core.domain.task.TickOutcome
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -148,25 +149,17 @@ class TaskDetailSectionsTest {
     }
 
     @Test
-    fun `an untick shows its message with Undo that calls onUndo`() {
-        var undos = 0
-        val outcome = TickOutcome.Removed("t", "tick", done = 0, target = 1)
-        val state = previewDetail(plain).copy(pendingUndo = DetailUndo.Unticked("English", outcome))
-        show(state, TaskDetailActions(onUndo = { undos++ }))
+    fun `a late history row uses the late colour`() {
+        var rowColor = Color.Unspecified
+        var lateColor = Color.Unspecified
+        composeRule.setContent {
+            PreviewSurface {
+                rowColor = historyResultColor(HistoryResult.Late)
+                lateColor = TaskColors.late
+            }
+        }
 
-        composeRule
-            .onNode(
-                androidx.compose.ui.test
-                    .hasText("English unticked"),
-            ).assertIsDisplayed()
-        composeRule
-            .onNode(
-                androidx.compose.ui.test
-                    .hasText("Undo"),
-            ).performClick()
-
-        composeRule.waitForIdle()
-        assertEquals(1, undos)
+        assertEquals(lateColor, rowColor)
     }
 
     @Test

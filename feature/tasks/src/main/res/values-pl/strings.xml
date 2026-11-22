@@ -44,6 +44,7 @@
     <string name="tasks_details_late">spóźnione · termin: %1$s</string>
     <string name="tasks_details_done">Zrobione</string>
     <string name="tasks_details_missed">Pominięte</string>
+    <string name="tasks_details_late_open">Spóźnione · jeszcze nie zrobione</string>
     <string name="tasks_row_done">Zrobione</string>
     <string name="tasks_row_done_label">Zrobione</string>
     <string name="tasks_row_mark_done">Oznacz jako zrobione</string>
@@ -183,4 +184,5 @@
     <string name="tasks_catstats_empty_hint">Dodaj zadanie i wybierz tę kategorię.</string>
     <string name="tasks_catstats_not_found_title">Tej kategorii już nie ma</string>
     <string name="tasks_catstats_not_found_hint">Została usunięta albo nigdy nie istniała.</string>
+    <string name="tasks_row_swipe_hint">przesuń w prawo, aby oznaczyć jako zrobione</string>
 </resources>
