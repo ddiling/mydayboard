@@ -168,5 +168,15 @@
     <string name="tasks_category_delete">Usuń kategorię</string>
     <string name="tasks_category_error_duplicate">Kategoria o tej nazwie już istnieje</string>
     <string name="tasks_category_error_too_long">Nazwa jest za długa (limit: %1$d)</string>
+    <string name="tasks_catstats_hero_unit">zadań dziennie, średnia z ostatnich 30 dni</string>
+    <string name="tasks_catstats_stat_tasks">zadań</string>
+    <string name="tasks_catstats_tasks_title">ZADANIA</string>
+    <string name="tasks_catstats_archived_title">ZARCHIWIZOWANE ZADANIA NADAL SIĘ LICZĄ</string>
+    <plurals name="tasks_catstats_skipped">
+        <item quantity="one">pominięte %1$d raz</item>
+        <item quantity="few">pominięte %1$d razy</item>
+        <item quantity="many">pominięte %1$d razy</item>
+        <item quantity="other">pominięte %1$d razy</item>
+    </plurals>
     <string name="tasks_row_swipe_hint">przesuń w prawo, aby oznaczyć jako zrobione</string>
 </resources>
