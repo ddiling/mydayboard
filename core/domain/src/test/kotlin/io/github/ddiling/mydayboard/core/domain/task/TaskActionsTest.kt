@@ -479,7 +479,7 @@ class TaskActionsTest {
 }
 
 /** Lets other coroutines run between reading the ticks and writing, the way a real database does. */
-private class YieldingTicks(
+internal class YieldingTicks(
     private val inner: TaskTickRepository,
 ) : TaskTickRepository by inner {
     override fun observeTicks(taskId: String): Flow<List<TaskTick>> = inner.observeTicks(taskId).onEach { yield() }

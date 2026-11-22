@@ -42,6 +42,7 @@
     <string name="tasks_details_late">late · was due %1$s</string>
     <string name="tasks_details_done">Done</string>
     <string name="tasks_details_missed">Missed</string>
+    <string name="tasks_details_late_open">Late · not done yet</string>
     <string name="tasks_row_done">Done</string>
     <string name="tasks_row_done_label">Done</string>
     <string name="tasks_row_mark_done">Mark done</string>
@@ -117,4 +118,5 @@
     <string name="tasks_day_marked_done">%1$s · %2$s marked as done</string>
     <string name="tasks_day_marked_not_done">%1$s · %2$s marked as not done</string>
     <string name="tasks_day_updated">%1$s · %2$s updated</string>
+    <string name="tasks_row_swipe_hint">swipe right to mark done</string>
 </resources>
