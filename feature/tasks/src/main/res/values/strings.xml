@@ -58,4 +58,5 @@
         <item quantity="other">%1$d late</item>
     </plurals>
     <string name="tasks_list_empty_hint">No tasks yet. Add your first one.</string>
+    <string name="tasks_row_swipe_hint">swipe right to mark done</string>
 </resources>
