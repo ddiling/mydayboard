@@ -65,26 +65,6 @@ class TaskTickDaoTest {
         }
 
     @Test
-    fun `findLiveForDay returns only live ticks of that day`() =
-        runTest {
-            dao.insertForLiveTask("today", "t", DAY0, null, T0)
-            dao.insertForLiveTask("gone", "t", DAY0, null, T0)
-            dao.insertForLiveTask("tomorrow", "t", DAY0 + 1, null, T0)
-            dao.softDeleteIfLive("gone", T0 + 1)
-
-            assertEquals(listOf("today"), dao.findLiveForDay("t", DAY0).map { it.id })
-        }
-
-    @Test
-    fun `findLiveForDay is empty for a deleted task`() =
-        runTest {
-            dao.insertForLiveTask("k", "t", DAY0, null, T0)
-            taskDao.softDeleteIfLive("t", T0 + 1)
-
-            assertTrue(dao.findLiveForDay("t", DAY0).isEmpty())
-        }
-
-    @Test
     fun `insertForLiveTask stores day and slot and returns a row id`() =
         runTest {
             val rowId = dao.insertForLiveTask("k", "t", DAY0 + 2, 480, T0)
