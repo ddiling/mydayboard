@@ -89,6 +89,25 @@ private fun TaskFormEveryNDaysPreview() =
         ),
     )
 
+@PreviewLightDark
+@Composable
+private fun TaskFormMonthlyPreview() =
+    PreviewForm(
+        emptyForm.copy(name = "Pay bills", repeatType = RepeatType.MONTHLY, dayOfMonth = 15, canSave = true),
+    )
+
+@PreviewLightDark
+@Composable
+private fun TaskFormOneTimePreview() =
+    PreviewForm(
+        emptyForm.copy(
+            name = "Send CVs",
+            repeatType = RepeatType.ONE_TIME,
+            dueDate = previewToday.plusDays(7),
+            canSave = true,
+        ),
+    )
+
 @Preview(name = "Large font light", fontScale = 2f)
 @Preview(name = "Large font dark", fontScale = 2f, uiMode = UI_MODE_NIGHT_YES)
 @Composable

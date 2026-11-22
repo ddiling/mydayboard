@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -21,6 +22,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import io.github.ddiling.mydayboard.feature.tasks.R
 import java.time.Instant
@@ -94,3 +96,36 @@ private fun DatePickerPopup(
         dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.tasks_form_cancel)) } },
     ) { DatePicker(state) }
 }
+
+/**
+ * A whole-number input. The typed text is kept here, so the user can clear the box and type a new number. Every
+ * edit is reported, an empty box as [EMPTY_NUMBER] (0), which the form's number fields reject, so the model never
+ * holds a number the box does not show. The box shows the typed text while it still reads as [value], and the
+ * value itself once they differ, for example after the model changed from outside.
+ */
+@Composable
+internal fun DashedNumberField(
+    label: String,
+    value: Int,
+    onValueChange: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+    error: String? = null,
+) {
+    var typed by remember { mutableStateOf(value.toString()) }
+    val shown = if ((typed.toIntOrNull() ?: EMPTY_NUMBER) == value) typed else value.toString()
+    DashedTextField(
+        label = label,
+        value = shown,
+        onValueChange = { edited ->
+            val digits = edited.filter(Char::isDigit).take(MAX_NUMBER_DIGITS)
+            typed = digits
+            onValueChange(digits.toIntOrNull() ?: EMPTY_NUMBER)
+        },
+        modifier = modifier,
+        error = error,
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+    )
+}
+
+private const val EMPTY_NUMBER = 0
+private const val MAX_NUMBER_DIGITS = 3

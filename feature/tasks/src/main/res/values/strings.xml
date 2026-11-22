@@ -40,4 +40,9 @@
     <string name="tasks_form_mode_fixed">Fixed calendar</string>
     <string name="tasks_form_mode_fixed_help">Always on the same dates, even if you tick it late.</string>
     <string name="tasks_form_starting_on">Starting on</string>
+    <string name="tasks_form_on_day">On day</string>
+    <string name="tasks_form_on_day_help">If a month is shorter, the last day is used.</string>
+    <string name="tasks_form_due_date">Due date</string>
+    <string name="tasks_form_error_due_required">Choose a due date</string>
+    <string name="tasks_form_error_day_of_month">Enter a day from 1 to 31</string>
 </resources>
