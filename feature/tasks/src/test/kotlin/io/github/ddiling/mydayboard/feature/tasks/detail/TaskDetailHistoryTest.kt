@@ -120,6 +120,35 @@ class TaskDetailHistoryTest {
         }
 
     @Test
+    fun `a count goal task averages raw ticks per day, not credit`() =
+        runTest {
+            val task = fixture.addTask("Send CVs", goal = 3, startDate = yesterday)
+            repeat(2) { fixture.tickOn(task, yesterday) }
+
+            val stats = fixture.content(task).stats as DetailStats.Recurring
+
+            assertTrue(stats.countsTicks)
+            assertEquals(2.0 / stats.plannedDays, stats.perDay, 1e-9)
+        }
+
+    @Test
+    fun `a several-times task counts its half days`() =
+        runTest {
+            val task =
+                fixture.addTask(
+                    "Pills",
+                    Repeat.TimesPerDay(listOf(LocalTime.of(8, 0), LocalTime.of(20, 0))),
+                    startDate = yesterday,
+                )
+            fixture.tickOn(task, yesterday, LocalTime.of(8, 0))
+
+            val stats = fixture.content(task).stats as DetailStats.Recurring
+
+            assertEquals(1, stats.halfDays)
+            assertEquals(0.5, stats.doneOfPlanned, 0.0)
+        }
+
+    @Test
     fun `unticking today takes the streak back in the same state flow`() =
         runTest {
             val task = nineDayTask()
