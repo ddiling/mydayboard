@@ -18,10 +18,10 @@ abstract class TaskContractTest : TaskRepositoryContractBase() {
     @Test
     fun `created task has the injected id, clock times and the given start date`() =
         runTest {
-            val task = tasks.createTask(draft, startDayNotToday)
+            val task = tasks.createTask(draft, notToday)
 
             assertEquals(
-                Task("id-1", "Vacuum", null, Repeat.EveryDay, null, null, null, OnMiss.STAYS, startDayNotToday, null, now, now),
+                Task("id-1", "Vacuum", null, Repeat.EveryDay, null, null, null, OnMiss.STAYS, notToday, null, now, now),
                 task,
             )
         }

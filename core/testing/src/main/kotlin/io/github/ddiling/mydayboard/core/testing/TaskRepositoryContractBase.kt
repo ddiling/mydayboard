@@ -41,11 +41,11 @@ abstract class TaskRepositoryContractBase {
     protected val clockAdvance: Duration = Duration.ofMinutes(3)
     protected val nowAfterAdvance: Instant = now.plus(clockAdvance)
 
-    protected val startDayNotToday: LocalDate = LocalDate.of(2025, 3, 10)
+    protected val notToday: LocalDate = LocalDate.of(2025, 3, 10)
 
     protected val draft = TaskDraft("Vacuum", null, Repeat.EveryDay, null, null, null, OnMiss.STAYS)
 
-    protected suspend fun givenTask(draft: TaskDraft = this.draft): Task = tasks.createTask(draft, startDayNotToday)
+    protected suspend fun givenTask(draft: TaskDraft = this.draft): Task = tasks.createTask(draft, notToday)
 
     protected suspend fun givenDeletedTask(): Task = givenTask().also { tasks.deleteTask(it.id) }
 
