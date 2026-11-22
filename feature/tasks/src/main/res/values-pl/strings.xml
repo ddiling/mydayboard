@@ -62,4 +62,5 @@
         <item quantity="other">%1$d spóźnionego</item>
     </plurals>
     <string name="tasks_list_empty_hint">Nie masz jeszcze zadań. Dodaj pierwsze.</string>
+    <string name="tasks_row_swipe_hint">przesuń w prawo, aby oznaczyć jako zrobione</string>
 </resources>

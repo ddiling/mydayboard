@@ -94,6 +94,9 @@ internal sealed interface HistoryResult {
 
     data object Missed : HistoryResult
 
+    /** Overdue but still open: the hero and the big button let the user do it, so history must not call it missed. */
+    data object Late : HistoryResult
+
     /**
      * Part of the target was reached. [settled] is false only for today, which can still be finished; a settled
      * one reads "half a day" ([severalTimes]) or "not reached" (a count goal).
