@@ -10,6 +10,9 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.hasAnyDescendant
+import androidx.compose.ui.test.hasScrollAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -29,6 +32,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
 
 @RunWith(RobolectricTestRunner::class)
 class TaskFormScreenTest {
@@ -36,6 +40,8 @@ class TaskFormScreenTest {
     val composeRule = createAndroidComposeRule<ComponentActivity>()
 
     private val today = LocalDate.of(2026, 3, 2)
+    private val morning = LocalTime.of(8, 0)
+    private val evening = LocalTime.of(21, 30)
     private val home = TaskCategory("home", "Home", Instant.EPOCH, Instant.EPOCH)
 
     private val blank = TaskFormUiState(today = today)
@@ -129,6 +135,31 @@ class TaskFormScreenTest {
     }
 
     @Test
+    fun `several times a day shows the times as chips and the x removes one`() {
+        val removed = mutableListOf<LocalTime>()
+        show(
+            blank.copy(repeatType = RepeatType.TIMES_PER_DAY, times = listOf(morning, evening)),
+            TaskFormActions(onRemoveTime = { removed += it }),
+        )
+
+        composeRule.onNodeWithText("21:30").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Remove 08:00").performScrollTo().performClick()
+
+        assertEquals(listOf(morning), removed)
+    }
+
+    @Test
+    fun `add time opens the clock and confirming reports the picked time`() {
+        val added = mutableListOf<LocalTime>()
+        show(blank.copy(repeatType = RepeatType.TIMES_PER_DAY), TaskFormActions(onAddTime = { added += it }))
+
+        composeRule.onNodeWithText("Add time").performScrollTo().performClick()
+        composeRule.onNodeWithText("OK").performClick()
+
+        assertEquals(listOf(DEFAULT_PICKER_TIME), added)
+    }
+
+    @Test
     fun `a category id that is not in the list shows no category`() {
         show(blank.copy(categoryId = "gone"), categories = listOf(home))
 
@@ -144,10 +175,75 @@ class TaskFormScreenTest {
     }
 
     @Test
+    fun `the every day time field clear x reports no time`() {
+        val changes = mutableListOf<LocalTime?>()
+        show(
+            blank.copy(repeatType = RepeatType.EVERY_DAY, time = morning),
+            TaskFormActions(onTimeChange = { changes += it }),
+        )
+
+        composeRule.onNodeWithContentDescription("Clear time").performScrollTo().performClick()
+
+        assertEquals(listOf<LocalTime?>(null), changes)
+    }
+
+    @Test
+    fun `tapping the every day time field opens the clock on the current time and confirming reports it`() {
+        val changes = mutableListOf<LocalTime?>()
+        show(
+            blank.copy(repeatType = RepeatType.EVERY_DAY, time = morning),
+            TaskFormActions(onTimeChange = { changes += it }),
+        )
+
+        composeRule.onNodeWithTag("tasks_form_time").performScrollTo().performClick()
+        composeRule.onNodeWithText("OK").performClick()
+
+        assertEquals(listOf<LocalTime?>(morning), changes)
+    }
+
+    @Test
+    fun `cancelling the every day clock reports nothing and closes it`() {
+        val changes = mutableListOf<LocalTime?>()
+        show(
+            blank.copy(repeatType = RepeatType.EVERY_DAY, time = morning),
+            TaskFormActions(onTimeChange = { changes += it }),
+        )
+
+        composeRule.onNodeWithTag("tasks_form_time").performScrollTo().performClick()
+        composeRule.onNodeWithText("Cancel").performClick()
+
+        assertEquals(emptyList<LocalTime?>(), changes)
+        composeRule.onNodeWithText("OK").assertDoesNotExist()
+    }
+
+    @Test
+    fun `the every day note shows its too long error`() {
+        show(blank.copy(repeatType = RepeatType.EVERY_DAY, errors = listOf(TaskFormError.NoteTooLong(max = 200))))
+
+        composeRule.onNodeWithText("Note is too long (max 200)").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun `the clock scrolls so OK and Cancel stay reachable on a short screen`() {
+        show(blank.copy(repeatType = RepeatType.EVERY_DAY, time = morning))
+
+        composeRule.onNodeWithTag("tasks_form_time").performScrollTo().performClick()
+
+        composeRule.onNode(hasScrollAction() and hasAnyDescendant(hasText("08"))).assertExists()
+    }
+
+    @Test
     fun `a blank name shows its error`() {
         show(blank.copy(name = " ", errors = listOf(TaskFormError.BlankName)))
 
         composeRule.onNodeWithText("Enter a name").assertIsDisplayed()
+    }
+
+    @Test
+    fun `several times a day without a time shows its error`() {
+        show(blank.copy(repeatType = RepeatType.TIMES_PER_DAY, errors = listOf(TaskFormError.NoTimes)))
+
+        composeRule.onNodeWithText("Add at least one time").performScrollTo().assertIsDisplayed()
     }
 
     @Test

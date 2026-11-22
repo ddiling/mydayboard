@@ -9,6 +9,7 @@ import io.github.ddiling.mydayboard.core.domain.task.TaskCategory
 import io.github.ddiling.mydayboard.core.domain.task.TaskFormError
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
 
 private val previewToday = LocalDate.of(2026, 3, 2)
 
@@ -25,6 +26,31 @@ private fun PreviewForm(state: TaskFormUiState) {
 @PreviewLightDark
 @Composable
 private fun TaskFormEmptyPreview() = PreviewForm(emptyForm)
+
+@PreviewLightDark
+@Composable
+private fun TaskFormSeveralTimesPreview() =
+    PreviewForm(
+        emptyForm.copy(
+            name = "Pills",
+            repeatType = RepeatType.TIMES_PER_DAY,
+            times = listOf(LocalTime.of(8, 0), LocalTime.of(14, 0), LocalTime.of(21, 30)),
+            canSave = true,
+        ),
+    )
+
+@PreviewLightDark
+@Composable
+private fun TaskFormEveryDayPreview() =
+    PreviewForm(
+        emptyForm.copy(
+            name = "Vacuum",
+            categoryId = "home",
+            time = LocalTime.of(18, 0),
+            note = "Living room",
+            canSave = true,
+        ),
+    )
 
 @PreviewLightDark
 @Composable

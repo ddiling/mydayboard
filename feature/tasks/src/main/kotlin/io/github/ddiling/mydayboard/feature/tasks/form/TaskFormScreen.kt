@@ -109,5 +109,6 @@ private fun Form(
         )
         CategoryField(uiState.categoryId, categories, actions.onCategoryChange)
         RepeatField(uiState.repeatType, actions.onRepeatTypeChange)
+        RepeatSections(uiState, actions)
     }
 }
