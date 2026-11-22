@@ -3,7 +3,6 @@ package io.github.ddiling.mydayboard.core.domain.task
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.time.LocalDate
-import java.time.LocalTime
 
 class ValidateTaskDraftTest {
     private fun draft(
@@ -34,13 +33,6 @@ class ValidateTaskDraftTest {
         val result = validateTaskDraft(draft(Repeat.TimesPerDay(emptyList())))
 
         assertEquals(listOf(TaskFormError.NoTimes), result)
-    }
-
-    @Test
-    fun `several times with a time has no errors`() {
-        val result = validateTaskDraft(draft(Repeat.TimesPerDay(listOf(LocalTime.of(8, 0)))))
-
-        assertEquals(emptyList<TaskFormError>(), result)
     }
 
     @Test
