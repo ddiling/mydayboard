@@ -1,0 +1,23 @@
+# E2E: with "Ask me for a reason" on, "Log anyway" logs the event and Undo takes it back.
+# Run: maestro test app/maestro/   (emulator running, debug APK installed)
+appId: io.github.ddiling.mydayboard.debug
+name: Reasons - log anyway and undo
+tags:
+  - smoke
+---
+- launchApp:
+    clearState: true
+- runFlow:
+    file: subflows/create_tracker_asking_for_reason.yaml
+    env:
+      NAME: "Coffee"
+      TYPE: "Event counter"
+- runFlow: subflows/add_two_reasons.yaml
+- back # the detail screen -> the dashboard
+- assertVisible: "0 today"
+- tapOn: "Coffee"
+- assertVisible: ".*(I sleep better|I save money).*"
+- tapOn: "Log anyway"
+- assertVisible: "1 today.*" # now "1 today · <time ago>", and Maestro matches the whole text
+- tapOn: "Undo"
+- assertVisible: "0 today"

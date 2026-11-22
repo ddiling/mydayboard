@@ -1,0 +1,19 @@
+# Shared steps, not a test: `maestro test app/maestro/` does not descend into this folder.
+# From a tracker's detail screen: open the editor, add two reasons on the reasons screen,
+# and come back to the detail screen. The "Reasons" row only exists when editing, so a new tracker needs this detour.
+appId: io.github.ddiling.mydayboard.debug
+---
+- tapOn: "Edit"
+- tapOn: "No reasons yet" # the supporting text of the "Reasons" row; the section header has the same title
+- tapOn: "Add reason"
+- tapOn: "Reason"
+- inputText: "I sleep better"
+- tapOn: "Save"
+- tapOn: "Add reason"
+- tapOn: "Reason"
+- inputText: "I save money"
+- tapOn: "Save"
+- assertVisible: "I sleep better"
+- assertVisible: "I save money"
+- back # reasons screen -> editor
+- back # editor -> detail screen

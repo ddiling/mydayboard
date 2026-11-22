@@ -1,0 +1,26 @@
+# E2E: with the switch on and no reasons, the dialog offers to add the first one instead of showing a reason.
+# Run: maestro test app/maestro/   (emulator running, debug APK installed)
+appId: io.github.ddiling.mydayboard.debug
+name: Reasons - add the first reason from the dialog
+tags:
+  - smoke
+---
+- launchApp:
+    clearState: true
+- runFlow:
+    file: subflows/create_tracker_asking_for_reason.yaml
+    env:
+      NAME: "Coffee"
+      TYPE: "Event counter"
+- back # the detail screen -> the dashboard
+- tapOn: "Coffee"
+- assertVisible: "You have no reasons yet.*"
+- tapOn: "Add your first reason"
+- assertVisible: "Add reason" # the reasons screen opened
+- back
+- assertVisible: "0 today" # nothing was logged on the way
+# Dialog tags are not exposed as ids by Maestro (dialogs are separate windows), so text is used.
+# "Log anyway" must still work with no reasons to show.
+- tapOn: "Coffee"
+- tapOn: "Log anyway"
+- assertVisible: "1 today.*" # now "1 today · <time ago>", and Maestro matches the whole text

@@ -1,0 +1,19 @@
+# Shared steps, not a test: `maestro test app/maestro/` does not descend into this folder.
+# From the empty dashboard: create a tracker with "Ask me for a reason" on and stop on its detail screen.
+# Env: NAME (tracker name), TYPE (editor chip text: "Event counter" or "Days since").
+appId: io.github.ddiling.mydayboard.debug
+---
+- tapOn:
+    id: "empty_slot_0"
+- tapOn: "Name"
+- inputText: ${NAME}
+- tapOn: ${TYPE}
+- hideKeyboard # the keyboard covers the editor's lower half
+- scrollUntilVisible:
+    element: "Ask me for a reason before logging"
+    direction: DOWN
+- tapOn: "Ask me for a reason before logging"
+- scrollUntilVisible: # the reasons section sits above Save, so Save can be below the fold
+    element: "Save"
+    direction: DOWN
+- tapOn: "Save"

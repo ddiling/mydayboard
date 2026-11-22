@@ -1,0 +1,25 @@
+# E2E: with the switch on, Reset on a days-since tracker asks first: "I'll hold on" keeps the streak, "Reset anyway" resets.
+# Run: maestro test app/maestro/   (emulator running, debug APK installed)
+appId: io.github.ddiling.mydayboard.debug
+name: Reasons - hold on or reset a days-since tracker
+tags:
+  - smoke
+---
+- launchApp:
+    clearState: true
+- runFlow:
+    file: subflows/create_tracker_asking_for_reason.yaml
+    env:
+      NAME: "No sweets"
+      TYPE: "Days since"
+- runFlow: subflows/add_two_reasons.yaml
+- tapOn:
+    id: "trackers_detail_reset"
+- assertVisible: ".*(I sleep better|I save money).*"
+- tapOn: "I'll hold on"
+# Only a real reset moves the previous streak into the earlier list, which hides the empty-state text.
+- assertVisible: "No earlier streaks yet"
+- tapOn:
+    id: "trackers_detail_reset"
+- tapOn: "Reset anyway"
+- assertNotVisible: "No earlier streaks yet"
