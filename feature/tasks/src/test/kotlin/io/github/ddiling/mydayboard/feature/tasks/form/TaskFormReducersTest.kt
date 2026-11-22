@@ -51,11 +51,18 @@ class TaskFormReducersTest {
     }
 
     @Test
-    fun `a one-time task cannot be saved before it has a due date`() {
+    fun `a one-time task starts due today so it can be saved with a name alone`() {
         val oneTime = initial.withName("Electricity bill").withRepeatType(RepeatType.ONE_TIME)
-        assertFalse(oneTime.canSave)
 
-        assertTrue(oneTime.withDueDate(LocalDate.of(2026, 3, 20)).canSave)
+        assertEquals(today, oneTime.dueDate)
+        assertTrue(oneTime.canSave)
+    }
+
+    @Test
+    fun `switching from one time to another type drops the due date`() {
+        val daily = initial.withRepeatType(RepeatType.ONE_TIME).withRepeatType(RepeatType.EVERY_DAY)
+
+        assertNull(daily.dueDate)
     }
 
     @Test
@@ -83,15 +90,16 @@ class TaskFormReducersTest {
     }
 
     @Test
-    fun `a removed time leaves the others and several times a day has no time of its own`() {
-        val state =
-            givenSeveralTimesTask()
-                .withTimeAdded(morning)
-                .withTimeAdded(evening)
-                .withTime(morning)
-                .withTimeRemoved(morning)
+    fun `a removed time leaves the others`() {
+        val state = givenSeveralTimesTask().withTimeAdded(morning).withTimeAdded(evening).withTimeRemoved(morning)
 
         assertEquals(listOf(evening), state.times)
+    }
+
+    @Test
+    fun `several times a day has no time of its own in the draft`() {
+        val state = givenSeveralTimesTask().withTimeAdded(morning).withTime(morning)
+
         assertNull(state.toDraft().time)
     }
 
@@ -182,11 +190,16 @@ class TaskFormReducersTest {
     }
 
     @Test
-    fun `the goal is cleared when switching to several times a day and cannot be turned on there`() {
+    fun `the goal is cleared when switching to several times a day`() {
         val state = initial.withGoalOn(true).withRepeatType(RepeatType.TIMES_PER_DAY)
-        assertFalse(state.goalOn)
 
-        val again = state.withGoalOn(true)
+        assertFalse(state.goalOn)
+    }
+
+    @Test
+    fun `the goal cannot be turned on for several times a day`() {
+        val again = initial.withRepeatType(RepeatType.TIMES_PER_DAY).withGoalOn(true)
+
         assertFalse(again.goalOn)
         assertNull(again.toDraft().goal)
     }
