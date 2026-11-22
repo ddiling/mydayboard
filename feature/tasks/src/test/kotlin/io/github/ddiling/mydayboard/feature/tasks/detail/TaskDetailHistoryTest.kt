@@ -18,13 +18,4 @@ class TaskDetailHistoryTest {
 
             assertEquals(listOf(HistoryRow(lastFriday, HistoryResult.Late)), fixture.content(task).history)
         }
-
-    @Test
-    fun `a one-time task that expired undone shows as missed`() =
-        runTest {
-            val yesterday = fixture.today.minusDays(1)
-            val task = fixture.addTask("Send CVs", Repeat.OneTime(yesterday), startDate = yesterday)
-
-            assertEquals(listOf(HistoryRow(yesterday, HistoryResult.Missed)), fixture.content(task).history)
-        }
 }

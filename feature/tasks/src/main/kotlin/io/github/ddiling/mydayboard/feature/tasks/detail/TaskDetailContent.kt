@@ -115,10 +115,7 @@ private fun openButton(
     }
 }
 
-/**
- * Today's untouched occurrence is not history yet, and an upcoming one has not happened. A late one can still be
- * done, so it is neither missed nor settled.
- */
+/** Today's untouched or upcoming occurrence is not history yet; a late one is still open, so neither missed nor settled. */
 private fun historyRowOf(
     task: Task,
     occurrence: Occurrence,
