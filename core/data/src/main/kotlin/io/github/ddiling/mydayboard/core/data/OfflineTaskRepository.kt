@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import java.time.Clock
 import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 
 /**
@@ -47,7 +48,8 @@ internal class OfflineTaskRepository
             draft: TaskDraft,
             startDate: LocalDate,
         ): Task {
-            val now = clock.instant()
+            // Room stores epoch millis, so the returned task must not carry finer precision than what is read back.
+            val now = clock.instant().truncatedTo(ChronoUnit.MILLIS)
             val task =
                 draft.normalized().toTask(
                     ids.newId(),
@@ -79,7 +81,9 @@ internal class OfflineTaskRepository
         }
 
         override suspend fun archiveTask(id: String) {
-            taskDao.setArchivedAt(id, archivedAt = clock.millis(), now = clock.millis())
+            // One reading, so that archivedAt and updatedAt are the same instant.
+            val now = clock.millis()
+            taskDao.setArchivedAt(id, archivedAt = now, now = now)
         }
 
         override suspend fun restoreTask(id: String) {
