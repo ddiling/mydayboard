@@ -1,6 +1,8 @@
 package io.github.ddiling.mydayboard.feature.tasks.form
 
+import io.github.ddiling.mydayboard.core.domain.task.OnMiss
 import io.github.ddiling.mydayboard.core.domain.task.Repeat
+import io.github.ddiling.mydayboard.core.domain.task.TaskDraft
 import io.github.ddiling.mydayboard.core.testing.MainDispatcherRule
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
@@ -55,6 +57,31 @@ class TaskFormEditTest {
             val task = fixture.storedTasks().single()
             assertEquals("Vacuum the stairs", task.name)
             assertEquals(storedStart, task.startDate)
+        }
+
+    @Test
+    fun `a later change to the stored task does not overwrite what the user typed`() =
+        runTest {
+            val stored = fixture.givenTask("Vacuum")
+            val viewModel = fixture.viewModelFor(stored.id)
+            advanceUntilIdle()
+            viewModel.actions.onNameChange("Vacuum the stairs")
+
+            fixture.tasks.updateTask(
+                stored.id,
+                TaskDraft(
+                    "Changed elsewhere",
+                    categoryId = null,
+                    Repeat.EveryDay,
+                    time = null,
+                    note = null,
+                    goal = null,
+                    onMiss = OnMiss.EXPIRES,
+                ),
+            )
+            advanceUntilIdle()
+
+            assertEquals("Vacuum the stairs", viewModel.uiState.value.name)
         }
 
     @Test
