@@ -3,6 +3,7 @@ package io.github.ddiling.mydayboard.feature.tasks.form
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -18,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import io.github.ddiling.mydayboard.feature.tasks.R
 import java.time.Instant
@@ -86,3 +88,32 @@ private fun DatePickerPopup(
         dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.tasks_form_cancel)) } },
     ) { DatePicker(state) }
 }
+
+/**
+ * A whole-number input. The typed text is kept here, so the user can clear the box and type a new number; only
+ * a parsable number is reported, and the box shows the reported value again when it changes from outside.
+ */
+@Composable
+internal fun DashedNumberField(
+    label: String,
+    value: Int,
+    onValueChange: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+    error: String? = null,
+) {
+    var text by remember(value) { mutableStateOf(value.toString()) }
+    DashedTextField(
+        label = label,
+        value = text,
+        onValueChange = { typed ->
+            val digits = typed.filter(Char::isDigit).take(MAX_NUMBER_DIGITS)
+            text = digits
+            digits.toIntOrNull()?.let(onValueChange)
+        },
+        modifier = modifier,
+        error = error,
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+    )
+}
+
+private const val MAX_NUMBER_DIGITS = 3

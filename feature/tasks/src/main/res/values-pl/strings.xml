@@ -42,4 +42,9 @@
     <string name="tasks_form_mode_fixed">Stały kalendarz</string>
     <string name="tasks_form_mode_fixed_help">Zawsze w te same dni, nawet jeśli odhaczysz późno.</string>
     <string name="tasks_form_starting_on">Od dnia</string>
+    <string name="tasks_form_on_day">W dniu</string>
+    <string name="tasks_form_on_day_help">Jeśli miesiąc jest krótszy, używany jest ostatni dzień.</string>
+    <string name="tasks_form_due_date">Termin</string>
+    <string name="tasks_form_error_due_required">Wybierz termin</string>
+    <string name="tasks_form_error_day_of_month">Podaj dzień od 1 do 31</string>
 </resources>

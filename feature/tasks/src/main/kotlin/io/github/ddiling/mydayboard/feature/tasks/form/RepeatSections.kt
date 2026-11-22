@@ -38,7 +38,7 @@ private val timeFormat = DateTimeFormatter.ofPattern("HH:mm")
 /** The time shown on chips and in fields: 24-hour, so the picker (also 24-hour) and the text always agree. */
 internal fun LocalTime.display(): String = format(timeFormat)
 
-/** The fields that depend on the repeat type; the other types get their fields in a later change. */
+/** The fields that depend on the repeat type; the note and the time show only where they make sense. */
 @Composable
 internal fun RepeatSections(
     uiState: TaskFormUiState,
@@ -74,7 +74,33 @@ internal fun RepeatSections(
             IntervalSection(uiState, actions)
         }
 
-        else -> {}
+        RepeatType.MONTHLY -> {
+            DashedNumberField(
+                label = stringResource(R.string.tasks_form_on_day),
+                value = uiState.dayOfMonth,
+                onValueChange = actions.onDayOfMonthChange,
+                error = (TaskFormError.DayOfMonthOutOfRange.takeIf { it in uiState.errors }).message(),
+                modifier = Modifier.testTag("tasks_form_day_of_month"),
+            )
+            Text(
+                stringResource(R.string.tasks_form_on_day_help),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            TimeField(uiState.time, actions.onTimeChange)
+        }
+
+        RepeatType.ONE_TIME -> {
+            DateField(
+                label = stringResource(R.string.tasks_form_due_date),
+                date = uiState.dueDate,
+                opensOn = uiState.today,
+                onDateChange = actions.onDueDateChange,
+                tag = "tasks_form_due_date",
+                error = stringResource(R.string.tasks_form_error_due_required).takeIf { uiState.dueDate == null },
+            )
+            TimeField(uiState.time, actions.onTimeChange)
+        }
     }
 }
 
