@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -38,6 +39,7 @@ private fun <T> DashedDropdown(
     options: List<DropdownOption<T>>,
     onSelect: (T) -> Unit,
     tag: String,
+    extra: DropdownExtra? = null,
 ) {
     var expanded by remember { mutableStateOf(false) }
     DashedField(label) {
@@ -63,17 +65,39 @@ private fun <T> DashedDropdown(
                         },
                     )
                 }
+                if (extra != null) {
+                    HorizontalDivider()
+                    DropdownMenuItem(
+                        text = { Text(extra.text) },
+                        onClick = {
+                            expanded = false
+                            extra.onClick()
+                        },
+                        modifier = Modifier.testTag(extra.tag),
+                    )
+                }
             }
         }
     }
 }
 
-/** "No category" is an entry of its own, so a task can be moved out of a category again. */
+/** A last menu row that runs an action instead of choosing a value, such as "New category". */
+private data class DropdownExtra(
+    val text: String,
+    val tag: String,
+    val onClick: () -> Unit,
+)
+
+/**
+ * "No category" is an entry of its own, so a task can be moved out of a category again. "New category" comes last,
+ * after a divider, because it is an action and not a choice.
+ */
 @Composable
 internal fun CategoryField(
     categoryId: String?,
     categories: List<TaskCategory>,
     onCategoryChange: (String?) -> Unit,
+    onNewCategory: () -> Unit,
 ) {
     val none = stringResource(R.string.tasks_form_category_none)
     val options =
@@ -84,6 +108,12 @@ internal fun CategoryField(
         options = options,
         onSelect = onCategoryChange,
         tag = "tasks_form_category",
+        extra =
+            DropdownExtra(
+                stringResource(R.string.tasks_form_category_new),
+                "tasks_form_category_new",
+                onNewCategory,
+            ),
     )
 }
 

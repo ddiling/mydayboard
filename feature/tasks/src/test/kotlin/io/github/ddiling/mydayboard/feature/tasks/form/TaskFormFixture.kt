@@ -12,6 +12,7 @@ import io.github.ddiling.mydayboard.core.testing.MutableClock
 import io.github.ddiling.mydayboard.core.testing.SequentialIdGenerator
 import io.github.ddiling.mydayboard.core.testing.TestZones
 import io.github.ddiling.mydayboard.core.testing.warsaw
+import io.github.ddiling.mydayboard.feature.tasks.categories.CategoryEditor
 import kotlinx.coroutines.flow.first
 import java.time.Instant
 import java.time.LocalDate
@@ -28,7 +29,13 @@ internal class TaskFormFixture(
     val categories = FakeTaskCategoryRepository(clock, ids, store)
 
     fun viewModelFor(taskId: String? = null) =
-        TaskFormViewModel(SavedStateHandle(mapOf("taskId" to taskId)), tasks, categories, clock)
+        TaskFormViewModel(
+            SavedStateHandle(mapOf("taskId" to taskId)),
+            tasks,
+            categories,
+            CategoryEditor(categories),
+            clock,
+        )
 
     suspend fun storedTasks(): List<Task> = tasks.observeTasks().first()
 

@@ -57,4 +57,13 @@
     <string name="tasks_form_missed_expires">It expires at the end of its day or period</string>
     <string name="tasks_form_missed_expires_help">Counts as missed. Good for vacuuming.</string>
     <string name="tasks_form_missed_note">A repeating task keeps repeating either way.</string>
+    <string name="tasks_form_category_new">New category</string>
+    <string name="tasks_category_title_new">New category</string>
+    <string name="tasks_category_title_edit">Edit category</string>
+    <string name="tasks_category_name">Name</string>
+    <string name="tasks_category_save">Save</string>
+    <string name="tasks_category_cancel">Cancel</string>
+    <string name="tasks_category_delete">Delete category</string>
+    <string name="tasks_category_error_duplicate">A category with this name already exists</string>
+    <string name="tasks_category_error_too_long">The name is too long (limit: %1$d)</string>
 </resources>

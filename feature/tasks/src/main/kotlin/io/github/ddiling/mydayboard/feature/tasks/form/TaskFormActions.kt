@@ -10,6 +10,7 @@ import java.time.LocalTime
 internal data class TaskFormActions(
     val onNameChange: (String) -> Unit = {},
     val onCategoryChange: (String?) -> Unit = {},
+    val onNewCategory: () -> Unit = {},
     val onRepeatTypeChange: (RepeatType) -> Unit = {},
     val onAddTime: (LocalTime) -> Unit = {},
     val onRemoveTime: (LocalTime) -> Unit = {},

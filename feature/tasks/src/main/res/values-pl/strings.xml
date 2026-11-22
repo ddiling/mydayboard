@@ -59,4 +59,13 @@
     <string name="tasks_form_missed_expires">Wygasa z końcem dnia lub okresu</string>
     <string name="tasks_form_missed_expires_help">Liczy się jako pominięte. Dobre dla odkurzania.</string>
     <string name="tasks_form_missed_note">Zadanie powtarzalne i tak będzie się powtarzać.</string>
+    <string name="tasks_form_category_new">Nowa kategoria</string>
+    <string name="tasks_category_title_new">Nowa kategoria</string>
+    <string name="tasks_category_title_edit">Edytuj kategorię</string>
+    <string name="tasks_category_name">Nazwa</string>
+    <string name="tasks_category_save">Zapisz</string>
+    <string name="tasks_category_cancel">Anuluj</string>
+    <string name="tasks_category_delete">Usuń kategorię</string>
+    <string name="tasks_category_error_duplicate">Kategoria o tej nazwie już istnieje</string>
+    <string name="tasks_category_error_too_long">Nazwa jest za długa (limit: %1$d)</string>
 </resources>
