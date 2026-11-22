@@ -5,9 +5,11 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertHeightIsAtLeast
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -16,6 +18,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.unit.dp
 import io.github.ddiling.mydayboard.core.domain.task.TaskCategory
 import io.github.ddiling.mydayboard.core.domain.task.TaskFormError
 import org.junit.Assert.assertEquals
@@ -104,7 +107,10 @@ class TaskFormScreenTest {
 
         composeRule.onNodeWithTag("tasks_form_repeat").performClick()
         composeRule.onNodeWithText("Several times a day").assertIsDisplayed()
+        composeRule.onAllNodesWithText("Every day").assertCountEquals(2) // the field and the menu entry
+        composeRule.onNodeWithText("Every N days").assertDoesNotExist()
         composeRule.onNodeWithText("Once a month").assertDoesNotExist()
+        composeRule.onNodeWithText("One time").assertDoesNotExist()
         composeRule.onNodeWithText("Chosen weekdays").performClick()
 
         assertEquals(listOf(RepeatType.WEEKDAYS), chosen)
@@ -120,6 +126,21 @@ class TaskFormScreenTest {
         composeRule.onNodeWithText("Home").performClick()
 
         assertEquals(listOf<String?>("home"), chosen)
+    }
+
+    @Test
+    fun `a category id that is not in the list shows no category`() {
+        show(blank.copy(categoryId = "gone"), categories = listOf(home))
+
+        composeRule.onNodeWithTag("tasks_form_category").assertTextEquals("No category")
+    }
+
+    @Test
+    fun `the dropdown fields are at least 48 dp tall to tap`() {
+        show(blank)
+
+        composeRule.onNodeWithTag("tasks_form_category").assertHeightIsAtLeast(48.dp)
+        composeRule.onNodeWithTag("tasks_form_repeat").assertHeightIsAtLeast(48.dp)
     }
 
     @Test
