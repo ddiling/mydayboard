@@ -53,6 +53,13 @@ class DetailsTextTest {
     }
 
     @Test
+    fun `an upcoming monthly task adds the weekday of its next due day`() {
+        val row = rowOf(taskOf(Repeat.Monthly(5)), RowState.UPCOMING, nextDue = LocalDate.of(2026, 11, 21))
+
+        assertEquals("every month on the 5th · Sat", detailsText(resources, row, textsToday))
+    }
+
+    @Test
     fun `a pending task shows its schedule only`() {
         val row = rowOf(everyThreeDays, RowState.PENDING, nextDue = textsToday)
 
