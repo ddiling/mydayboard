@@ -92,6 +92,17 @@ class TaskDaoTest {
         }
 
     @Test
+    fun `updateIfLive keeps the stored creation and archive times`() =
+        runTest {
+            dao.insert(task("t").copy(createdAt = T0, archivedAt = T0 + 1))
+
+            dao.updateIfLive(task("t").copy(createdAt = T0 + 8, archivedAt = null), T0 + 5)
+
+            val stored = dao.observeLiveById("t").first()
+            assertEquals(T0 to (T0 + 1), stored?.createdAt to stored?.archivedAt)
+        }
+
+    @Test
     fun `updateIfLive returns 0 for a deleted task and changes nothing`() =
         runTest {
             dao.insert(task("t", name = "Old", deletedAt = T0 + 1))
