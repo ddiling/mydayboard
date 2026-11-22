@@ -7,6 +7,7 @@ internal data class TasksListActions(
     val onBack: () -> Unit = {},
     val onAddTask: () -> Unit = {},
     val onTaskClick: (String) -> Unit = {},
+    val onCategoryStats: (String) -> Unit = {},
     val onSwipeDone: (String) -> Unit = {},
     val onUndo: () -> Unit = {},
     val onUndoDismissed: (UndoOffer) -> Unit = {},

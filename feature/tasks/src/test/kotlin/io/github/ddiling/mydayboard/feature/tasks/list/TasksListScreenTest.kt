@@ -6,6 +6,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -156,6 +157,23 @@ class TasksListScreenTest {
         composeRule.onNodeWithTag("tasks_list_content").performScrollToNode(hasText("NO CATEGORY"))
 
         composeRule.onNode(hasText("NO CATEGORY")).assertIsDisplayed()
+    }
+
+    @Test
+    fun `a category's chart button is named by the category and calls onCategoryStats with its id`() {
+        val opened = mutableListOf<String>()
+        show(content(), TasksListActions(onCategoryStats = { opened += it }))
+
+        composeRule.onNode(hasContentDescription("Stats of Home")).performClick()
+
+        assertEquals(listOf("home"), opened)
+    }
+
+    @Test
+    fun `the No category group has no chart button`() {
+        show(content(listOf(TaskGroup(null, listOf(pending)))))
+
+        composeRule.onNodeWithTag("tasks_list_stats_null").assertDoesNotExist()
     }
 
     private val vacuumDone = UndoOffer("Vacuum", TickOutcome.Added("vacuum", "tick1", 1, 1, null))

@@ -170,5 +170,6 @@
     <string name="tasks_catstats_empty_hint">Add a task and choose this category.</string>
     <string name="tasks_catstats_not_found_title">This category is gone</string>
     <string name="tasks_catstats_not_found_hint">It was deleted or never existed.</string>
+    <string name="tasks_list_category_stats">Stats of %1$s</string>
     <string name="tasks_row_swipe_hint">swipe right to mark done</string>
 </resources>
