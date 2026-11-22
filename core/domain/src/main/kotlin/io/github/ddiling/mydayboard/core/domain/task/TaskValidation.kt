@@ -16,8 +16,6 @@ const val MAX_TASK_NOTE_LENGTH = 80
 /** The shortest and longest interval of an every-N-days task. A year is the longest period that still makes sense. */
 const val MIN_INTERVAL_DAYS = 1
 const val MAX_INTERVAL_DAYS = 365
-
-/** The first and last valid day of a monthly task. */
 const val MIN_DAY_OF_MONTH = 1
 const val MAX_DAY_OF_MONTH = 31
 
