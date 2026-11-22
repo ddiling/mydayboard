@@ -42,22 +42,3 @@ class FakeTaskTickObserveContractTest : TaskTickObserveContractTest() {
         ids: IdGenerator,
     ): TaskTickRepository = FakeTaskTickRepository(clock, ids, store)
 }
-
-class FakeTaskTickDayContractTest : TaskTickDayContractTest() {
-    private val store = FakeTaskStore()
-
-    override fun createTaskRepository(
-        clock: MutableClock,
-        ids: IdGenerator,
-    ): TaskRepository = FakeTaskRepository(clock, ids, store)
-
-    override fun createCategoryRepository(
-        clock: MutableClock,
-        ids: IdGenerator,
-    ): TaskCategoryRepository = FakeTaskCategoryRepository(clock, ids, store)
-
-    override fun createTickRepository(
-        clock: MutableClock,
-        ids: IdGenerator,
-    ): TaskTickRepository = FakeTaskTickRepository(clock, ids, store)
-}

@@ -80,4 +80,17 @@ abstract class TaskTickContractTest : TaskTickRepositoryContractBase() {
 
             assertEquals(emptyList<TaskTick>(), liveTicksOf(task.id))
         }
+
+    @Test
+    fun `restoring a timed tick is skipped when a live tick now holds the same slot`() =
+        runTest {
+            val task = givenTask()
+            val deleted = givenTick(task.id, slot = morning)
+            ticks.deleteTick(deleted.id)
+            val replacement = givenTick(task.id, slot = morning)
+
+            ticks.restoreTick(deleted.id)
+
+            assertEquals(listOf(replacement), liveTicksOf(task.id))
+        }
 }
