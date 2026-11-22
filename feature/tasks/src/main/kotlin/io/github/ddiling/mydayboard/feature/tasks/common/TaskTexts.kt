@@ -28,22 +28,27 @@ private val workWeek =
         DayOfWeek.FRIDAY,
     )
 
+private val allWeek = DayOfWeek.entries.toSet()
+
+private fun Repeat.isEveryDay(): Boolean = this == Repeat.EveryDay || (this is Repeat.Weekdays && days == allWeek)
+
 private fun Resources.locale(): Locale = configuration.locales[0]
 
 /**
  * When the task repeats, as one short phrase: "08:30", "Mon, Wed, Fri", "every 3 days", "every weekday". A time
- * is added after the phrase; for every-day and several-times tasks the times are the whole phrase, because
- * "every day · 08:30" only repeats what the list already says. The text is built here, not stored, so it
- * follows the device language.
+ * is added after the phrase; for every-day (also all seven weekdays picked by hand) and several-times tasks the
+ * times are the whole phrase, because "every day · 08:30" only repeats what the list already says. The text is
+ * built here, not stored, so it follows the device language.
  */
 internal fun scheduleText(
     resources: Resources,
     task: Task,
 ): String {
     val time = task.time?.format(timeFormat)
-    return when (val repeat = task.repeat) {
-        is Repeat.TimesPerDay -> repeat.times.joinToString(", ") { it.format(timeFormat) }
-        Repeat.EveryDay -> time ?: resources.getString(R.string.tasks_schedule_every_day)
+    val repeat = task.repeat
+    return when {
+        repeat is Repeat.TimesPerDay -> repeat.times.joinToString(", ") { it.format(timeFormat) }
+        repeat.isEveryDay() -> time ?: resources.getString(R.string.tasks_schedule_every_day)
         else -> listOfNotNull(repeatText(resources, repeat), time).joinToString(SEPARATOR)
     }
 }
@@ -132,7 +137,7 @@ private fun weekdaysText(
 ): String =
     when (days) {
         workWeek -> resources.getString(R.string.tasks_schedule_every_weekday)
-        DayOfWeek.entries.toSet() -> resources.getString(R.string.tasks_schedule_every_day)
+        allWeek -> resources.getString(R.string.tasks_schedule_every_day)
         else -> days.sorted().joinToString(", ") { it.getDisplayName(TextStyle.SHORT, resources.locale()) }
     }
 
