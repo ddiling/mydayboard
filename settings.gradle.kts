@@ -41,6 +41,7 @@ include(":app")
 
 // Features: one module per area (trackers, alarms, ...), each a screen or flow.
 include(":feature:trackers")
+include(":feature:tasks")
 
 // Core: shared foundations.
 include(":core:domain")
