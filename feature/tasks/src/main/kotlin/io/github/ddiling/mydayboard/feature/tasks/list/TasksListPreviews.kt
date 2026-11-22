@@ -26,12 +26,8 @@ private val previewContent =
                 TaskGroup(
                     home,
                     listOf(
-                        previewRow(
-                            "Breakfast",
-                            Repeat.EveryDay,
-                            RowState.DONE,
-                            LocalTime.of(8, 30),
-                        ).copy(done = 1, target = 1),
+                        previewRow("Breakfast", Repeat.EveryDay, RowState.DONE, LocalTime.of(8, 30))
+                            .copy(done = 1, target = 1),
                         previewRow("Vacuum", workdays, RowState.PENDING),
                     ),
                 ),
