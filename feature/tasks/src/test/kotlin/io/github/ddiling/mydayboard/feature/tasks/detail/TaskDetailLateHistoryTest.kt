@@ -7,7 +7,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.time.LocalDate
 
-class TaskDetailHistoryTest {
+class TaskDetailLateHistoryTest {
     private val fixture = TaskDetailFixture()
     private val lastFriday = LocalDate.of(2026, 11, 13)
 
