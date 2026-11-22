@@ -8,6 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import io.github.ddiling.mydayboard.core.dashboard.DashboardCard
 import io.github.ddiling.mydayboard.core.dashboard.sortedDashboardCards
+import io.github.ddiling.mydayboard.feature.tasks.navigation.tasksGraph
 import io.github.ddiling.mydayboard.feature.trackers.navigation.trackersGraph
 import java.time.Clock
 
@@ -37,5 +38,6 @@ fun MyDayboardNavHost(
             SettingsScreen(onBack = { navController.popBackStack() })
         }
         trackersGraph(navController)
+        tasksGraph()
     }
 }
