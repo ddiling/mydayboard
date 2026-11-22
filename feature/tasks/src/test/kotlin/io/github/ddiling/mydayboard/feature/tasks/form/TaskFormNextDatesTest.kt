@@ -7,6 +7,7 @@ import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performScrollTo
 import io.github.ddiling.mydayboard.core.domain.task.EveryNDaysMode
+import io.github.ddiling.mydayboard.core.domain.task.Repeat
 import io.github.ddiling.mydayboard.core.testing.TestZones
 import io.github.ddiling.mydayboard.core.testing.warsaw
 import org.junit.Assert.assertEquals
@@ -43,7 +44,7 @@ class TaskFormNextDatesTest {
         composeRule
             .onNodeWithTag("tasks_form_next_dates")
             .performScrollTo()
-            .assertTextEquals("Next: Dec 1, 2026, Dec 4, 2026, Dec 7, 2026")
+            .assertTextEquals("Next: Tue 1 Dec \u00B7 Fri 4 Dec \u00B7 Mon 7 Dec")
     }
 
     @Test
@@ -59,6 +60,67 @@ class TaskFormNextDatesTest {
             listOf(today, today.plusDays(14), today.plusDays(28)),
             fromLast.nextDueDates(),
         )
+    }
+
+    @Test
+    fun `a starting day in the past lists the dates from the next one that is not past`() {
+        val catchUp = fixedFromTheFirst.copy(firstDue = LocalDate.of(2026, 11, 1))
+
+        assertEquals(
+            listOf(LocalDate.of(2026, 11, 22), LocalDate.of(2026, 11, 25), LocalDate.of(2026, 11, 28)),
+            catchUp.nextDueDates(),
+        )
+    }
+
+    @Test
+    fun `a starting day today is listed first, not pushed to tomorrow`() {
+        val startsToday = fixedFromTheFirst.copy(firstDue = today)
+
+        assertEquals(today, startsToday.nextDueDates().first())
+    }
+
+    @Test
+    fun `switching to counting from the last time starts the task today`() {
+        val switched = fixedFromTheFirst.withIntervalMode(EveryNDaysMode.FROM_LAST_DONE)
+
+        assertEquals(today, switched.firstDue)
+        assertEquals(today, switched.nextDueDates().first())
+        assertEquals(
+            Repeat.EveryNDays(3, EveryNDaysMode.FROM_LAST_DONE, today),
+            switched.toDraft().repeat,
+        )
+    }
+
+    @Test
+    fun `switching to the fixed calendar keeps the starting day`() {
+        val switched =
+            fixedFromTheFirst
+                .withIntervalMode(EveryNDaysMode.FROM_LAST_DONE)
+                .withFirstDue(LocalDate.of(2026, 12, 1))
+                .withIntervalMode(EveryNDaysMode.FIXED_CALENDAR)
+
+        assertEquals(LocalDate.of(2026, 12, 1), switched.firstDue)
+    }
+
+    @Test
+    fun `a saved task counted from the last time lists no dates and shows no line`() {
+        val saved =
+            fixedFromTheFirst.copy(
+                isEditing = true,
+                intervalMode = EveryNDaysMode.FROM_LAST_DONE,
+                firstDue = today,
+            )
+        show(saved)
+
+        assertEquals(emptyList<LocalDate>(), saved.nextDueDates())
+        composeRule.onNodeWithTag("tasks_form_next_dates").assertDoesNotExist()
+    }
+
+    @Test
+    fun `a saved task on the fixed calendar still lists its dates`() {
+        val saved = fixedFromTheFirst.copy(isEditing = true)
+
+        assertEquals(LocalDate.of(2026, 12, 1), saved.nextDueDates().first())
     }
 
     @Test

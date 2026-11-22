@@ -25,7 +25,6 @@ import io.github.ddiling.mydayboard.core.domain.task.MIN_INTERVAL_DAYS
 import io.github.ddiling.mydayboard.feature.tasks.R
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
 
 /**
  * "Every N days": the stepper, the two ways to count, and the start date that only the fixed calendar needs (the
@@ -118,14 +117,18 @@ private fun StepButton(
     ) { Text(symbol, Modifier.clearAndSetSemantics {}, style = MaterialTheme.typography.titleLarge) }
 }
 
+/** Short weekday, day and month, no year: the dates are near, and a comma-free date keeps the separator clear. */
+private const val NEXT_DATE_PATTERN = "EEE d MMM"
+private const val NEXT_DATES_SEPARATOR = " \u00B7 "
+
 /** The info line under the options: the dates, in the same style as the date fields. Nothing when there are none. */
 @Composable
 private fun NextDates(dates: List<LocalDate>) {
     if (dates.isEmpty()) return
     val locale = LocalConfiguration.current.locales[0]
-    val format = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale)
+    val format = DateTimeFormatter.ofPattern(NEXT_DATE_PATTERN, locale)
     Text(
-        stringResource(R.string.tasks_form_next_dates, dates.joinToString { it.format(format) }),
+        stringResource(R.string.tasks_form_next_dates, dates.joinToString(NEXT_DATES_SEPARATOR) { it.format(format) }),
         style = MaterialTheme.typography.bodyMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier.testTag("tasks_form_next_dates"),
