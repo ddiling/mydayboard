@@ -7,5 +7,6 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.compose.material.icons.core)
     testImplementation(projects.core.testing)
 }

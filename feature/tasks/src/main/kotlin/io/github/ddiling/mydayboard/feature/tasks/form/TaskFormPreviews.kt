@@ -1,0 +1,43 @@
+package io.github.ddiling.mydayboard.feature.tasks.form
+
+import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
+import io.github.ddiling.mydayboard.core.designsystem.preview.PreviewSurface
+import io.github.ddiling.mydayboard.core.domain.task.TaskFormError
+import java.time.LocalDate
+
+private val previewToday = LocalDate.of(2026, 3, 2)
+
+private val emptyForm = TaskFormUiState(today = previewToday)
+
+@Composable
+private fun PreviewForm(state: TaskFormUiState) {
+    PreviewSurface { TaskFormScreen(state, TaskFormActions()) }
+}
+
+@PreviewLightDark
+@Composable
+private fun TaskFormEmptyPreview() = PreviewForm(emptyForm)
+
+@PreviewLightDark
+@Composable
+private fun TaskFormErrorsPreview() =
+    PreviewForm(
+        emptyForm.copy(
+            name = " ",
+            errors = listOf(TaskFormError.BlankName),
+        ),
+    )
+
+@Preview(name = "Large font light", fontScale = 2f)
+@Preview(name = "Large font dark", fontScale = 2f, uiMode = UI_MODE_NIGHT_YES)
+@Composable
+private fun TaskFormLargeFontPreview() =
+    PreviewForm(
+        emptyForm.copy(
+            name = "Pills",
+            canSave = true,
+        ),
+    )

@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="tasks_form_placeholder">Nowe zadanie</string>
+    <string name="tasks_form_title_new">Nowe zadanie</string>
+    <string name="tasks_form_title_edit">Edytuj zadanie</string>
+    <string name="tasks_form_close">Zamknij</string>
+    <string name="tasks_form_save">Zapisz</string>
+    <string name="tasks_form_name">Nazwa</string>
+    <string name="tasks_form_not_found">Nie znaleziono zadania</string>
+    <string name="tasks_form_error_name_blank">Wpisz nazwę</string>
+    <string name="tasks_form_error_name_too_long">Nazwa jest za długa (maks. %1$d)</string>
 </resources>

@@ -26,4 +26,5 @@ internal data class TaskFormActions(
     val onOnMissChange: (OnMiss) -> Unit = {},
     val onSave: () -> Unit = {},
     val onSavedHandled: () -> Unit = {},
+    val onClose: () -> Unit = {},
 )
