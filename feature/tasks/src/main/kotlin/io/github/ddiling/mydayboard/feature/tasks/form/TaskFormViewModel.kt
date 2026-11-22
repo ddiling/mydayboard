@@ -35,7 +35,7 @@ internal class TaskFormViewModel
     constructor(
         savedStateHandle: SavedStateHandle,
         private val tasks: TaskRepository,
-        categories: TaskCategoryRepository,
+        private val categoryRepository: TaskCategoryRepository,
         private val clock: Clock,
     ) : ViewModel() {
         private val taskId: String? = savedStateHandle.toRoute<TaskFormDestination>().taskId
@@ -51,7 +51,7 @@ internal class TaskFormViewModel
 
         /** The categories to pick from, oldest first. */
         val categories: StateFlow<List<TaskCategory>> =
-            categories
+            categoryRepository
                 .observeCategories()
                 .stateIn(viewModelScope, SharingStarted.WhileSubscribed(SUBSCRIPTION_TIMEOUT_MS), emptyList())
 
@@ -73,6 +73,7 @@ internal class TaskFormViewModel
                 onGoalOnChange = { edit { withGoalOn(it) } },
                 onGoalChange = { edit { withGoal(it) } },
                 onOnMissChange = { edit { withOnMiss(it) } },
+                onCreateCategory = ::onCreateCategory,
                 onSave = ::onSave,
                 onSavedHandled = ::onSavedHandled,
             )
@@ -104,6 +105,15 @@ internal class TaskFormViewModel
             viewModelScope.launch {
                 if (taskId == null) tasks.createTask(draft, startDate) else tasks.updateTask(taskId, draft)
                 _uiState.update { it.copy(saved = true).revalidated() }
+            }
+        }
+
+        private fun onCreateCategory(name: String) {
+            val trimmed = name.trim()
+            if (trimmed.isEmpty()) return
+            viewModelScope.launch {
+                val created = categoryRepository.createCategory(trimmed)
+                edit { withCategory(created.id) }
             }
         }
 

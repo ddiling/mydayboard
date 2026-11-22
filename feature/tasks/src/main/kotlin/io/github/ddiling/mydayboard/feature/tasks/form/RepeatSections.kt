@@ -70,7 +70,20 @@ internal fun RepeatSections(
             TimeField(uiState.time, actions.onTimeChange)
         }
 
-        else -> {}
+        RepeatType.EVERY_N_DAYS -> {
+            EveryNDaysSection(uiState, actions)
+            TimeField(uiState.time, actions.onTimeChange)
+        }
+
+        RepeatType.MONTHLY -> {
+            NumberField(stringResource(R.string.tasks_form_day_of_month), uiState.dayOfMonth, 1..31, actions.onDayOfMonthChange)
+            TimeField(uiState.time, actions.onTimeChange)
+        }
+
+        RepeatType.ONE_TIME -> {
+            DateField(stringResource(R.string.tasks_form_due_date), uiState.dueDate, actions.onDueDateChange)
+            TimeField(uiState.time, actions.onTimeChange)
+        }
     }
 }
 
