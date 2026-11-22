@@ -42,4 +42,8 @@
     <string name="tasks_details_late">late · was due %1$s</string>
     <string name="tasks_details_done">Done</string>
     <string name="tasks_details_missed">Missed</string>
+    <string name="tasks_row_done">Done</string>
+    <string name="tasks_row_done_label">Done</string>
+    <string name="tasks_row_mark_done">Mark done</string>
+    <string name="tasks_row_swipe_hint">swipe right to mark done</string>
 </resources>
