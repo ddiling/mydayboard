@@ -65,7 +65,7 @@ internal fun dateText(
 ): String = day.format(DateTimeFormatter.ofPattern("d MMM", resources.deviceLocale()))
 
 /** A half day counts 0.5, so a whole number prints without a decimal ("8") and a half with one ("7.5"). */
-private fun creditText(
+internal fun creditText(
     resources: Resources,
     credit: Double,
 ): String =

@@ -155,4 +155,12 @@
     <string name="tasks_category_delete">Delete category</string>
     <string name="tasks_category_error_duplicate">A category with this name already exists</string>
     <string name="tasks_category_error_too_long">The name is too long (limit: %1$d)</string>
+    <string name="tasks_catstats_hero_unit">tasks done a day, average of the last 30 days</string>
+    <string name="tasks_catstats_stat_tasks">tasks</string>
+    <string name="tasks_catstats_tasks_title">TASKS</string>
+    <string name="tasks_catstats_archived_title">ARCHIVED TASKS STILL COUNT</string>
+    <plurals name="tasks_catstats_skipped">
+        <item quantity="one">skipped %1$d time</item>
+        <item quantity="other">skipped %1$d times</item>
+    </plurals>
 </resources>
