@@ -13,16 +13,18 @@ internal fun TasksListRoute(
     onBack: () -> Unit,
     onAddTask: () -> Unit,
     onTaskClick: (String) -> Unit,
+    onCategoryStats: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: TasksListViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val actions =
-        remember(viewModel, onBack, onAddTask, onTaskClick) {
+        remember(viewModel, onBack, onAddTask, onTaskClick, onCategoryStats) {
             TasksListActions(
                 onBack = onBack,
                 onAddTask = onAddTask,
                 onTaskClick = onTaskClick,
+                onCategoryStats = onCategoryStats,
                 onSwipeDone = viewModel::onSwipeDone,
                 onUndo = viewModel::onUndo,
                 onUndoDismissed = viewModel::onUndoDismissed,

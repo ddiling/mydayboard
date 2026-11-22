@@ -183,4 +183,5 @@
     <string name="tasks_catstats_empty_hint">Dodaj zadanie i wybierz tę kategorię.</string>
     <string name="tasks_catstats_not_found_title">Tej kategorii już nie ma</string>
     <string name="tasks_catstats_not_found_hint">Została usunięta albo nigdy nie istniała.</string>
+    <string name="tasks_list_category_stats">Statystyki: %1$s</string>
 </resources>

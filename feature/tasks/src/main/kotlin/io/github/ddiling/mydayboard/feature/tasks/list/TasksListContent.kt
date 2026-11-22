@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -44,7 +45,7 @@ internal fun TasksListContent(
     LazyColumn(modifier.padding(horizontal = 20.dp).testTag("tasks_list_content")) {
         content.groups.forEachIndexed { index, group ->
             if (index > 0) item(key = "divider-${group.category?.id}") { DashedDivider() }
-            item(key = "title-${group.category?.id}") { GroupTitle(group) }
+            item(key = "title-${group.category?.id}") { GroupTitle(group, actions.onCategoryStats) }
             items(group.rows, key = { it.task.id }) { row ->
                 val actionable = row.state == RowState.PENDING || row.state == RowState.LATE
                 SwipeToDoneRow(onDone = { actions.onSwipeDone(row.task.id) }, enabled = actionable) {
@@ -55,30 +56,53 @@ internal fun TasksListContent(
     }
 }
 
-/** A heading for screen readers, so they can jump from category to category. */
+/**
+ * A heading for screen readers, so they can jump from category to category. A real category also has a chart
+ * button that opens its stats; "No category" has none, because it is not a category that can be opened. The button
+ * sits beside the heading, not inside it, so it stays a separate button for screen readers.
+ */
 @Composable
-private fun GroupTitle(group: TaskGroup) {
-    val name = group.category?.name ?: stringResource(R.string.tasks_form_category_none)
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .heightIn(min = 48.dp)
-            .semantics(mergeDescendants = true) { heading() }
-            .testTag("tasks_list_group_${group.category?.id}"),
-        Arrangement.spacedBy(8.dp),
-        Alignment.CenterVertically,
-    ) {
-        Icon(
-            FolderIcon,
-            contentDescription = null,
-            modifier = Modifier.size(16.dp),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Text(
-            name.uppercase(Locale.current.platformLocale),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+private fun GroupTitle(
+    group: TaskGroup,
+    onCategoryStats: (String) -> Unit,
+) {
+    val category = group.category
+    val name = category?.name ?: stringResource(R.string.tasks_form_category_none)
+    Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween, Alignment.CenterVertically) {
+        Row(
+            Modifier
+                .weight(1f)
+                .heightIn(min = 48.dp)
+                .semantics(mergeDescendants = true) { heading() }
+                .testTag("tasks_list_group_${category?.id}"),
+            Arrangement.spacedBy(8.dp),
+            Alignment.CenterVertically,
+        ) {
+            Icon(
+                FolderIcon,
+                contentDescription = null,
+                modifier = Modifier.size(16.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                name.uppercase(Locale.current.platformLocale),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        if (category != null) {
+            IconButton(
+                onClick = { onCategoryStats(category.id) },
+                modifier = Modifier.testTag("tasks_list_stats_${category.id}"),
+            ) {
+                Icon(
+                    ChartIcon,
+                    stringResource(R.string.tasks_list_category_stats, category.name),
+                    Modifier.size(16.dp),
+                    MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
     }
 }
 
