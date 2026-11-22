@@ -159,7 +159,6 @@ class TasksListScreenTest {
         composeRule.onNode(hasText("NO CATEGORY")).assertIsDisplayed()
     }
 
-<<<<<<< HEAD
     @Test
     fun `a category's chart button is named by the category and calls onCategoryStats with its id`() {
         val opened = mutableListOf<String>()
@@ -175,7 +174,8 @@ class TasksListScreenTest {
         show(content(listOf(TaskGroup(null, listOf(pending)))))
 
         composeRule.onNodeWithTag("tasks_list_stats_null").assertDoesNotExist()
-=======
+    }
+
     private val vacuumDone = UndoOffer("Vacuum", TickOutcome.Added("vacuum", "tick1", 1, 1, null))
 
     @Test
@@ -204,6 +204,5 @@ class TasksListScreenTest {
     private companion object {
         /** Longer than the Short snackbar duration (4 s), so it times out. */
         const val SNACKBAR_TIMEOUT_MS = 6_000L
->>>>>>> feat/tasks-category-stats-screen
     }
 }
