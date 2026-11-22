@@ -69,8 +69,15 @@ class TaskFormRoundTripTest {
     }
 
     @Test
-    fun `an every N days task round-trips`() {
+    fun `an every N days task counted from the last completion round-trips`() {
         val repeat = Repeat.EveryNDays(5, EveryNDaysMode.FROM_LAST_DONE, today.minusDays(1))
+
+        assertRoundTrips(givenTask(repeat, time = null))
+    }
+
+    @Test
+    fun `an every N days task on a fixed calendar round-trips`() {
+        val repeat = Repeat.EveryNDays(5, EveryNDaysMode.FIXED_CALENDAR, today.minusDays(1))
 
         assertRoundTrips(givenTask(repeat, time = null))
     }
