@@ -60,6 +60,11 @@ class ScheduleTextTest {
     }
 
     @Test
+    fun `all seven weekdays with a time show just the time like every day`() {
+        assertEquals("08:30", text(Repeat.Weekdays(DayOfWeek.entries.toSet()), morning))
+    }
+
+    @Test
     fun `a time follows the weekdays after a dot`() {
         assertEquals("Mon · 08:30", text(Repeat.Weekdays(setOf(DayOfWeek.MONDAY)), morning))
     }

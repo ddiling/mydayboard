@@ -26,7 +26,7 @@ class TaskUndoSnackbarTest {
 
     private val hostState = SnackbarHostState()
     private var undone = 0
-    private var dismissed = 0
+    private val dismissed = mutableListOf<UndoOffer>()
 
     private fun added(
         done: Int,
@@ -38,7 +38,7 @@ class TaskUndoSnackbarTest {
         composeRule.setContent {
             PreviewSurface {
                 SnackbarHost(hostState)
-                TaskUndoSnackbar(offer(), hostState, onUndo = { undone++ }, onDismissed = { dismissed++ })
+                TaskUndoSnackbar(offer(), hostState, onUndo = { undone++ }, onDismissed = { dismissed += it })
             }
         }
 
@@ -82,6 +82,18 @@ class TaskUndoSnackbarTest {
     }
 
     @Test
+    fun `a dismissed message reports the offer it showed`() {
+        val offer = UndoOffer("Breakfast", added(1, 1))
+        show { offer }
+        composeRule.waitForIdle()
+
+        composeRule.runOnIdle { hostState.currentSnackbarData?.dismiss() }
+
+        composeRule.waitForIdle()
+        assertEquals(listOf(offer), dismissed)
+    }
+
+    @Test
     fun `a newer offer replaces the older one without reporting it dismissed`() {
         var offer by mutableStateOf(UndoOffer("Breakfast", added(1, 1)))
         show { offer }
@@ -91,6 +103,6 @@ class TaskUndoSnackbarTest {
         composeRule.waitForIdle()
 
         composeRule.onNodeWithText("Pills done").assertIsDisplayed()
-        assertEquals(0, dismissed)
+        assertEquals(emptyList<UndoOffer>(), dismissed)
     }
 }
