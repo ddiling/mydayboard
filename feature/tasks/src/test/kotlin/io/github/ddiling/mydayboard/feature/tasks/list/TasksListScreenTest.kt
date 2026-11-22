@@ -10,6 +10,7 @@ import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTouchInput
@@ -20,6 +21,8 @@ import io.github.ddiling.mydayboard.core.domain.task.Repeat
 import io.github.ddiling.mydayboard.core.domain.task.RowState
 import io.github.ddiling.mydayboard.core.domain.task.TaskCategory
 import io.github.ddiling.mydayboard.core.domain.task.TaskGroup
+import io.github.ddiling.mydayboard.core.domain.task.TickOutcome
+import io.github.ddiling.mydayboard.feature.tasks.common.UndoOffer
 import io.github.ddiling.mydayboard.feature.tasks.common.rowOf
 import io.github.ddiling.mydayboard.feature.tasks.common.taskOf
 import io.github.ddiling.mydayboard.feature.tasks.common.textsToday
@@ -43,7 +46,8 @@ class TasksListScreenTest {
     private fun content(
         groups: List<TaskGroup> = listOf(TaskGroup(home, listOf(pending))),
         lateCount: Int = 0,
-    ) = TasksListUiState.Content(groups, textsToday, lateCount, archivedCount = 0, undo = null)
+        undo: UndoOffer? = null,
+    ) = TasksListUiState.Content(groups, textsToday, lateCount, archivedCount = 0, undo = undo)
 
     private fun show(
         state: TasksListUiState,
@@ -155,6 +159,7 @@ class TasksListScreenTest {
         composeRule.onNode(hasText("NO CATEGORY")).assertIsDisplayed()
     }
 
+<<<<<<< HEAD
     @Test
     fun `a category's chart button is named by the category and calls onCategoryStats with its id`() {
         val opened = mutableListOf<String>()
@@ -170,5 +175,35 @@ class TasksListScreenTest {
         show(content(listOf(TaskGroup(null, listOf(pending)))))
 
         composeRule.onNodeWithTag("tasks_list_stats_null").assertDoesNotExist()
+=======
+    private val vacuumDone = UndoOffer("Vacuum", TickOutcome.Added("vacuum", "tick1", 1, 1, null))
+
+    @Test
+    fun `tapping Undo on the snackbar calls onUndo`() {
+        var undos = 0
+        show(content(undo = vacuumDone), TasksListActions(onUndo = { undos++ }))
+
+        composeRule.onNodeWithText("Undo").performClick()
+
+        composeRule.waitForIdle()
+        assertEquals(1, undos)
+    }
+
+    @Test
+    fun `a dismissed snackbar reports the offer it showed`() {
+        val dismissed = mutableListOf<UndoOffer>()
+        show(content(undo = vacuumDone), TasksListActions(onUndoDismissed = { dismissed += it }))
+        composeRule.waitForIdle()
+
+        composeRule.mainClock.advanceTimeBy(SNACKBAR_TIMEOUT_MS)
+
+        composeRule.waitForIdle()
+        assertEquals(listOf(vacuumDone), dismissed)
+    }
+
+    private companion object {
+        /** Longer than the Short snackbar duration (4 s), so it times out. */
+        const val SNACKBAR_TIMEOUT_MS = 6_000L
+>>>>>>> feat/tasks-category-stats-screen
     }
 }

@@ -41,4 +41,9 @@ class TaskDetailPolishTextTest {
         assertEquals("Jeszcze nie zrobione", heroText(resources, Hero.NotDone, textsToday))
         assertEquals("1 z 2 dzisiaj", heroText(resources, Hero.TimesProgress(1, 2), textsToday))
     }
+
+    @Test
+    fun `a late history row says it is not done yet in Polish`() {
+        assertEquals("Spóźnione · jeszcze nie zrobione", historyResultText(resources, HistoryResult.Late))
+    }
 }
