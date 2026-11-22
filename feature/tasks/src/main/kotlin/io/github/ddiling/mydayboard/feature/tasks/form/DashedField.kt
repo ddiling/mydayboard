@@ -12,6 +12,9 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.error
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import io.github.ddiling.mydayboard.core.designsystem.theme.DashedSeparatorColor
 
@@ -57,7 +60,11 @@ internal fun DashedField(
     }
 }
 
-/** A single-line text input in a [DashedField]; [modifier] goes on the input itself so tests can find it. */
+/**
+ * A single-line text input in a [DashedField]; [modifier] goes on the input itself so tests can find it.
+ * The visible label is a separate `Text`, so the input gets the label as its accessible name and the [error]
+ * as its error semantics; otherwise a screen reader announces an unnamed edit box without the problem.
+ */
 @Composable
 internal fun DashedTextField(
     label: String,
@@ -73,7 +80,11 @@ internal fun DashedTextField(
             singleLine = true,
             textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
             cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-            modifier = modifier.fillMaxWidth(),
+            modifier =
+                modifier.fillMaxWidth().semantics {
+                    contentDescription = label
+                    if (error != null) error(error)
+                },
         )
     }
 }
