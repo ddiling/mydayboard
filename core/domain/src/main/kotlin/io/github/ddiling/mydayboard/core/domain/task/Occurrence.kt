@@ -52,10 +52,29 @@ fun occurrencesOf(
     until: LocalDate = today,
 ): List<Occurrence> {
     val days = countedDays(task, ticks)
-    return dueWindows(task)
+    return dueWindows(task, days)
         .takeWhile { !it.due.isAfter(until) }
         .map { occurrenceOf(task, it, days, today) }
         .toList()
+}
+
+/**
+ * The next day [task] needs attention: the due day of a late or due-today occurrence, otherwise the next due
+ * day after [today]. Null when nothing is left (a finished one-time task).
+ */
+fun nextDueDate(
+    task: Task,
+    ticks: List<TaskTick>,
+    today: LocalDate,
+): LocalDate? {
+    val days = countedDays(task, ticks)
+    return dueWindows(task, days)
+        .map { occurrenceOf(task, it, days, today) }
+        .firstOrNull {
+            it.status == OccurrenceStatus.UPCOMING ||
+                it.status == OccurrenceStatus.LATE ||
+                it.status == OccurrenceStatus.DUE_TODAY
+        }?.due
 }
 
 /** Days of the ticks that count. A several-times task counts one tick per current time; others count all. */

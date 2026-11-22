@@ -11,8 +11,14 @@ import java.time.temporal.ChronoUnit
  * Expiring tasks last only their due day. Staying tasks last until the day before the next due day, so a
  * missed day can be caught up but never overlaps the next one.
  */
-internal fun dueWindows(task: Task): Sequence<DueWindow> {
+internal fun dueWindows(
+    task: Task,
+    countedDays: List<LocalDate>,
+): Sequence<DueWindow> {
     val repeat = task.repeat
+    if (repeat is Repeat.EveryNDays && repeat.mode == EveryNDaysMode.FROM_LAST_DONE) {
+        return fromLastWindows(task, repeat, countedDays)
+    }
     val first = firstFixedDue(task.startDate, repeat)
     return generateSequence(first) { nextFixedDue(it, repeat) }.map { due ->
         val next = nextFixedDue(due, repeat)
