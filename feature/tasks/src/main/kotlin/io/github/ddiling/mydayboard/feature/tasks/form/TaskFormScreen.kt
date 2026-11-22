@@ -31,10 +31,6 @@ import io.github.ddiling.mydayboard.core.domain.task.TaskCategory
 import io.github.ddiling.mydayboard.core.domain.task.TaskFormError
 import io.github.ddiling.mydayboard.feature.tasks.R
 
-/** The repeat types offered for now: the other three get their fields in a later change and stay hidden until then. */
-internal val availableRepeatTypes: List<RepeatType> =
-    RepeatType.entries - setOf(RepeatType.EVERY_N_DAYS, RepeatType.MONTHLY, RepeatType.ONE_TIME)
-
 /** Stateless: everything shown comes from [uiState] and [categories], everything the user does goes to [actions]. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -107,8 +103,10 @@ private fun Form(
             error = nameError.takeIf { nameTouched || uiState.name.isNotEmpty() }?.message(),
             modifier = Modifier.testTag("tasks_form_name"),
         )
-        CategoryField(uiState.categoryId, categories, actions.onCategoryChange)
+        CategoryField(uiState.categoryId, categories, actions.onCategoryChange, actions.onNewCategory)
         RepeatField(uiState.repeatType, actions.onRepeatTypeChange)
         RepeatSections(uiState, actions)
+        GoalSection(uiState, actions)
+        MissedSection(uiState, actions)
     }
 }

@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import io.github.ddiling.mydayboard.core.designsystem.preview.PreviewSurface
+import io.github.ddiling.mydayboard.core.domain.task.EveryNDaysMode
 import io.github.ddiling.mydayboard.core.domain.task.TaskCategory
 import io.github.ddiling.mydayboard.core.domain.task.TaskFormError
 import java.time.DayOfWeek
@@ -12,15 +13,15 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
 
-private val previewToday = LocalDate.of(2026, 3, 2)
+internal val previewToday = LocalDate.of(2026, 3, 2)
 
 private val previewCategories =
     listOf(TaskCategory("home", "Home", Instant.EPOCH, Instant.EPOCH))
 
-private val emptyForm = TaskFormUiState(today = previewToday)
+internal val emptyForm = TaskFormUiState(today = previewToday)
 
 @Composable
-private fun PreviewForm(state: TaskFormUiState) {
+internal fun PreviewForm(state: TaskFormUiState) {
     PreviewSurface { TaskFormScreen(state, previewCategories, TaskFormActions()) }
 }
 
@@ -73,6 +74,37 @@ private fun TaskFormErrorsPreview() =
             name = " ",
             repeatType = RepeatType.WEEKDAYS,
             errors = listOf(TaskFormError.BlankName, TaskFormError.NoWeekdays),
+        ),
+    )
+
+@PreviewLightDark
+@Composable
+private fun TaskFormEveryNDaysPreview() =
+    PreviewForm(
+        emptyForm.copy(
+            name = "Water filter",
+            repeatType = RepeatType.EVERY_N_DAYS,
+            intervalMode = EveryNDaysMode.FIXED_CALENDAR,
+            canSave = true,
+        ),
+    )
+
+@PreviewLightDark
+@Composable
+private fun TaskFormMonthlyPreview() =
+    PreviewForm(
+        emptyForm.copy(name = "Pay bills", repeatType = RepeatType.MONTHLY, dayOfMonth = 15, canSave = true),
+    )
+
+@PreviewLightDark
+@Composable
+private fun TaskFormOneTimePreview() =
+    PreviewForm(
+        emptyForm.copy(
+            name = "Send CVs",
+            repeatType = RepeatType.ONE_TIME,
+            dueDate = previewToday.plusDays(7),
+            canSave = true,
         ),
     )
 

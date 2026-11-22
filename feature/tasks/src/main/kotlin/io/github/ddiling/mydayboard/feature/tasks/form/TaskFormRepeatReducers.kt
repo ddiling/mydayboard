@@ -1,9 +1,7 @@
 package io.github.ddiling.mydayboard.feature.tasks.form
 
 import io.github.ddiling.mydayboard.core.domain.task.EveryNDaysMode
-import io.github.ddiling.mydayboard.core.domain.task.MAX_DAY_OF_MONTH
 import io.github.ddiling.mydayboard.core.domain.task.MAX_INTERVAL_DAYS
-import io.github.ddiling.mydayboard.core.domain.task.MIN_DAY_OF_MONTH
 import io.github.ddiling.mydayboard.core.domain.task.MIN_INTERVAL_DAYS
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -22,12 +20,20 @@ internal fun TaskFormUiState.withWeekdayToggled(day: DayOfWeek) =
 internal fun TaskFormUiState.withInterval(days: Int) =
     copy(intervalDays = days.coerceIn(MIN_INTERVAL_DAYS, MAX_INTERVAL_DAYS)).revalidated()
 
-internal fun TaskFormUiState.withIntervalMode(mode: EveryNDaysMode) = copy(intervalMode = mode).revalidated()
+/**
+ * Counting from the last time has no "Starting on" field, so a date picked for the fixed calendar must not stay
+ * hidden in the state: it would show in the dates line and be saved. Switching to it starts the task today.
+ */
+internal fun TaskFormUiState.withIntervalMode(mode: EveryNDaysMode) =
+    copy(
+        intervalMode = mode,
+        firstDue = if (mode == EveryNDaysMode.FROM_LAST_DONE) today else firstDue,
+    ).revalidated()
 
 internal fun TaskFormUiState.withFirstDue(date: LocalDate) = copy(firstDue = date).revalidated()
 
-internal fun TaskFormUiState.withDayOfMonth(day: Int) =
-    copy(dayOfMonth = day.coerceIn(MIN_DAY_OF_MONTH, MAX_DAY_OF_MONTH)).revalidated()
+/** Stored as typed, so 0 or 32 shows the range error instead of being silently moved into the range. */
+internal fun TaskFormUiState.withDayOfMonth(day: Int) = copy(dayOfMonth = day).revalidated()
 
 internal fun TaskFormUiState.withDueDate(date: LocalDate) = copy(dueDate = date).revalidated()
 

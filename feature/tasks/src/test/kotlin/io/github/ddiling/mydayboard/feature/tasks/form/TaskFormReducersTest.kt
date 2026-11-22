@@ -122,10 +122,11 @@ class TaskFormReducersTest {
     }
 
     @Test
-    fun `the day of month stays within the days a month can have`() {
-        val state = initial.withRepeatType(RepeatType.MONTHLY)
+    fun `a day of month above 31 is kept as typed and reported as an error`() {
+        val state = initial.withRepeatType(RepeatType.MONTHLY).withDayOfMonth(MAX_DAY_OF_MONTH + 1)
 
-        assertEquals(MAX_DAY_OF_MONTH, state.withDayOfMonth(32).dayOfMonth)
+        assertEquals(MAX_DAY_OF_MONTH + 1, state.dayOfMonth)
+        assertTrue(TaskFormError.DayOfMonthOutOfRange in state.errors)
     }
 
     @Test
