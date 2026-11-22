@@ -91,7 +91,7 @@ internal fun statsWindow(
 
 internal fun Double.perDay(days: Int): Double = if (days == 0) 0.0 else this / days
 
-private fun Occurrence.isSettled(): Boolean =
+internal fun Occurrence.isSettled(): Boolean =
     status == OccurrenceStatus.DONE || status == OccurrenceStatus.ENDED || status == OccurrenceStatus.LATE
 
 private fun streakOf(occurrences: List<Occurrence>): Int =
