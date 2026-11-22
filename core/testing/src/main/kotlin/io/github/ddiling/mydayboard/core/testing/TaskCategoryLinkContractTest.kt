@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -58,18 +59,37 @@ abstract class TaskCategoryLinkContractTest : TaskRepositoryContractBase() {
     fun `the task list does not emit again after a category write that changes no task`() =
         runTest {
             val task = givenTask()
-            val other = givenCategory()
             val emissions = MutableStateFlow(emptyList<List<Task>>())
             backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
                 tasks.observeTasks().collect { list -> emissions.update { it + listOf(list) } }
             }
-            emissions.first { it.isNotEmpty() }
+            val initial = emissions.first { it.isNotEmpty() }.single()
 
-            categories.renameCategory(other.id, "Garden")
+            givenCategory()
             tasks.updateTask(task.id, draft.copy(name = "Water filter"))
-            emissions.first { it.size >= 2 }
+            emissions.first { it.size >= 2 && it.last().single().name == "Water filter" }
+            advanceUntilIdle()
 
-            // The second emission is the task edit; a repeat of the first list would come from the category write.
-            assertEquals("Water filter", emissions.value[1].single().name)
+            // A repeat of the first list from the category write would make this three emissions.
+            assertEquals(listOf(initial, emissions.value.last()), emissions.value)
+            assertEquals("Water filter", emissions.value.last().single().name)
+        }
+
+    @Test
+    fun `an observed task does not emit again after a category write that changes nothing for it`() =
+        runTest {
+            val task = givenTask()
+            val emissions = MutableStateFlow(emptyList<Task?>())
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                tasks.observeTask(task.id).collect { value -> emissions.update { it + listOf(value) } }
+            }
+            val initial = emissions.first { it.isNotEmpty() }.single()
+
+            givenCategory()
+            tasks.updateTask(task.id, draft.copy(name = "Water filter"))
+            emissions.first { it.size >= 2 && it.last()?.name == "Water filter" }
+            advanceUntilIdle()
+
+            assertEquals(listOf(initial, emissions.value.last()), emissions.value)
         }
 }
