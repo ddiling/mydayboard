@@ -10,8 +10,9 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
 /**
- * Opens a real version-1 database built from the committed `1.json`, fills it with raw SQL (the v1 entities
- * no longer exist in code) and runs the migration to version 2, which also validates the result against `2.json`.
+ * Opens a real old database built from the committed `1.json` or `2.json`, fills it with raw SQL (the old
+ * entities no longer exist in code) and runs the migration forward, which also validates the result against the
+ * target version's `.json`.
  */
 @RunWith(RobolectricTestRunner::class)
 class MigrationTest {
@@ -68,6 +69,80 @@ class MigrationTest {
 
         assertEquals(listOf("0"), row)
     }
+
+    @Test
+    fun `trackers keep all column values after migrating from 2 to 3`() {
+        givenVersion2 { insertWaterTracker2() }
+
+        val row =
+            migrateTo3().queryRow(
+                "SELECT id, name, type, started_at, created_at, updated_at, deleted_at, ask_for_reason FROM trackers",
+            )
+
+        assertEquals(
+            listOf("water", "Water", "DAYS_SINCE", "$STARTED_AT", "$CREATED_AT", "$UPDATED_AT", "$DELETED_AT", "1"),
+            row,
+        )
+    }
+
+    @Test
+    fun `events keep all column values after migrating from 2 to 3`() {
+        givenVersion2 {
+            insertWaterTracker2()
+            execSQL(
+                "INSERT INTO tracker_events (id, tracker_id, occurred_at, created_at, updated_at, deleted_at) " +
+                    "VALUES ('sip', 'water', $OCCURRED_AT, $CREATED_AT, $UPDATED_AT, $DELETED_AT)",
+            )
+        }
+
+        val row =
+            migrateTo3().queryRow(
+                "SELECT id, tracker_id, occurred_at, created_at, updated_at, deleted_at FROM tracker_events",
+            )
+
+        assertEquals(listOf("sip", "water", "$OCCURRED_AT", "$CREATED_AT", "$UPDATED_AT", "$DELETED_AT"), row)
+    }
+
+    @Test
+    fun `reasons keep all column values after migrating from 2 to 3`() {
+        givenVersion2 {
+            insertWaterTracker2()
+            execSQL(
+                "INSERT INTO tracker_reasons (id, tracker_id, text, created_at, updated_at, deleted_at) " +
+                    "VALUES ('thirst', 'water', 'Thirsty', $CREATED_AT, $UPDATED_AT, $DELETED_AT)",
+            )
+        }
+
+        val row =
+            migrateTo3().queryRow(
+                "SELECT id, tracker_id, text, created_at, updated_at, deleted_at FROM tracker_reasons",
+            )
+
+        assertEquals(listOf("thirst", "water", "Thirsty", "$CREATED_AT", "$UPDATED_AT", "$DELETED_AT"), row)
+    }
+
+    @Test
+    fun `the three new tables exist and are empty after migrating from 2 to 3`() {
+        givenVersion2 { insertWaterTracker2() }
+
+        val counts =
+            listOf("task_categories", "tasks", "task_ticks").map { table ->
+                migrateTo3().queryRow("SELECT COUNT(*) FROM $table").single()
+            }
+
+        assertEquals(listOf("0", "0", "0"), counts)
+    }
+
+    private fun givenVersion2(fill: SupportSQLiteDatabase.() -> Unit) =
+        helper.createDatabase(TEST_DB, 2).use { it.fill() }
+
+    private fun migrateTo3(): SupportSQLiteDatabase = helper.runMigrationsAndValidate(TEST_DB, 3, true)
+
+    private fun SupportSQLiteDatabase.insertWaterTracker2() =
+        execSQL(
+            "INSERT INTO trackers (id, name, type, started_at, created_at, updated_at, deleted_at, ask_for_reason) " +
+                "VALUES ('water', 'Water', 'DAYS_SINCE', $STARTED_AT, $CREATED_AT, $UPDATED_AT, $DELETED_AT, 1)",
+        )
 
     private fun givenVersion1(fill: SupportSQLiteDatabase.() -> Unit) =
         helper.createDatabase(TEST_DB, 1).use { it.fill() }

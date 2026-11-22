@@ -1,6 +1,11 @@
 package io.github.ddiling.mydayboard.core.database
 
 import androidx.room.Room
+import io.github.ddiling.mydayboard.core.database.model.TaskCategoryEntity
+import io.github.ddiling.mydayboard.core.database.model.TaskEntity
+import io.github.ddiling.mydayboard.core.database.model.TaskEntityOnMiss
+import io.github.ddiling.mydayboard.core.database.model.TaskEntityRepeatType
+import io.github.ddiling.mydayboard.core.database.model.TaskTickEntity
 import io.github.ddiling.mydayboard.core.database.model.TrackerEntity
 import io.github.ddiling.mydayboard.core.database.model.TrackerEntityType
 import io.github.ddiling.mydayboard.core.database.model.TrackerEventEntity
@@ -54,6 +59,60 @@ internal fun reason(
     text = text,
     createdAt = createdAt,
     updatedAt = createdAt,
+    deletedAt = deletedAt,
+)
+
+/** A fixed epoch day (2026-01-01), so task tests never read a clock. */
+internal const val DAY0 = 20_454L
+
+internal fun category(
+    id: String,
+    name: String = "Category $id",
+    createdAt: Long = T0,
+    deletedAt: Long? = null,
+) = TaskCategoryEntity(id = id, name = name, createdAt = createdAt, updatedAt = createdAt, deletedAt = deletedAt)
+
+internal fun task(
+    id: String,
+    name: String = "Task $id",
+    repeatType: TaskEntityRepeatType = TaskEntityRepeatType.EVERY_DAY,
+    categoryId: String? = null,
+    deletedAt: Long? = null,
+) = TaskEntity(
+    id = id,
+    name = name,
+    categoryId = categoryId,
+    repeatType = repeatType,
+    times = null,
+    weekdays = null,
+    intervalDays = null,
+    intervalMode = null,
+    anchorDate = null,
+    dayOfMonth = null,
+    timeOfDay = null,
+    note = null,
+    goal = null,
+    onMiss = TaskEntityOnMiss.STAYS,
+    startDate = DAY0,
+    archivedAt = null,
+    createdAt = T0,
+    updatedAt = T0,
+    deletedAt = deletedAt,
+)
+
+internal fun tick(
+    id: String,
+    taskId: String,
+    day: Long = DAY0,
+    slotMinute: Int? = null,
+    deletedAt: Long? = null,
+) = TaskTickEntity(
+    id = id,
+    taskId = taskId,
+    day = day,
+    slotMinute = slotMinute,
+    createdAt = T0,
+    updatedAt = T0,
     deletedAt = deletedAt,
 )
 
