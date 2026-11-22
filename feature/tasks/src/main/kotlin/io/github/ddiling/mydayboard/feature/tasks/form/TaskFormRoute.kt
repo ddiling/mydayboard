@@ -1,16 +1,13 @@
 package io.github.ddiling.mydayboard.feature.tasks.form
 
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import io.github.ddiling.mydayboard.feature.tasks.R
 
-/** Placeholder until the form screen exists; it already leaves the form when a save has finished. */
+/** Hilt provides the ViewModel; the form leaves itself when a save has finished, so no caller has to watch for it. */
 @Composable
 internal fun TaskFormRoute(
     onBack: () -> Unit,
@@ -24,5 +21,5 @@ internal fun TaskFormRoute(
             onBack()
         }
     }
-    Text(text = stringResource(R.string.tasks_form_placeholder), modifier = modifier)
+    TaskFormScreen(uiState, viewModel.actions.copy(onClose = onBack), modifier)
 }
