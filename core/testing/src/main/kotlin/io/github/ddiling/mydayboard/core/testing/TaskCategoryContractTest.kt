@@ -5,9 +5,14 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import java.time.Duration
 
 /** Contract for the categories themselves. */
 abstract class TaskCategoryContractTest : TaskRepositoryContractBase() {
+    /** More than nine, so `id-10` sorts before `id-2` and a missing tie-break shows. */
+    private val sameInstantCount = 11
+    private val subMillisecondNanos = 789_123L
+
     @Test
     fun `created category has the injected id, name and clock times`() =
         runTest {
@@ -43,14 +48,6 @@ abstract class TaskCategoryContractTest : TaskRepositoryContractBase() {
         }
 
     @Test
-    fun `renaming an unknown id changes nothing`() =
-        runTest {
-            categories.renameCategory("unknown", "Garden")
-
-            assertEquals(emptyList<TaskCategory>(), categories.observeCategories().first())
-        }
-
-    @Test
     fun `a restored category returns at its old place`() =
         runTest {
             val first = givenCategory("Home")
@@ -75,5 +72,78 @@ abstract class TaskCategoryContractTest : TaskRepositoryContractBase() {
             categories.restoreCategory(category.id)
 
             assertEquals(listOf(category), categories.observeCategories().first())
+        }
+
+    @Test
+    fun `categories created at the same instant are listed by id`() =
+        runTest {
+            val created = List(sameInstantCount) { givenCategory("Category $it") }
+
+            assertEquals(created.sortedBy { it.id }, categories.observeCategories().first())
+        }
+
+    @Test
+    fun `a created category equals what is read back when the clock has sub-millisecond precision`() =
+        runTest {
+            clock.advanceBy(Duration.ofNanos(subMillisecondNanos))
+
+            val category = categories.createCategory("Home")
+
+            assertEquals(listOf(category), categories.observeCategories().first())
+        }
+}
+
+/** Contract for ids that are unknown or deleted: such calls change nothing. */
+abstract class TaskCategoryNoOpContractTest : TaskRepositoryContractBase() {
+    @Test
+    fun `renaming an unknown id changes nothing`() =
+        runTest {
+            categories.renameCategory("unknown", "Garden")
+
+            assertEquals(emptyList<TaskCategory>(), categories.observeCategories().first())
+        }
+
+    @Test
+    fun `renaming a deleted category changes nothing`() =
+        runTest {
+            val category = givenDeletedCategory()
+            clock.advanceBy(clockAdvance)
+            categories.renameCategory(category.id, "Garden")
+            clock.advanceBy(clockAdvance)
+
+            categories.restoreCategory(category.id)
+
+            assertEquals(
+                listOf(category.copy(updatedAt = nowAfterAdvance.plus(clockAdvance))),
+                categories.observeCategories().first(),
+            )
+        }
+
+    @Test
+    fun `deleting an unknown id keeps the other categories`() =
+        runTest {
+            val category = givenCategory()
+
+            categories.deleteCategory("unknown")
+
+            assertEquals(listOf(category), categories.observeCategories().first())
+        }
+
+    @Test
+    fun `deleting a deleted category again keeps it deleted`() =
+        runTest {
+            val category = givenDeletedCategory()
+
+            categories.deleteCategory(category.id)
+
+            assertEquals(emptyList<TaskCategory>(), categories.observeCategories().first())
+        }
+
+    @Test
+    fun `restoring an unknown id changes nothing`() =
+        runTest {
+            categories.restoreCategory("unknown")
+
+            assertEquals(emptyList<TaskCategory>(), categories.observeCategories().first())
         }
 }

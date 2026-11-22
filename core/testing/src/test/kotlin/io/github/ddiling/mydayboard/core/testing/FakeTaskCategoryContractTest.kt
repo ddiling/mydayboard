@@ -11,3 +11,12 @@ class FakeTaskCategoryContractTest : TaskCategoryContractTest() {
         ids: IdGenerator,
     ): TaskCategoryRepository = FakeTaskCategoryRepository(clock, ids, store)
 }
+
+class FakeTaskCategoryNoOpContractTest : TaskCategoryNoOpContractTest() {
+    private val store = FakeTaskStore()
+
+    override fun createCategoryRepository(
+        clock: MutableClock,
+        ids: IdGenerator,
+    ): TaskCategoryRepository = FakeTaskCategoryRepository(clock, ids, store)
+}
