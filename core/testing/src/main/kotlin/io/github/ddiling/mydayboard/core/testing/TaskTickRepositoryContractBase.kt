@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.first
 import java.time.LocalDate
 import java.time.LocalTime
 
-/** Fixtures of [TaskTickContractTest] and [TaskTickObserveContractTest]. */
+/** Fixtures of [TaskTickContractTest], [TaskTickObserveContractTest] and [TaskTickDayContractTest]. */
 abstract class TaskTickRepositoryContractBase : TaskRepositoryContractBase() {
     abstract fun createTickRepository(
         clock: MutableClock,

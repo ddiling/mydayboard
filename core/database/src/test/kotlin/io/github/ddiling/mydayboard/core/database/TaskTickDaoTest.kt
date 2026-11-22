@@ -43,12 +43,12 @@ class TaskTickDaoTest {
         }
 
     @Test
-    fun `observeForTask orders by day then slot then id`() =
+    fun `observeForTask orders by day then slot then id, counted ticks first`() =
         runTest {
             dao.insertForLiveTask("c", "t", DAY0 + 1, 60, T0)
             dao.insertForLiveTask("b", "t", DAY0, 120, T0)
-            dao.insertForLiveTask("z", "t", DAY0, 60, T0)
-            dao.insertForLiveTask("a", "t", DAY0, 60, T0)
+            dao.insertForLiveTask("z", "t", DAY0, null, T0)
+            dao.insertForLiveTask("a", "t", DAY0, null, T0)
 
             assertEquals(listOf("a", "z", "b", "c"), dao.observeForTask("t").first().map { it.id })
         }
@@ -62,6 +62,26 @@ class TaskTickDaoTest {
             taskDao.softDeleteIfLive("other", T0 + 1)
 
             assertEquals(listOf("own"), dao.observeAllLive().first().map { it.id })
+        }
+
+    @Test
+    fun `findLiveForDay returns only live ticks of that day`() =
+        runTest {
+            dao.insertForLiveTask("today", "t", DAY0, null, T0)
+            dao.insertForLiveTask("gone", "t", DAY0, null, T0)
+            dao.insertForLiveTask("tomorrow", "t", DAY0 + 1, null, T0)
+            dao.softDeleteIfLive("gone", T0 + 1)
+
+            assertEquals(listOf("today"), dao.findLiveForDay("t", DAY0).map { it.id })
+        }
+
+    @Test
+    fun `findLiveForDay is empty for a deleted task`() =
+        runTest {
+            dao.insertForLiveTask("k", "t", DAY0, null, T0)
+            taskDao.softDeleteIfLive("t", T0 + 1)
+
+            assertTrue(dao.findLiveForDay("t", DAY0).isEmpty())
         }
 
     @Test
