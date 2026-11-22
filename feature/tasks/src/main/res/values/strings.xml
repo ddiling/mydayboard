@@ -104,4 +104,7 @@
     <string name="tasks_detail_chip_open">%1$s, not done. Tap to tick</string>
     <string name="tasks_detail_history_title">HISTORY</string>
     <string name="tasks_detail_history_row">%1$s, %2$s. Tap to change</string>
+    <string name="tasks_day_marked_done">%1$s · %2$s marked as done</string>
+    <string name="tasks_day_marked_not_done">%1$s · %2$s marked as not done</string>
+    <string name="tasks_day_updated">%1$s · %2$s updated</string>
 </resources>
