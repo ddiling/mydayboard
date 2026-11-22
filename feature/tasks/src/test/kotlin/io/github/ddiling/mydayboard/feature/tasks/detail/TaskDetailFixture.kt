@@ -12,7 +12,12 @@ import io.github.ddiling.mydayboard.core.testing.MutableClock
 import io.github.ddiling.mydayboard.core.testing.SequentialIdGenerator
 import io.github.ddiling.mydayboard.core.testing.TestZones
 import io.github.ddiling.mydayboard.core.testing.warsaw
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.runCurrent
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
@@ -31,6 +36,12 @@ internal class TaskDetailFixture(
     val tasks = FakeTaskRepository(clock, ids, store)
     val categories = FakeTaskCategoryRepository(clock, ids, store)
     val ticks = FakeTaskTickRepository(clock, ids, store)
+    val ticker = MutableSharedFlow<Instant>(replay = 1)
+    val observe = ObserveTaskDetail(tasks, ticks, categories, clock) { ticker }
+
+    init {
+        ticker.tryEmit(clock.instant())
+    }
 
     suspend fun addTask(
         name: String,
@@ -49,4 +60,13 @@ internal class TaskDetailFixture(
     /** What the screen would show for [task] today, from the ticks stored so far. */
     suspend fun content(task: Task): TaskDetailUiState.Content =
         detailContent(task, null, ticks.observeTicks(task.id).first(), today)
+
+    /** Collects the states of [taskId] in the background; the last one is the latest. */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun TestScope.collectStates(taskId: String): List<TaskDetailUiState> {
+        val seen = mutableListOf<TaskDetailUiState>()
+        backgroundScope.launch { observe(taskId).collect { seen += it } }
+        runCurrent()
+        return seen
+    }
 }
