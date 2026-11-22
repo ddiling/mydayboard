@@ -1,6 +1,10 @@
 package io.github.ddiling.mydayboard.feature.tasks.form
 
 import androidx.activity.ComponentActivity
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertHeightIsAtLeast
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsOff
@@ -9,10 +13,11 @@ import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onParent
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
-import androidx.compose.ui.test.performTextClearance
-import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTextReplacement
+import androidx.compose.ui.unit.dp
 import io.github.ddiling.mydayboard.core.domain.task.MAX_TASK_GOAL
 import io.github.ddiling.mydayboard.core.domain.task.MIN_TASK_GOAL
 import io.github.ddiling.mydayboard.core.domain.task.OnMiss
@@ -67,8 +72,7 @@ class TaskFormGoalMissedTest {
         val goals = mutableListOf<Int>()
         show(weekdays.copy(goalOn = true), TaskFormActions(onGoalChange = { goals += it }))
 
-        composeRule.onNodeWithTag("tasks_form_goal").performScrollTo().performTextClearance()
-        composeRule.onNodeWithTag("tasks_form_goal").performTextInput("12")
+        composeRule.onNodeWithTag("tasks_form_goal").performScrollTo().performTextReplacement("12")
 
         assertEquals(listOf(12), goals)
     }
@@ -87,6 +91,13 @@ class TaskFormGoalMissedTest {
     }
 
     @Test
+    fun `the goal field is at least 48 dp tall`() {
+        show(weekdays.copy(goalOn = true))
+
+        composeRule.onNodeWithTag("tasks_form_goal").performScrollTo().assertHeightIsAtLeast(48.dp)
+    }
+
+    @Test
     fun `several times a day has no goal section`() {
         show(weekdays.copy(repeatType = RepeatType.TIMES_PER_DAY))
 
@@ -101,6 +112,16 @@ class TaskFormGoalMissedTest {
         composeRule.onNodeWithText("Counts as missed. Good for vacuuming.").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithTag("tasks_form_missed_stays").assertIsSelected()
         composeRule.onNodeWithTag("tasks_form_missed_expires").assertIsNotSelected()
+    }
+
+    @Test
+    fun `the missed radios are one radio group`() {
+        show(weekdays)
+
+        composeRule
+            .onNodeWithTag("tasks_form_missed_stays")
+            .onParent()
+            .assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.SelectableGroup))
     }
 
     @Test

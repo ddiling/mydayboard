@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
@@ -78,7 +79,7 @@ internal fun MissedSection(
     actions: TaskFormActions,
 ) {
     if (uiState.repeatType.hidesStays()) return
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(Modifier.selectableGroup(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         SectionHeading(stringResource(R.string.tasks_form_missed_title))
         RadioOption(
             selected = uiState.onMiss == OnMiss.STAYS,
