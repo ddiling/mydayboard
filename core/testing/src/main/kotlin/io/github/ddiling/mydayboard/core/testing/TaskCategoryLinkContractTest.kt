@@ -72,7 +72,13 @@ abstract class TaskCategoryLinkContractTest : TaskRepositoryContractBase() {
 
             // A repeat of the first list from the category write would make this three emissions.
             assertEquals(listOf(initial, emissions.value.last()), emissions.value)
-            assertEquals("Water filter", emissions.value.last().single().name)
+            assertEquals(
+                "Water filter",
+                emissions.value
+                    .last()
+                    .single()
+                    .name,
+            )
         }
 
     @Test
