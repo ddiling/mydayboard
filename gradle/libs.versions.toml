@@ -30,7 +30,7 @@ androidx-activity = "1.12.0"
 # keeps the catalog equal to the version that actually ends up in the APK.
 androidx-lifecycle = "2.11.0"
 androidx-hilt = "1.4.0"
-androidx-compose-bom = "2026.09.00"
+androidx-compose-bom = "2026.11.01"
 androidx-navigation = "2.10.2"
 
 # --- Serialization -----------------------------------------------------------
