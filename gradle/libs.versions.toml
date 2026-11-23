@@ -1,6 +1,6 @@
 [versions]
 # --- Build tooling -----------------------------------------------------------
-agp = "9.5.1"
+agp = "9.5.2"
 # AGP 9 compiles Kotlin itself ("built-in Kotlin"). This version is still the
 # one that is used: the root build declares the Kotlin plugin with `apply false`,
 # which puts this KGP on the build classpath and overrides AGP's bundled one.
