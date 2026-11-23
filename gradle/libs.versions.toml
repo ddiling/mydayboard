@@ -43,7 +43,7 @@ javax-inject = "1"
 
 # --- Testing -----------------------------------------------------------------
 junit = "4.13.2"
-robolectric = "4.18"
+robolectric = "4.18.1"
 turbine = "1.2.1"
 
 [libraries]
