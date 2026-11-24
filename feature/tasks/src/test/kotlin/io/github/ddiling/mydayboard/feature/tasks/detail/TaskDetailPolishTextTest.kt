@@ -46,4 +46,24 @@ class TaskDetailPolishTextTest {
     fun `a late history row says it is not done yet in Polish`() {
         assertEquals("Spóźnione · jeszcze nie zrobione", historyResultText(resources, HistoryResult.Late))
     }
+
+    @Test
+    fun `the stats grid uses the Polish decimal comma and month names`() {
+        val since = LocalDate.of(2026, 10, 3)
+        val stats = DetailStats.Recurring(since, 4, 7.5, 9, 0.85, countsTicks = false, skipped = 1, halfDays = null)
+
+        val cells = statCells(resources, stats).map { it.value }
+
+        assertEquals(listOf("3 paź", "4 dni", "7,5 z 9", "0,9", "1"), cells)
+    }
+
+    @Test
+    fun `the next due day uses the Polish weekday and date format`() {
+        assertEquals("Następne: sob. 28.11", nextDueText(resources, LocalDate.of(2026, 11, 28)))
+    }
+
+    @Test
+    fun `a history day older than yesterday uses the Polish weekday and month`() {
+        assertEquals("pt. 13 lis", historyDayText(resources, LocalDate.of(2026, 11, 13), textsToday))
+    }
 }

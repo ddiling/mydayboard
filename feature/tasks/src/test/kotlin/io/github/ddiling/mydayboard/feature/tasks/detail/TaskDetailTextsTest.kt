@@ -55,6 +55,16 @@ class TaskDetailTextsTest {
     }
 
     @Test
+    fun `a task late for six days still says the weekday`() {
+        assertEquals("Late since Sat", hero(Hero.LateSince(today.minusDays(6))))
+    }
+
+    @Test
+    fun `a task late for exactly seven days says the date because the weekday would read as today`() {
+        assertEquals("Late since 13 Nov", hero(Hero.LateSince(today.minusDays(7))))
+    }
+
+    @Test
     fun `the subtitle joins repeat, note and category and leaves out what is missing`() {
         val task = taskOf(Repeat.Weekdays(setOf(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY)))
 
