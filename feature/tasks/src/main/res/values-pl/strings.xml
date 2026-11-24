@@ -104,5 +104,11 @@
     <string name="tasks_detail_stat_skipped">pominięte</string>
     <string name="tasks_detail_stat_half_days">pół dni</string>
     <string name="tasks_detail_stat_late">spóźnienie</string>
+    <string name="tasks_detail_back">Wstecz</string>
+    <string name="tasks_detail_edit">Edytuj zadanie</string>
+    <string name="tasks_detail_late_note">To zadanie czeka, aż je zrobisz. Nie pokazuje się na pulpicie.</string>
+    <string name="tasks_detail_not_found_title">Tego zadania już nie ma</string>
+    <string name="tasks_detail_not_found_hint">Zostało usunięte albo nigdy nie istniało.</string>
+    <string name="tasks_detail_not_found_back">Wróć do zadań</string>
     <string name="tasks_row_swipe_hint">przesuń w prawo, aby oznaczyć jako zrobione</string>
 </resources>
