@@ -4,6 +4,7 @@ import io.github.ddiling.mydayboard.core.domain.task.EveryNDaysMode
 import io.github.ddiling.mydayboard.core.domain.task.MIN_TASK_GOAL
 import io.github.ddiling.mydayboard.core.domain.task.OnMiss
 import io.github.ddiling.mydayboard.core.domain.task.TaskFormError
+import io.github.ddiling.mydayboard.feature.tasks.navigation.TasksListNotice
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
@@ -22,7 +23,9 @@ internal const val DEFAULT_INTERVAL_DAYS = 3
  * Fields of other repeat types keep their last value only until the type changes (then they are reset), so the
  * form never offers a stale weekday set under "Once a month". [errors] is always current; the screen decides when
  * to show them, so an untouched empty name does not scold the user at once. [saved] is set when a save has
- * finished and navigation should leave the form; the screen clears it with `onSavedHandled`.
+ * finished and navigation should leave the form; the screen clears it with `onSavedHandled`. [deleteDialogName] is
+ * the stored name of the task while the delete question is open (null when closed); [finished] is the notice to
+ * hand to the list once the task was archived or deleted, cleared with `onFinishedHandled`.
  */
 internal data class TaskFormUiState(
     val today: LocalDate,
@@ -46,4 +49,6 @@ internal data class TaskFormUiState(
     val isEditing: Boolean = false,
     val canSave: Boolean = false,
     val saved: Boolean = false,
+    val deleteDialogName: String? = null,
+    val finished: TasksListNotice? = null,
 )
