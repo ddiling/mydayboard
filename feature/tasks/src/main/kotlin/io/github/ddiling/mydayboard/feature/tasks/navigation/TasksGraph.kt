@@ -16,7 +16,10 @@ import io.github.ddiling.mydayboard.feature.tasks.list.TasksListRoute
  */
 fun NavGraphBuilder.tasksGraph(navController: NavController) {
     composable<TaskFormDestination> {
-        TaskFormRoute(onBack = { navController.popBackStack() })
+        TaskFormRoute(
+            onBack = { navController.popBackStack() },
+            onFinish = navController::finishWithNotice,
+        )
     }
     composable<TasksListDestination> {
         TasksListRoute(

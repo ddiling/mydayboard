@@ -13,6 +13,7 @@ import io.github.ddiling.mydayboard.feature.tasks.categories.CategoryDialogActio
 import io.github.ddiling.mydayboard.feature.tasks.categories.CategoryDialogState
 import io.github.ddiling.mydayboard.feature.tasks.categories.CategoryEditor
 import io.github.ddiling.mydayboard.feature.tasks.navigation.TaskFormDestination
+import io.github.ddiling.mydayboard.feature.tasks.navigation.TasksListNotice
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -30,7 +31,8 @@ private const val SUBSCRIPTION_TIMEOUT_MS = 5_000L
  * Creates or edits one task. The repository does not validate, so Save runs `validateTaskDraft` first (through
  * [TaskFormUiState.canSave]). The start date is read from the clock when Save is pressed, not when the form was
  * opened, so a form left open past midnight (or across a time zone change) still counts from the right day. The
- * field changes live in [actions]; each is a pure reducer on [TaskFormUiState].
+ * Archive and delete act on the stored task, not on unsaved edits, and report back as a [TasksListNotice] so the
+ * list can say what happened. The field changes live in [actions]; each is a pure reducer on [TaskFormUiState].
  */
 @HiltViewModel
 internal class TaskFormViewModel
@@ -91,9 +93,16 @@ internal class TaskFormViewModel
                 onOnMissChange = { edit { withOnMiss(it) } },
                 onSave = ::onSave,
                 onSavedHandled = ::onSavedHandled,
+                onArchive = ::onArchive,
+                onDeleteRequest = ::onDeleteRequest,
+                onDeleteConfirm = ::onDeleteConfirm,
+                onDeleteDismiss = ::onDeleteDismiss,
+                onFinishedHandled = ::onFinishedHandled,
             )
 
         private var saveStarted = false
+        private var finishStarted = false
+        private var storedName: String? = null
 
         init {
             if (taskId != null) loadTask(taskId)
@@ -105,6 +114,7 @@ internal class TaskFormViewModel
         private fun loadTask(id: String) {
             viewModelScope.launch {
                 val task = tasks.observeTask(id).first()
+                storedName = task?.name
                 _uiState.update {
                     task?.toFormState(it.today) ?: it.copy(load = FormLoad.NotFound).revalidated()
                 }
@@ -129,4 +139,37 @@ internal class TaskFormViewModel
         }
 
         fun onSavedHandled() = _uiState.update { it.copy(saved = false) }
+
+        /** Archives at once, without a question: it can be undone from the list. */
+        fun onArchive() {
+            val name = storedName
+            val id = taskId
+            if (name == null || id == null || finishStarted) return
+            finishStarted = true
+            viewModelScope.launch {
+                tasks.archiveTask(id)
+                _uiState.update { it.copy(finished = TasksListNotice.Archived(id, name)) }
+            }
+        }
+
+        /** Only opens the question; nothing is changed until [onDeleteConfirm]. */
+        fun onDeleteRequest() {
+            val name = storedName ?: return
+            _uiState.update { it.copy(deleteDialogName = name) }
+        }
+
+        fun onDeleteDismiss() = _uiState.update { it.copy(deleteDialogName = null) }
+
+        fun onDeleteConfirm() {
+            val name = _uiState.value.deleteDialogName
+            val id = taskId
+            if (name == null || id == null || finishStarted) return
+            finishStarted = true
+            viewModelScope.launch {
+                tasks.deleteTask(id)
+                _uiState.update { it.copy(deleteDialogName = null, finished = TasksListNotice.Deleted(name)) }
+            }
+        }
+
+        fun onFinishedHandled() = _uiState.update { it.copy(finished = null) }
     }

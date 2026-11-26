@@ -8,11 +8,16 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.ddiling.mydayboard.feature.tasks.categories.CategoryDialog
 import io.github.ddiling.mydayboard.feature.tasks.categories.CategoryDialogState
+import io.github.ddiling.mydayboard.feature.tasks.navigation.TasksListNotice
 
-/** Hilt provides the ViewModel; the form leaves itself when a save has finished, so no caller has to watch for it. */
+/**
+ * Hilt provides the ViewModel; the form leaves itself when a save has finished, so no caller has to watch for it.
+ * After an archive or delete it leaves through [onFinish] instead, so the list can show what happened.
+ */
 @Composable
 internal fun TaskFormRoute(
     onBack: () -> Unit,
+    onFinish: (TasksListNotice) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: TaskFormViewModel = hiltViewModel(),
 ) {
@@ -22,6 +27,12 @@ internal fun TaskFormRoute(
         if (uiState.saved) {
             viewModel.onSavedHandled()
             onBack()
+        }
+    }
+    LaunchedEffect(uiState.finished) {
+        uiState.finished?.let {
+            viewModel.onFinishedHandled()
+            onFinish(it)
         }
     }
     val categoryDialog by viewModel.categoryDialog.collectAsStateWithLifecycle()
