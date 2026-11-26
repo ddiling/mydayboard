@@ -186,4 +186,12 @@
     <string name="tasks_catstats_not_found_hint">Została usunięta albo nigdy nie istniała.</string>
     <string name="tasks_list_category_stats">Statystyki: %1$s</string>
     <string name="tasks_row_swipe_hint">przesuń w prawo, aby oznaczyć jako zrobione</string>
+    <string name="tasks_form_stop_title">ZATRZYMAJ LUB USUŃ</string>
+    <string name="tasks_form_archive">Archiwizuj zadanie</string>
+    <string name="tasks_form_delete">Usuń zadanie i historię</string>
+    <string name="tasks_delete_title">Usuń zadanie</string>
+    <string name="tasks_delete_question">Usunąć %1$s i całą jego historię?</string>
+    <string name="tasks_delete_warning">Tego nie da się cofnąć. Statystyki kategorii się zmienią.</string>
+    <string name="tasks_delete_keep">Zostaw</string>
+    <string name="tasks_delete_confirm">Usuń</string>
 </resources>
