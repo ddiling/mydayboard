@@ -63,7 +63,7 @@ internal fun TaskDetailScreen(
         when (uiState) {
             TaskDetailUiState.Loading -> Loading(body)
             TaskDetailUiState.NotFound -> NotFound(actions.onBack, body)
-            is TaskDetailUiState.Content -> TaskDetailBody(uiState, body)
+            is TaskDetailUiState.Content -> TaskDetailBody(uiState, actions, body)
         }
     }
 }

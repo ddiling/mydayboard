@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,16 +31,24 @@ private const val STATS_PER_ROW = 3
 @Composable
 internal fun TaskDetailBody(
     content: TaskDetailUiState.Content,
+    actions: TaskDetailActions,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier) {
         LazyColumn(
             Modifier.weight(1f).padding(horizontal = 20.dp).testTag("tasks_detail_content"),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             item(key = "hero") { Hero(content) }
             item(key = "stats") { StatsGrid(content.stats) }
+            if (content.chips.isNotEmpty()) item(key = "chips") { TimeChips(content.chips, actions.onChipClick) }
+            if (content.history.isNotEmpty()) {
+                item(key = "history-title") { HistoryTitle() }
+                items(content.history, key = { it.day.toString() }) { row ->
+                    HistoryRowLine(row, content.today) { actions.onHistoryRowClick(row.day) }
+                }
+            }
         }
+        BottomAction(content, actions.onBigButton)
     }
 }
 
@@ -55,7 +64,7 @@ private fun Hero(content: TaskDetailUiState.Content) {
             bad -> TaskColors.late
             else -> MaterialTheme.colorScheme.onSurface
         }
-    Column(Modifier.fillMaxWidth()) {
+    Column(Modifier.fillMaxWidth().padding(bottom = 16.dp)) {
         Text(
             heroText(resources, hero, content.today),
             style = MaterialTheme.typography.displaySmall,
@@ -88,7 +97,7 @@ private fun Grey(
 @Composable
 private fun StatsGrid(stats: DetailStats) {
     val cells = statCells(LocalResources.current, stats)
-    Column(Modifier.fillMaxWidth().testTag("tasks_detail_stats"), Arrangement.spacedBy(12.dp)) {
+    Column(Modifier.fillMaxWidth().padding(bottom = 16.dp).testTag("tasks_detail_stats"), Arrangement.spacedBy(12.dp)) {
         cells.chunked(STATS_PER_ROW).forEach { rowCells ->
             Row(Modifier.fillMaxWidth(), Arrangement.spacedBy(12.dp)) {
                 rowCells.forEach { cell -> StatCellView(cell, Modifier.weight(1f)) }

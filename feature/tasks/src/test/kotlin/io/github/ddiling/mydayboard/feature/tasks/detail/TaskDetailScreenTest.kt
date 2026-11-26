@@ -15,6 +15,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.Density
 import io.github.ddiling.mydayboard.core.designsystem.preview.PreviewSurface
+import io.github.ddiling.mydayboard.core.domain.task.OnMiss
 import io.github.ddiling.mydayboard.core.domain.task.Repeat
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -96,7 +97,7 @@ class TaskDetailScreenTest {
 
     @Test
     fun `a late task shows the note that it stays until done`() {
-        show(previewDetail(previewTask(Repeat.OneTime(LocalDate.of(2026, 11, 18)))))
+        show(previewDetail(previewTask(Repeat.OneTime(LocalDate.of(2026, 11, 18)), OnMiss.STAYS)))
 
         composeRule.onNodeWithTag("tasks_detail_late_note").assertIsDisplayed()
     }

@@ -100,5 +100,9 @@
     <string name="tasks_detail_not_found_title">This task is gone</string>
     <string name="tasks_detail_not_found_hint">It was deleted or it never existed.</string>
     <string name="tasks_detail_not_found_back">Back to tasks</string>
+    <string name="tasks_detail_chip_ticked">%1$s, done. Tap to untick</string>
+    <string name="tasks_detail_chip_open">%1$s, not done. Tap to tick</string>
+    <string name="tasks_detail_history_title">HISTORY</string>
+    <string name="tasks_detail_history_row">%1$s, %2$s. Tap to change</string>
     <string name="tasks_row_swipe_hint">swipe right to mark done</string>
 </resources>
