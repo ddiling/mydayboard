@@ -58,6 +58,16 @@
         <item quantity="one">%1$d late</item>
         <item quantity="other">%1$d late</item>
     </plurals>
+    <string name="tasks_list_archived_notice">%1$s archived</string>
+    <string name="tasks_list_deleted_notice">%1$s deleted</string>
+    <plurals name="tasks_list_archived">
+        <item quantity="one">Archived · %1$d task</item>
+        <item quantity="other">Archived · %1$d tasks</item>
+    </plurals>
+    <plurals name="tasks_list_archived_open">
+        <item quantity="one">Open archive, %1$d task</item>
+        <item quantity="other">Open archive, %1$d tasks</item>
+    </plurals>
     <string name="tasks_list_empty_hint">No tasks yet. Add your first one.</string>
     <string name="tasks_detail_hero_not_done">Not done yet</string>
     <string name="tasks_detail_hero_done_today">Done today</string>

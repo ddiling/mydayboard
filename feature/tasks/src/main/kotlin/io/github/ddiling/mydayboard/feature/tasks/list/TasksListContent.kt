@@ -1,5 +1,6 @@
 package io.github.ddiling.mydayboard.feature.tasks.list
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -10,6 +11,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -21,7 +24,10 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.intl.Locale
@@ -52,6 +58,10 @@ internal fun TasksListContent(
                     TaskRowLine(row, content.today, onClick = { actions.onTaskClick(row.task.id) })
                 }
             }
+        }
+        if (content.archivedCount > 0) {
+            if (content.groups.isNotEmpty()) item(key = "archived-divider") { DashedDivider() }
+            item(key = "archived") { ArchivedRow(content.archivedCount, actions.onArchiveClick) }
         }
     }
 }
@@ -118,4 +128,34 @@ private fun DashedDivider() {
                 drawLine(DashedSeparatorColor, Offset(0f, 0f), Offset(size.width, 0f), 1.dp.toPx(), pathEffect = dashes)
             },
     )
+}
+
+/**
+ * Leads to the archived tasks, which are not in the groups. Its description says what it opens, as the arrow alone
+ * tells a screen reader nothing; the row grows with the font instead of clipping.
+ */
+@Composable
+private fun ArchivedRow(
+    count: Int,
+    onClick: () -> Unit,
+) {
+    val description = pluralStringResource(R.plurals.tasks_list_archived_open, count, count)
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .heightIn(min = 48.dp)
+            .clickable(role = Role.Button, onClick = onClick)
+            .semantics(mergeDescendants = true) { contentDescription = description }
+            .testTag("tasks_list_archived"),
+        Arrangement.SpaceBetween,
+        Alignment.CenterVertically,
+    ) {
+        Text(
+            pluralStringResource(R.plurals.tasks_list_archived, count, count),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(1f),
+        )
+        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
 }

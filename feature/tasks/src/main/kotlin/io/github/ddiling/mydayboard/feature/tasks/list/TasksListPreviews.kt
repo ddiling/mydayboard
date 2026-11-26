@@ -66,3 +66,7 @@ private fun TasksListLoadingPreview() = PreviewList(TasksListUiState.Loading)
 @Preview(name = "Large font dark", fontScale = 2f, uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun TasksListLargeFontPreview() = PreviewList(previewContent)
+
+@Preview(name = "Archived row dark", uiMode = UI_MODE_NIGHT_YES)
+@Composable
+private fun TasksListArchivedPreview() = PreviewList(previewContent.copy(archivedCount = 3))
