@@ -22,6 +22,7 @@ class DaySheetTest {
     private val pastDay = fixture.today.minusDays(3)
     private val morning = LocalTime.of(8, 0)
     private val evening = LocalTime.of(20, 0)
+    private val noon = LocalTime.of(12, 0)
 
     private suspend fun open(
         task: Task,
@@ -88,6 +89,19 @@ class DaySheetTest {
         }
 
     @Test
+    fun `toggling a time the task does not have leaves the draft unchanged`() =
+        runTest {
+            val task = fixture.addTask("Pills", Repeat.TimesPerDay(listOf(morning, evening)), startDate = started)
+            fixture.tickOn(task, pastDay, morning)
+            open(task)
+            val before = sheet.state.value?.kind
+
+            sheet.toggle(noon)
+
+            assertEquals(before, sheet.state.value?.kind)
+        }
+
+    @Test
     fun `Save for times marks exactly the chosen slots`() =
         runTest {
             val task = fixture.addTask("Pills", Repeat.TimesPerDay(listOf(morning, evening)), startDate = started)
@@ -113,6 +127,17 @@ class DaySheetTest {
 
             repeat(5) { sheet.step(-1) }
             assertEquals(DaySheetKind.Count(target = 3, value = 0), sheet.state.value?.kind)
+        }
+
+    @Test
+    fun `a day with more ticks than the goal opens at the goal`() =
+        runTest {
+            val task = fixture.addTask("Send CVs", goal = 3, startDate = started)
+            repeat(4) { fixture.tickOn(task, pastDay) }
+
+            open(task)
+
+            assertEquals(DaySheetKind.Count(target = 3, value = 3), sheet.state.value?.kind)
         }
 
     @Test
