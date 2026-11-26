@@ -1,6 +1,7 @@
 package io.github.ddiling.mydayboard.feature.tasks.detail
 
 import androidx.activity.ComponentActivity
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
@@ -148,18 +149,42 @@ class TaskDetailSectionsTest {
             .assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.Heading))
     }
 
-    @Test
-    fun `a late history row uses the late colour`() {
+    private fun assertHistoryColour(
+        result: HistoryResult,
+        expected: @Composable () -> Color,
+    ) {
         var rowColor = Color.Unspecified
-        var lateColor = Color.Unspecified
+        var expectedColor = Color.Unspecified
         composeRule.setContent {
             PreviewSurface {
-                rowColor = historyResultColor(HistoryResult.Late)
-                lateColor = TaskColors.late
+                rowColor = historyResultColor(result)
+                expectedColor = expected()
             }
         }
 
-        assertEquals(lateColor, rowColor)
+        assertEquals(expectedColor, rowColor)
+    }
+
+    @Test
+    fun `a late history row uses the late colour`() {
+        assertHistoryColour(HistoryResult.Late) { TaskColors.late }
+    }
+
+    @Test
+    fun `a missed history row uses the late colour`() {
+        assertHistoryColour(HistoryResult.Missed) { TaskColors.late }
+    }
+
+    @Test
+    fun `a settled partial history row uses the late colour`() {
+        assertHistoryColour(HistoryResult.Partial(done = 1, target = 2, severalTimes = false, settled = true)) {
+            TaskColors.late
+        }
+    }
+
+    @Test
+    fun `a done history row uses the done colour`() {
+        assertHistoryColour(HistoryResult.Done) { TaskColors.done }
     }
 
     @Test
