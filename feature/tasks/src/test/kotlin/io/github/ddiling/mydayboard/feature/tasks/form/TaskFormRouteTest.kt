@@ -20,7 +20,9 @@ class TaskFormRouteTest {
     @Test
     fun `saving a valid form through the view model stores the task and closes the form`() {
         var closes = 0
-        composeRule.setContent { TaskFormRoute(onBack = { closes++ }, viewModel = fixture.viewModelFor()) }
+        composeRule.setContent {
+            TaskFormRoute(onBack = { closes++ }, onFinish = {}, viewModel = fixture.viewModelFor())
+        }
 
         composeRule.onNodeWithTag("tasks_form_name").performTextInput("Pills")
         composeRule.onNodeWithTag("tasks_form_save").performClick()
