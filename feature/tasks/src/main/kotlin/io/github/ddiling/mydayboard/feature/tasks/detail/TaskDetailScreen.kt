@@ -31,19 +31,28 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.github.ddiling.mydayboard.core.designsystem.component.PrimaryButton
 import io.github.ddiling.mydayboard.feature.tasks.R
+import io.github.ddiling.mydayboard.feature.tasks.day.DaySheetActions
+import io.github.ddiling.mydayboard.feature.tasks.day.DaySheetModal
+import io.github.ddiling.mydayboard.feature.tasks.day.DaySheetState
 
-/** Stateless: everything shown comes from [uiState]. The name is the title and the pencil opens the edit form. */
+/**
+ * Stateless: everything shown comes from [uiState] and [daySheet]. The name is the title and the pencil opens the
+ * edit form; the day sheet floats above while it is not null.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun TaskDetailScreen(
     uiState: TaskDetailUiState,
     actions: TaskDetailActions,
     modifier: Modifier = Modifier,
+    daySheet: DaySheetState? = null,
+    daySheetActions: DaySheetActions = DaySheetActions(),
 ) {
     BackHandler(onBack = actions.onBack)
     val snackbarHostState = remember { SnackbarHostState() }
     val content = uiState as? TaskDetailUiState.Content
     TaskDetailUndoSnackbar(content?.pendingUndo, snackbarHostState, actions.onUndo, actions.onUndoDismissed)
+    if (daySheet != null) DaySheetModal(daySheet, daySheetActions)
     Scaffold(
         modifier = modifier,
         topBar = {

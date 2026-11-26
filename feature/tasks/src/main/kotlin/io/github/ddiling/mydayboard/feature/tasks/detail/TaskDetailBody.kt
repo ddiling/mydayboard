@@ -40,7 +40,11 @@ internal fun TaskDetailBody(
         ) {
             item(key = "hero") { Hero(content) }
             item(key = "stats") { StatsGrid(content.stats) }
-            if (content.chips.isNotEmpty()) item(key = "chips") { TimeChips(content.chips, actions.onChipClick) }
+            if (content.chips.isNotEmpty()) {
+                item(key = "chips") {
+                    TimeChips(content.chips, actions.onChipClick, Modifier.testTag("tasks_detail_chips"))
+                }
+            }
             if (content.history.isNotEmpty()) {
                 item(key = "history-title") { HistoryTitle() }
                 items(content.history, key = { it.day.toString() }) { row ->
