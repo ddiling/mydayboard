@@ -172,4 +172,12 @@
     <string name="tasks_catstats_not_found_hint">It was deleted or never existed.</string>
     <string name="tasks_list_category_stats">Stats of %1$s</string>
     <string name="tasks_row_swipe_hint">swipe right to mark done</string>
+    <string name="tasks_form_stop_title">STOP OR REMOVE</string>
+    <string name="tasks_form_archive">Archive task</string>
+    <string name="tasks_form_delete">Delete task and history</string>
+    <string name="tasks_delete_title">Delete task</string>
+    <string name="tasks_delete_question">Delete %1$s and all its history?</string>
+    <string name="tasks_delete_warning">You cannot undo this. The category stats will change.</string>
+    <string name="tasks_delete_keep">Keep it</string>
+    <string name="tasks_delete_confirm">Delete</string>
 </resources>

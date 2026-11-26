@@ -108,5 +108,6 @@ private fun Form(
         RepeatSections(uiState, actions)
         GoalSection(uiState, actions)
         MissedSection(uiState, actions)
+        if (uiState.isEditing) StopOrRemoveSection(actions)
     }
 }

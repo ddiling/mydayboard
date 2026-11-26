@@ -37,5 +37,6 @@ internal fun TaskFormRoute(
     }
     val categoryDialog by viewModel.categoryDialog.collectAsStateWithLifecycle()
     (categoryDialog as? CategoryDialogState.Editing)?.let { CategoryDialog(it, viewModel.categoryDialogActions) }
+    uiState.deleteDialogName?.let { DeleteTaskDialog(it, viewModel.actions) }
     TaskFormScreen(uiState, categories, viewModel.actions.copy(onClose = onBack), modifier)
 }
