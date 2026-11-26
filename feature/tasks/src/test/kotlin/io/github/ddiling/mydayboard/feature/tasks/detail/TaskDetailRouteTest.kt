@@ -43,6 +43,24 @@ class TaskDetailRouteTest {
     }
 
     @Test
+    fun `undo after an untick ticks the task again through the view model`() {
+        val task = runBlocking { fixture.addTask("Pills").also { fixture.tickOn(it, fixture.today) } }
+        composeRule.setContent {
+            PreviewSurface { TaskDetailRoute(onBack = {}, onEdit = {}, viewModel = fixture.viewModel(task.id)) }
+        }
+        composeRule.waitUntil { composeRule.onAllNodesWithText("Done today").fetchSemanticsNodes().isNotEmpty() }
+
+        composeRule.onNodeWithTag("tasks_detail_big_button").performClick()
+        composeRule.waitUntil { composeRule.onAllNodesWithText("Pills unticked").fetchSemanticsNodes().isNotEmpty() }
+        composeRule.onNodeWithText("Not done yet").assertIsDisplayed()
+
+        composeRule.onNodeWithText("Undo").performClick()
+
+        composeRule.waitUntil { composeRule.onAllNodesWithText("Done today").fetchSemanticsNodes().isNotEmpty() }
+        composeRule.onNodeWithText("Done today").assertIsDisplayed()
+    }
+
+    @Test
     fun `the pencil calls onEdit`() {
         var edits = 0
         showFor("Pills") { edits++ }
