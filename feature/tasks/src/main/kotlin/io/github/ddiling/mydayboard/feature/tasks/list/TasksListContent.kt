@@ -60,7 +60,10 @@ internal fun TasksListContent(
             }
         }
         if (content.archivedCount > 0) {
-            if (content.groups.isNotEmpty()) item(key = "archived-divider") { DashedDivider() }
+            // No divider when no group is shown above it: a line with nothing before it would look like a stray rule.
+            if (content.groups.isNotEmpty()) {
+                item(key = "archived-divider") { DashedDivider(Modifier.testTag("tasks_list_archived_divider")) }
+            }
             item(key = "archived") { ArchivedRow(content.archivedCount, actions.onArchiveClick) }
         }
     }
@@ -117,9 +120,9 @@ private fun GroupTitle(
 }
 
 @Composable
-private fun DashedDivider() {
+private fun DashedDivider(modifier: Modifier = Modifier) {
     Box(
-        Modifier
+        modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp)
             .height(1.dp)
