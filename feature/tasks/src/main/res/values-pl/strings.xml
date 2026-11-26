@@ -115,5 +115,8 @@
     <string name="tasks_detail_chip_open">%1$s, nie zrobione. Dotknij, aby odhaczyć</string>
     <string name="tasks_detail_history_title">HISTORIA</string>
     <string name="tasks_detail_history_row">%1$s, %2$s. Dotknij, aby zmienić</string>
+    <string name="tasks_day_marked_done">%1$s · %2$s: zrobione</string>
+    <string name="tasks_day_marked_not_done">%1$s · %2$s: nie zrobione</string>
+    <string name="tasks_day_updated">%1$s · %2$s: zmieniono</string>
     <string name="tasks_row_swipe_hint">przesuń w prawo, aby oznaczyć jako zrobione</string>
 </resources>

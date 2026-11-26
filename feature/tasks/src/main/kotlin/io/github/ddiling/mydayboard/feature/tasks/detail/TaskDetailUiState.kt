@@ -3,6 +3,7 @@ package io.github.ddiling.mydayboard.feature.tasks.detail
 import io.github.ddiling.mydayboard.core.domain.task.Task
 import io.github.ddiling.mydayboard.core.domain.task.TickOutcome
 import io.github.ddiling.mydayboard.feature.tasks.common.UndoOffer
+import io.github.ddiling.mydayboard.feature.tasks.day.DayMarked
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -134,7 +135,7 @@ internal sealed interface DetailStats {
     ) : DetailStats
 }
 
-/** The message with Undo after a button or chip tap. */
+/** The message with Undo after a button or chip tap, or after a past day was saved. */
 internal sealed interface DetailUndo {
     val outcome: TickOutcome
 
@@ -149,4 +150,11 @@ internal sealed interface DetailUndo {
         val name: String,
         override val outcome: TickOutcome.Removed,
     ) : DetailUndo
+
+    /** A past day was rewritten from the day sheet; one Undo reverts all of it. */
+    data class Marked(
+        val marked: DayMarked,
+    ) : DetailUndo {
+        override val outcome: TickOutcome get() = marked.outcome
+    }
 }

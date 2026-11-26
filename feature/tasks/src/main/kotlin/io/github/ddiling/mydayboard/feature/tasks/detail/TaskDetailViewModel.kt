@@ -6,24 +6,28 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.ddiling.mydayboard.core.domain.task.TaskActions
+import io.github.ddiling.mydayboard.core.domain.task.TaskTickRepository
 import io.github.ddiling.mydayboard.feature.tasks.common.UndoOffer
+import io.github.ddiling.mydayboard.feature.tasks.day.DaySheet
 import io.github.ddiling.mydayboard.feature.tasks.navigation.TaskDetailDestination
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import java.time.LocalTime
 import javax.inject.Inject
 
 private const val SUBSCRIPTION_TIMEOUT_MS = 5_000L
 
 /**
- * One task's details. The message with Undo holds only the latest tick or untick; a newer one replaces it and
- * the older change stays.
+ * One task's details. The message with Undo holds only the latest tick, untick or day change; a newer one replaces
+ * it and the older change stays.
  */
 @HiltViewModel
 internal class TaskDetailViewModel
@@ -32,6 +36,8 @@ internal class TaskDetailViewModel
         savedStateHandle: SavedStateHandle,
         observe: ObserveTaskDetail,
         private val actions: TaskActions,
+        private val ticks: TaskTickRepository,
+        val daySheet: DaySheet,
     ) : ViewModel() {
         private val taskId: String = savedStateHandle.toRoute<TaskDetailDestination>().taskId
         private val undo = MutableStateFlow<DetailUndo?>(null)
@@ -80,6 +86,17 @@ internal class TaskDetailViewModel
                     actions.tickSlotToday(taskId, time)?.let { undo.value = DetailUndo.Ticked(UndoOffer(name, it)) }
                 }
             }
+        }
+
+        /** Opens the day sheet for a history row; days outside the start date to yesterday do not open. */
+        fun onDayClick(day: LocalDate) {
+            val task = (uiState.value as? TaskDetailUiState.Content)?.task ?: return
+            viewModelScope.launch { daySheet.open(task, ticks.observeTicks(taskId).first(), day) }
+        }
+
+        /** Writes the sheet's draft and offers Undo for it; the stats follow because the ticks changed. */
+        fun onDaySave() {
+            viewModelScope.launch { daySheet.save()?.let { undo.value = DetailUndo.Marked(it) } }
         }
 
         fun onUndo() {
