@@ -1,5 +1,6 @@
 package io.github.ddiling.mydayboard.feature.tasks.list
 
+import androidx.lifecycle.SavedStateHandle
 import io.github.ddiling.mydayboard.core.domain.task.ObserveTasksOverviewUseCase
 import io.github.ddiling.mydayboard.core.domain.task.OnMiss
 import io.github.ddiling.mydayboard.core.domain.task.Repeat
@@ -30,10 +31,12 @@ internal class TasksListFixture(
     val ticks = FakeTaskTickRepository(clock, ids, store)
 
     // Built after the Main dispatcher is set: the view model starts its scope on it.
-    fun viewModel() =
+    fun viewModel(savedState: SavedStateHandle = SavedStateHandle()) =
         TasksListViewModel(
             ObserveTasksOverviewUseCase(tasks, categories, ticks, clock),
             TaskActions(tasks, ticks, clock),
+            tasks,
+            savedState,
         )
 
     suspend fun addTask(

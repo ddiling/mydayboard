@@ -62,6 +62,20 @@
         <item quantity="many">%1$d spóźnionych</item>
         <item quantity="other">%1$d spóźnionego</item>
     </plurals>
+    <string name="tasks_list_archived_notice">%1$s: zarchiwizowane</string>
+    <string name="tasks_list_deleted_notice">%1$s: usunięte</string>
+    <plurals name="tasks_list_archived">
+        <item quantity="one">Archiwum · %1$d zadanie</item>
+        <item quantity="few">Archiwum · %1$d zadania</item>
+        <item quantity="many">Archiwum · %1$d zadań</item>
+        <item quantity="other">Archiwum · %1$d zadania</item>
+    </plurals>
+    <plurals name="tasks_list_archived_open">
+        <item quantity="one">Otwórz archiwum, %1$d zadanie</item>
+        <item quantity="few">Otwórz archiwum, %1$d zadania</item>
+        <item quantity="many">Otwórz archiwum, %1$d zadań</item>
+        <item quantity="other">Otwórz archiwum, %1$d zadania</item>
+    </plurals>
     <string name="tasks_list_empty_hint">Nie masz jeszcze zadań. Dodaj pierwsze.</string>
     <string name="tasks_detail_hero_not_done">Jeszcze nie zrobione</string>
     <string name="tasks_detail_hero_done_today">Zrobione dzisiaj</string>

@@ -32,19 +32,22 @@ import io.github.ddiling.mydayboard.core.designsystem.component.PrimaryButton
 import io.github.ddiling.mydayboard.core.designsystem.theme.TaskColors
 import io.github.ddiling.mydayboard.feature.tasks.R
 import io.github.ddiling.mydayboard.feature.tasks.common.TaskUndoSnackbar
+import io.github.ddiling.mydayboard.feature.tasks.navigation.TasksListNotice
 
-/** Stateless: everything shown comes from [uiState]. The late count sits in the top bar, to find late tasks. */
+/** Stateless: everything shown comes from [uiState] and [notice]. The late count sits in the top bar. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun TasksListScreen(
     uiState: TasksListUiState,
     actions: TasksListActions,
     modifier: Modifier = Modifier,
+    notice: TasksListNotice? = null,
 ) {
     BackHandler(onBack = actions.onBack)
     val snackbarHostState = remember { SnackbarHostState() }
     val content = uiState as? TasksListUiState.Content
     TaskUndoSnackbar(content?.undo, snackbarHostState, actions.onUndo, actions.onUndoDismissed)
+    TasksListNoticeSnackbar(notice, snackbarHostState, actions.onUndoArchive, actions.onNoticeShown)
     Scaffold(
         modifier = modifier,
         topBar = {

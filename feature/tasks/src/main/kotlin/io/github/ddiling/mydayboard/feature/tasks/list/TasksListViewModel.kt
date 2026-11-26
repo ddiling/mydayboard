@@ -1,14 +1,18 @@
 package io.github.ddiling.mydayboard.feature.tasks.list
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.ddiling.mydayboard.core.domain.task.ObserveTasksOverviewUseCase
 import io.github.ddiling.mydayboard.core.domain.task.RowState
 import io.github.ddiling.mydayboard.core.domain.task.TaskActions
+import io.github.ddiling.mydayboard.core.domain.task.TaskRepository
 import io.github.ddiling.mydayboard.core.domain.task.TasksOverview
 import io.github.ddiling.mydayboard.core.domain.task.groupedByCategory
 import io.github.ddiling.mydayboard.feature.tasks.common.UndoOffer
+import io.github.ddiling.mydayboard.feature.tasks.navigation.TASKS_LIST_NOTICE_KEY
+import io.github.ddiling.mydayboard.feature.tasks.navigation.TasksListNotice
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -23,7 +27,9 @@ private const val SUBSCRIPTION_TIMEOUT_MS = 5_000L
 /**
  * The full task list. Rows come from the shared overview, so a day change or a tick made elsewhere shows up
  * here without a refresh. A swipe is one step; the message that offers Undo holds only the latest swipe, so a
- * newer swipe replaces an older message (the older tick stays).
+ * newer swipe replaces an older message (the older tick stays). A notice handed over by a screen that closed on
+ * the list (an archive or a delete) waits in the saved state until the snackbar for it has ended, so it survives
+ * a rotation or process death but is shown only once.
  */
 @HiltViewModel
 internal class TasksListViewModel
@@ -31,6 +37,8 @@ internal class TasksListViewModel
     constructor(
         overview: ObserveTasksOverviewUseCase,
         private val actions: TaskActions,
+        private val tasks: TaskRepository,
+        private val savedState: SavedStateHandle,
     ) : ViewModel() {
         private val undo = MutableStateFlow<UndoOffer?>(null)
 
@@ -41,6 +49,18 @@ internal class TasksListViewModel
                     SharingStarted.WhileSubscribed(SUBSCRIPTION_TIMEOUT_MS),
                     TasksListUiState.Loading,
                 )
+
+        val notice: StateFlow<TasksListNotice?> = savedState.getStateFlow(TASKS_LIST_NOTICE_KEY, null)
+
+        /** Forgets the notice once its snackbar has ended, so it is not shown again. */
+        fun onNoticeShown() {
+            savedState[TASKS_LIST_NOTICE_KEY] = null
+        }
+
+        /** Brings an archived task back; clears its archive mark, so it returns to the list. */
+        fun onUndoArchive(taskId: String) {
+            viewModelScope.launch { tasks.restoreTask(taskId) }
+        }
 
         /** Ticks the task, late ones included. Does nothing when the task is gone or has nothing left to tick. */
         fun onSwipeDone(taskId: String) {
@@ -62,7 +82,7 @@ internal class TasksListViewModel
     }
 
 private fun TasksOverview.toUiState(undo: UndoOffer?): TasksListUiState =
-    if (rows.isEmpty()) {
+    if (rows.isEmpty() && archivedCount == 0) {
         TasksListUiState.Empty
     } else {
         TasksListUiState.Content(

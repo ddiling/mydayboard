@@ -27,6 +27,7 @@ fun NavGraphBuilder.tasksGraph(navController: NavController) {
             onAddTask = { navController.navigate(TaskFormDestination()) },
             onTaskClick = { taskId -> navController.navigate(TaskDetailDestination(taskId)) },
             onCategoryStats = { id -> navController.navigate(CategoryStatsDestination(id)) },
+            onArchiveClick = {},
         )
     }
     composable<CategoryStatsDestination> {

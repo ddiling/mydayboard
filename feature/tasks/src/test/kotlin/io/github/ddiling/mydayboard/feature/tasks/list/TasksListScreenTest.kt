@@ -46,8 +46,9 @@ class TasksListScreenTest {
     private fun content(
         groups: List<TaskGroup> = listOf(TaskGroup(home, listOf(pending))),
         lateCount: Int = 0,
+        archivedCount: Int = 0,
         undo: UndoOffer? = null,
-    ) = TasksListUiState.Content(groups, textsToday, lateCount, archivedCount = 0, undo = undo)
+    ) = TasksListUiState.Content(groups, textsToday, lateCount, archivedCount, undo)
 
     private fun show(
         state: TasksListUiState,
@@ -174,6 +175,22 @@ class TasksListScreenTest {
         show(content(listOf(TaskGroup(null, listOf(pending)))))
 
         composeRule.onNodeWithTag("tasks_list_stats_null").assertDoesNotExist()
+    }
+
+    @Test
+    fun `with every task archived there is no divider above the Archived row`() {
+        show(content(groups = emptyList(), archivedCount = 3))
+
+        composeRule.onNodeWithTag("tasks_list_archived").assertExists()
+        composeRule.onNodeWithTag("tasks_list_archived_divider").assertDoesNotExist()
+    }
+
+    @Test
+    fun `with tasks and archived tasks there is a divider above the Archived row`() {
+        show(content(archivedCount = 3))
+
+        composeRule.onNodeWithTag("tasks_list_archived").assertExists()
+        composeRule.onNodeWithTag("tasks_list_archived_divider").assertExists()
     }
 
     private val vacuumDone = UndoOffer("Vacuum", TickOutcome.Added("vacuum", "tick1", 1, 1, null))
