@@ -112,7 +112,12 @@ private fun StatCellView(
     cell: StatCell,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier.heightIn(min = 48.dp).semantics(mergeDescendants = true) {}) {
+    Column(
+        modifier
+            .heightIn(min = 48.dp)
+            .semantics(mergeDescendants = true) {
+            }.testTag("tasks_detail_stat_${cell.label}"),
+    ) {
         Text(cell.value, style = MaterialTheme.typography.titleLarge)
         Grey(cell.label)
     }
