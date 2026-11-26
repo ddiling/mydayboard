@@ -7,6 +7,7 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onChildAt
@@ -17,6 +18,7 @@ import io.github.ddiling.mydayboard.core.designsystem.preview.PreviewSurface
 import io.github.ddiling.mydayboard.core.domain.task.OnMiss
 import io.github.ddiling.mydayboard.core.domain.task.Repeat
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -107,10 +109,15 @@ class TaskDetailScreenTest {
         composeRule.onNodeWithTag("tasks_detail_late_note").assertDoesNotExist()
     }
 
+    private fun statTop(label: String) =
+        composeRule.onNodeWithTag("tasks_detail_stat_$label").getUnclippedBoundsInRoot().top
+
     @Test
-    fun `the stats are reachable at a double font size`() {
+    fun `at a double font size the stats stay three to a row and the last one is reachable`() {
         show(previewDetail(), fontScale = 2f)
 
-        composeRule.onNodeWithTag("tasks_detail_stats").assertIsDisplayed()
+        composeRule.onNodeWithTag("tasks_detail_stat_skipped").assertIsDisplayed()
+        assertEquals(statTop("since"), statTop("last 30 days"))
+        assertTrue(statTop("per day") > statTop("since"))
     }
 }

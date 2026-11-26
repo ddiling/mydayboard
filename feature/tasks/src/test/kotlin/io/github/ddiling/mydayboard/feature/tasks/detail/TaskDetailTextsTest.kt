@@ -50,8 +50,13 @@ class TaskDetailTextsTest {
     }
 
     @Test
-    fun `a task late for more than a week says the date`() {
-        assertEquals("Late since 10 Nov", hero(Hero.LateSince(LocalDate.of(2026, 11, 10))))
+    fun `a task late for six days still says the weekday`() {
+        assertEquals("Late since Sat", hero(Hero.LateSince(today.minusDays(6))))
+    }
+
+    @Test
+    fun `a task late for exactly seven days says the date because the weekday would read as today`() {
+        assertEquals("Late since 13 Nov", hero(Hero.LateSince(today.minusDays(7))))
     }
 
     @Test
